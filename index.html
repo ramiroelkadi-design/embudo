@@ -738,7 +738,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   var STAGES = [
     { id: 'coordinar', name: 'Coordinar entrevista', desc: 'hay que coordinar la entrevista' },
     { id: 'agendada', name: 'Agendada', desc: 'entrevista agendada' },
-    { id: 'realizada', name: 'Realizada', desc: 'entrevista realizada' },
+    { id: 'realizada', name: 'Realizada - Seguimiento cercano', desc: 'entrevista realizada, en seguimiento cercano' },
     { id: 'coordinar-ingreso', name: 'Coordinar ingreso', desc: 'quiere sumarse, falta coordinar el ingreso' },
     { id: 'se-suma', name: 'Se incorporó', desc: 'confirmó que se suma' },
     { id: 'mas-adelante', name: 'Más adelante', desc: 'contactar más adelante' },
@@ -1472,7 +1472,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
         el('span', { class: 'card-name', text: name }),
         meta && el('span', { class: 'card-meta', text: meta }),
         last && el('span', { class: 'card-note', text: last })),
-      tags.length && el('div', { class: 'card-tags' }, tags),
+      tags.length ? el('div', { class: 'card-tags' }, tags) : null,
       el('div', { class: 'card-foot' },
         el('span', { class: 'ago', text: t ? 'Última nota ' + ago(t) : '' }),
         el('span', { class: 'card-actions' },
