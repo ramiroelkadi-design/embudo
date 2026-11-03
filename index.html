@@ -31,6 +31,7 @@
   --c-se-suma: #2E8B57;
   --c-mas-adelante: #8B6BB0;
   --c-descartado: #B04A4A;
+  --c-ingreso: #B5479E;
   --p-eri: #E07A00;
   --p-vero: #7C3AED;
   --p-rami: #0E9F6E;
@@ -42,7 +43,7 @@
     --bg: #0D1422; --surface: #151F33; --surface-2: #1A2640; --ink: #E6ECF7; --ink-2: #AAB7CF; --line: #2A3753;
     --accent: #8DB0FF; --accent-ink: #0B1530; --accent-soft: #1C2C52;
     --late: #FF9A90; --late-bg: #3A1D1F; --today: #FFD27A; --today-bg: #3A2D10; --soon: #B4C0DA; --soon-bg: #222E47; --ok: #7FDDA8; --ok-bg: #173526;
-    --c-coordinar: #F0A940; --c-agendada: #4FC3C3; --c-realizada: #7BA4F0; --c-se-suma: #6FD39A; --c-mas-adelante: #BEA2E0; --c-descartado: #F08C8C;
+    --c-coordinar: #F0A940; --c-agendada: #4FC3C3; --c-realizada: #7BA4F0; --c-se-suma: #6FD39A; --c-mas-adelante: #BEA2E0; --c-descartado: #F08C8C; --c-ingreso: #E78AD0;
     --p-eri: #FFB454; --p-vero: #B79CFF; --p-rami: #5FD6A3;
     color-scheme: dark;
   }
@@ -51,7 +52,7 @@
   --bg: #0D1422; --surface: #151F33; --surface-2: #1A2640; --ink: #E6ECF7; --ink-2: #AAB7CF; --line: #2A3753;
   --accent: #8DB0FF; --accent-ink: #0B1530; --accent-soft: #1C2C52;
   --late: #FF9A90; --late-bg: #3A1D1F; --today: #FFD27A; --today-bg: #3A2D10; --soon: #B4C0DA; --soon-bg: #222E47; --ok: #7FDDA8; --ok-bg: #173526;
-  --c-coordinar: #F0A940; --c-agendada: #4FC3C3; --c-realizada: #7BA4F0; --c-se-suma: #6FD39A; --c-mas-adelante: #BEA2E0; --c-descartado: #F08C8C;
+  --c-coordinar: #F0A940; --c-agendada: #4FC3C3; --c-realizada: #7BA4F0; --c-se-suma: #6FD39A; --c-mas-adelante: #BEA2E0; --c-descartado: #F08C8C; --c-ingreso: #E78AD0;
   --p-eri: #FFB454; --p-vero: #B79CFF; --p-rami: #5FD6A3;
   color-scheme: dark;
 }
@@ -121,6 +122,7 @@ button:disabled { opacity: 0.55; cursor: default; }
 .dot.s-se-suma { background: var(--c-se-suma); }
 .dot.s-mas-adelante { background: var(--c-mas-adelante); }
 .dot.s-descartado { background: var(--c-descartado); }
+.dot.s-coordinar-ingreso { background: var(--c-ingreso); }
 
 /* Tablero */
 .board { display: flex; gap: 8px; align-items: flex-start; overflow-x: auto; padding-bottom: 12px; }
@@ -131,6 +133,7 @@ button:disabled { opacity: 0.55; cursor: default; }
 .col.stage-se-suma { --sc: var(--c-se-suma); }
 .col.stage-mas-adelante { --sc: var(--c-mas-adelante); }
 .col.stage-descartado { --sc: var(--c-descartado); }
+.col.stage-coordinar-ingreso { --sc: var(--c-ingreso); }
 .col.over { outline: 2px dashed var(--accent); outline-offset: -3px; }
 .col-head { display: flex; gap: 8px; align-items: center; width: 100%; padding: 7px 8px; background: color-mix(in srgb, var(--sc) 14%, transparent); border: 0; border-radius: 8px; text-align: left; }
 .col-head:hover { background: color-mix(in srgb, var(--sc) 22%, transparent); }
@@ -733,9 +736,10 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
 
   /* ---------- constantes ---------- */
   var STAGES = [
-    { id: 'coordinar', name: 'Por coordinar', desc: 'hay que coordinar la entrevista' },
+    { id: 'coordinar', name: 'Coordinar entrevista', desc: 'hay que coordinar la entrevista' },
     { id: 'agendada', name: 'Agendada', desc: 'entrevista agendada' },
     { id: 'realizada', name: 'Realizada', desc: 'entrevista realizada' },
+    { id: 'coordinar-ingreso', name: 'Coordinar ingreso', desc: 'quiere sumarse, falta coordinar el ingreso' },
     { id: 'se-suma', name: 'Se incorporó', desc: 'confirmó que se suma' },
     { id: 'mas-adelante', name: 'Más adelante', desc: 'contactar más adelante' },
     { id: 'descartado', name: 'No avanza', desc: 'no avanza' }
@@ -1026,7 +1030,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     if (ak !== bk) return ak < bk ? -1 : 1;
     return (b.actualizado || '') < (a.actualizado || '') ? -1 : 1;
   }
-  function wasInterviewed(c) { return c.estado === 'realizada' || c.estado === 'se-suma' || !!c.entrevistadoEl; }
+  function wasInterviewed(c) { return c.estado === 'realizada' || c.estado === 'coordinar-ingreso' || c.estado === 'se-suma' || !!c.entrevistadoEl; }
   function inScope(c) { return (!mineOnly || c.asignado === me.id) && (!onlyInt || wasInterviewed(c)); }
   function matches(c) {
     if (!query) return true;
@@ -1188,7 +1192,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   function lsLoad() {
     try {
       var l = JSON.parse(lsGet(LS) || '[]');
-      l.forEach(function (c) { if (c.estado === 'nuevo') c.estado = 'coordinar'; if (c.estado === 'realizada' && !c.entrevistadoEl) c.entrevistadoEl = c.actualizado || new Date().toISOString(); });
+      l.forEach(function (c) { if (c.estado === 'nuevo') c.estado = 'coordinar'; if ((c.estado === 'realizada' || c.estado === 'coordinar-ingreso') && !c.entrevistadoEl) c.entrevistadoEl = c.actualizado || new Date().toISOString(); });
       return l;
     } catch (e) { return []; }
   }
@@ -1337,7 +1341,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var c = get(id);
     var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '' };
     var fields = Object.assign({ estado: to }, extra || {});
-    if (to === 'realizada' && !c.entrevistadoEl) fields.entrevistadoEl = new Date().toISOString();
+    if ((to === 'realizada' || to === 'coordinar-ingreso') && !c.entrevistadoEl) fields.entrevistadoEl = new Date().toISOString();
     if (to !== 'descartado' && c.motivo && !('motivo' in fields)) fields.motivo = '';
     var nid = pushNote(id, { t: new Date().toISOString(), tipo: 'estado', texto: stageName(c.estado) + ' → ' + stageName(to) });
     patch(id, fields);
@@ -1934,7 +1938,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var ph = fmtPhone(data.telefono); if (ph.ok && ph.text) data.telefono = ph.text;
     data.entrevistas = collectIvs().filter(function (x) { return x.fecha; }); data.entrevista = '';
     if (draft.estado !== 'descartado') data.motivo = '';
-    if (draft.estado === 'realizada' || $('#f-entrev').checked) data.entrevistadoEl = now;
+    if (draft.estado === 'realizada' || draft.estado === 'coordinar-ingreso' || $('#f-entrev').checked) data.entrevistadoEl = now;
     var t = $('#noteText').value.trim();
     var id = newId();
     closePanels();
@@ -2315,7 +2319,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
           data.entrevistas = dates.entrevista ? [cleanIv({ fecha: dates.entrevista })] : [];
           data.motivo = estado === 'descartado' ? (dates.motivo || '') : '';
           data.asignado = me.id || '';
-          if (estado === 'realizada') data.entrevistadoEl = now;
+          if (estado === 'realizada' || estado === 'coordinar-ingreso') data.entrevistadoEl = now;
           var id = newId();
           create(id, data);
           if (str(i.nota)) pushNote(id, { t: now, texto: str(i.nota) });
@@ -2632,7 +2636,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       });
       loading = false;
       cands.forEach(function (c) {
-        if (c.estado === 'realizada' && !c.entrevistadoEl) {
+        if ((c.estado === 'realizada' || c.estado === 'coordinar-ingreso') && !c.entrevistadoEl) {
           c.entrevistadoEl = c.actualizado || new Date().toISOString();
           enqueue(c.id, function () { return coll.doc(c.id).update({ entrevistadoEl: c.entrevistadoEl }); });
         }
