@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Embudo de Asesores</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0B3A8F">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
 <style>
 /* Layout: tablero con una columna por etapa (escritorio) o pestañas por etapa (celular). La ficha y el chat se abren como panel lateral que no tapa el tablero cuando hay lugar, o a pantalla completa en el celular. */
@@ -80,7 +84,11 @@ button:disabled { opacity: 0.55; cursor: default; }
 /* Encabezado */
 .top { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: flex-end; justify-content: space-between; }
 .brand { min-width: 0; }
-.brand h1 { margin: 0; font: 700 26px/1.1 var(--f-display); letter-spacing: -0.01em; text-wrap: balance; }
+.brand h1 { display: flex; align-items: center; gap: 10px; margin: 0; font: 700 26px/1.1 var(--f-display); letter-spacing: -0.01em; text-wrap: balance; }
+.logo { width: 1.15em; height: 1.15em; flex: 0 0 auto; border-radius: 22%; }
+.who-tag { display: inline-flex; gap: 5px; align-items: center; padding: 2px 9px 2px 7px; border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); }
+.card.has-who { border-left: 4px solid var(--who, var(--line)); }
+select.btn { font-family: inherit; color: inherit; }
 .sub { margin: 4px 0 0; color: var(--ink-2); font-size: 13.5px; font-variant-numeric: tabular-nums; }
 .tools { display: flex; gap: 8px; flex: 1 1 320px; justify-content: flex-end; align-items: center; flex-wrap: wrap; min-width: 0; }
 .search { flex: 1 1 180px; max-width: 300px; min-width: 0; padding: 9px 12px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
@@ -342,6 +350,9 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   .tools { flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
   .search { display: none; }
   #onlyInt { display: none; }
+  #whoSel { width: 72px; padding: 9px 4px; font-size: 13px; }
+  .brand h1 { font-size: 19px; gap: 8px; }
+  .brand h1 span { line-height: 1.1; }
   .top.searching .tools { flex: 1 1 100%; }
   .top.searching .search { display: block; flex: 1 1 100%; max-width: none; order: 9; }
   #add .lbl { display: none; }
@@ -605,13 +616,13 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
 <div class="app" id="app">
   <header class="top" id="top">
     <div class="brand">
-      <h1>Embudo de Asesores</h1>
+      <h1><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0B3A8F"/><path d="M12 13H52L37 32V44L27 39V32Z" fill="#fff"/><circle cx="20" cy="53" r="4" fill="#FFB454"/><circle cx="32" cy="53" r="4" fill="#B79CFF"/><circle cx="44" cy="53" r="4" fill="#5FD6A3"/></svg><span>Embudo de Asesores</span></h1>
       <p id="stats" class="sub">Coldwell Banker Juntos · Olivos</p>
     </div>
     <div class="tools">
       <input id="q" class="search" type="search" placeholder="Buscar en candidatos y notas" aria-label="Buscar en candidatos y notas" autocomplete="off">
       <button id="searchBtn" class="btn icon mob-only" type="button" aria-label="Buscar" aria-pressed="false"><span data-icon="search"></span></button>
-      <button id="mine" class="btn" type="button" aria-pressed="false" hidden>Solo míos</button>
+      <select id="whoSel" class="btn" aria-label="Filtrar por responsable"><option value="">Todos</option><option value="Eri">Eri</option><option value="Vero">Vero</option><option value="Rami">Rami</option><option value="_none">Sin asignar</option></select>
       <button id="onlyInt" class="btn" type="button" aria-pressed="false">Entrevistados</button>
       <button id="openChat" class="btn desk-only" type="button" hidden><span data-icon="chat" data-size="16"></span>Chat</button>
       <button id="add" class="btn primary" type="button" aria-label="Agregar candidato"><span data-icon="plus" data-size="16"></span><span class="lbl">Candidato</span></button>
@@ -662,8 +673,8 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
         <div id="quick" class="quick"></div>
         <button id="contactGcal" class="btn" type="button" hidden>Agregar a Google Calendar</button>
       </div>
-      <label class="field" id="asignadoRow"><span>Asignado a</span>
-        <select id="f-asignado" data-k="asignado"></select>
+      <label class="field" id="asignadoRow"><span>Responsable</span>
+        <select id="f-responsable" data-k="responsable"><option value="">Sin asignar</option><option value="Eri">Eri</option><option value="Vero">Vero</option><option value="Rami">Rami</option></select>
       </label>
     </section>
     <section id="ivSec">
@@ -752,8 +763,8 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   var MODOS = { meet: 'Meet', presencial: 'Presencial' };
   var TZ = 'America/Argentina/Buenos_Aires';
   var VIEW_KEY = 'embudo-view', TEAM_KEY = 'embudo-equipo';
-  var FIELD_KEYS = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'asignado', 'motivo'];
-  var FIELD_LABELS = { nombre: 'el nombre', inmobiliaria: 'la inmobiliaria', telefono: 'el teléfono', email: 'el email', linkedin: 'LinkedIn', origen: 'el origen', proximoContacto: 'el próximo contacto', entrevista: 'la entrevista', asignado: 'la asignación', motivo: 'el motivo' };
+  var FIELD_KEYS = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'responsable', 'motivo'];
+  var FIELD_LABELS = { nombre: 'el nombre', inmobiliaria: 'la inmobiliaria', telefono: 'el teléfono', email: 'el email', linkedin: 'LinkedIn', origen: 'el origen', proximoContacto: 'el próximo contacto', entrevista: 'la entrevista', responsable: 'el responsable', motivo: 'el motivo' };
   var LS = 'embudo-asesores-v1';
   var COLS_KEY = 'embudo-asesores-cols';
   var MIC_KEY = 'embudo-mic-blocked';
@@ -773,7 +784,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   var cands = [], loading = true, coll = null;
   var notesMap = {}, notesUnsub = null, notesReady = false;
   var me = { id: null, name: '' }, userCap = null, people = {}, peopleAsked = {};
-  var filter = 'todos', query = '', mineOnly = false, onlyInt = false, collapsed = {};
+  var filter = 'todos', query = '', whoF = '', onlyInt = false, collapsed = {};
   var openId = null, isNew = false, draft = { estado: 'coordinar' }, lastFocus = null, focusVal = {};
   var dragging = false, pendingRender = false;
   var sample = null, chat = [], busy = false, recog = null, listening = false, curChanges = null;
@@ -1031,7 +1042,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     return (b.actualizado || '') < (a.actualizado || '') ? -1 : 1;
   }
   function wasInterviewed(c) { return c.estado === 'realizada' || c.estado === 'coordinar-ingreso' || c.estado === 'se-suma' || !!c.entrevistadoEl; }
-  function inScope(c) { return (!mineOnly || c.asignado === me.id) && (!onlyInt || wasInterviewed(c)); }
+  function inScope(c) { return (!whoF || (whoF === '_none' ? !c.responsable : c.responsable === whoF)) && (!onlyInt || wasInterviewed(c)); }
   function matches(c) {
     if (!query) return true;
     var hay = [c.nombre, c.inmobiliaria, c.origen, c.telefono, c.email, c.textoNotas, lastNote(c)].concat((c.notas || []).map(function (n) { return n.texto; })).join(' ');
@@ -1327,14 +1338,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       renderMineBtn();
     });
   }
-  function renderMineBtn() {
-    var b = $('#mine');
-    var show = !!me.id && knownPeople().length > 1;
-    b.hidden = !show;
-    if (!show && mineOnly) { mineOnly = false; render(); }
-    b.classList.toggle('on', mineOnly);
-    b.setAttribute('aria-pressed', String(mineOnly));
-  }
+  function renderMineBtn() {}
 
   /* ---------- etapas ---------- */
   function applyStage(id, to, extra) {
@@ -1451,7 +1455,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     }));
   }
   function cardSig(c) {
-    return [c.nombre, c.inmobiliaria, c.origen, c.estado, c.proximoContacto, JSON.stringify(ivsOf(c)), c.telefono, wasInterviewed(c), lastNote(c), lastTouch(c), Math.floor(Date.now() / 60000)].join('|');
+    return [c.nombre, c.inmobiliaria, c.origen, c.estado, c.proximoContacto, JSON.stringify(ivsOf(c)), c.telefono, c.responsable, wasInterviewed(c), lastNote(c), lastTouch(c), Math.floor(Date.now() / 60000)].join('|');
   }
   function card(c) {
     var sig = cardSig(c), hit = cardCache.get(c.id);
@@ -1461,13 +1465,14 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var wa = fmtPhone(c.telefono).wa;
     var meta = [c.inmobiliaria, c.origen].filter(Boolean).join(' · ');
     var tags = [];
+    if (c.responsable) tags.push(el('span', { class: 'who-tag' }, el('i', { class: 'pd', style: 'background:' + pColor(c.responsable) }), c.responsable));
     if (ent) tags.push(tag(ent.cls, ent.text));
     if (due) tags.push(tag(due.cls, due.text));
     if (c.estado !== 'realizada' && wasInterviewed(c)) tags.push(tag('ok', 'Entrevistado'));
     if (needsDate(c)) tags.push(tag('late', 'Sin fecha de contacto'));
     if (st) tags.push(tag('muted', st));
     var t = lastTouch(c);
-    var e = el('article', { class: 'card', draggable: 'true' },
+    var e = el('article', { class: 'card' + (c.responsable ? ' has-who' : ''), style: c.responsable ? '--who:' + pColor(c.responsable) : '', draggable: 'true' },
       el('button', { type: 'button', class: 'card-main', 'data-focus': 'card:' + id, onclick: function () { openSheet(id); } },
         el('span', { class: 'card-name', text: name }),
         meta && el('span', { class: 'card-meta', text: meta }),
@@ -1756,17 +1761,6 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     sel.replaceChildren.apply(sel, [el('option', { value: '', text: 'Sin especificar' })].concat(list.map(function (o) { return el('option', { value: o, text: o }); })));
     sel.value = cur || '';
   }
-  function fillAsignado(selected) {
-    var sel = $('#f-asignado');
-    var ids = knownPeople();
-    if (selected && ids.indexOf(selected) < 0) ids.push(selected);
-    ensurePeople(ids);
-    var opts = [el('option', { value: '', text: 'Sin asignar' })].concat(ids.map(function (i) {
-      return el('option', { value: i, text: i === me.id ? 'Yo' + (me.name ? ' (' + me.name + ')' : '') : authorLabel(i) });
-    }));
-    sel.replaceChildren.apply(sel, opts);
-    sel.value = selected || '';
-  }
   function updateContactBtn() {
     var v = validDate($('#f-proximoContacto').value);
     $('#contactGcal').hidden = !v;
@@ -1847,11 +1841,10 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     c = c || {};
     FIELD_KEYS.forEach(function (k) {
       var i = $('#f-' + k);
-      if (k === 'asignado' || k === 'motivo') return;
+      if (k === 'motivo') return;
       i.value = c[k] || '';
     });
     fillMotivos($('#f-motivo')); $('#f-motivo').value = c.motivo || ''; fillOrigen(c.origen || '');
-    fillAsignado(isNew ? (me.id || '') : (c.asignado || ''));
     $('#sheetTitle').textContent = isNew ? 'Nuevo candidato' : (c.nombre || 'Sin nombre');
     $('#noteLabel').textContent = isNew ? 'Primera nota (opcional)' : 'Nueva nota';
     $('#noteBtn').hidden = isNew; $('#noteHint').hidden = isNew;
@@ -1890,11 +1883,9 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     FIELD_KEYS.forEach(function (k) {
       var i = $('#f-' + k);
       if (document.activeElement === i) return;
-      if (k === 'asignado') return;
       i.value = c[k] || '';
     });
     if (document.activeElement !== $('#f-origen')) fillOrigen(c.origen || '');
-    fillAsignado(c.asignado || '');
     renderSeg(c.estado); syncEntrev(c); renderIvs(ivsOf(c), false); renderTimeline(c); updateLinks(); renderMeta(c); updateNav(); updateContactBtn();
   }
   function saveField(k, v) {
@@ -2080,7 +2071,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     $('#searchBtn').setAttribute('aria-pressed', String(on));
     if (on) $('#q').focus(); else { $('#q').value = ''; query = ''; render(); }
   });
-  $('#mine').addEventListener('click', function () { mineOnly = !mineOnly; render(); });
+  $('#whoSel').addEventListener('change', function (e) { whoF = e.target.value; render(); });
   function toggleInt() {
     onlyInt = !onlyInt;
     $('#onlyInt').classList.toggle('on', onlyInt); $('#onlyInt').setAttribute('aria-pressed', String(onlyInt));
@@ -2182,12 +2173,12 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   async function exportCSV() {
     toast('Preparando el archivo…');
     var all = await collectAll();
-    var head = ['Nombre', 'Inmobiliaria', 'Etapa', 'Próximo contacto', 'Entrevistas', 'Teléfono', 'Email', 'LinkedIn', 'Origen', 'Motivo', 'Asignado', 'Entrevistado', 'Creado', 'Notas'];
+    var head = ['Nombre', 'Inmobiliaria', 'Etapa', 'Próximo contacto', 'Entrevistas', 'Teléfono', 'Email', 'LinkedIn', 'Origen', 'Motivo', 'Responsable', 'Entrevistado', 'Creado', 'Notas'];
     var lines = [head.map(csvCell).join(';')];
     all.forEach(function (r) {
       var c = r.c;
       var notas = r.notes.map(function (n) { return fmtStamp(n.t) + (n.tipo === 'estado' ? ' [etapa] ' : ' ') + String(n.texto).replace(/\s+/g, ' '); }).join(' | ');
-      lines.push([c.nombre, c.inmobiliaria, stageName(c.estado), c.proximoContacto, ivSummary(c), c.telefono, c.email, c.linkedin, c.origen, c.motivo, c.asignado ? authorLabel(c.asignado) : '', wasInterviewed(c) ? 'Sí' : 'No', c.creado ? fmtStamp(c.creado) : '', notas].map(csvCell).join(';'));
+      lines.push([c.nombre, c.inmobiliaria, stageName(c.estado), c.proximoContacto, ivSummary(c), c.telefono, c.email, c.linkedin, c.origen, c.motivo, c.responsable || '', wasInterviewed(c) ? 'Sí' : 'No', c.creado ? fmtStamp(c.creado) : '', notas].map(csvCell).join(';'));
     });
     await saveFile('candidatos-' + todayStr() + '.csv', '﻿' + lines.join('\r\n'));
   }
@@ -2197,7 +2188,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var data = { version: 1, exportado: new Date().toISOString(), candidatos: all.map(function (r) { var o = clone(r.c); delete o.notas; o.notas = r.notes; return o; }) };
     await saveFile('respaldo-embudo-' + todayStr() + '.json', JSON.stringify(data, null, 1));
   }
-  var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'editor', 'entrevistadoEl'];
+  var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'responsable', 'editor', 'entrevistadoEl'];
   $('#importFile').addEventListener('change', function (e) {
     var f = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -2278,7 +2269,8 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       origen: { type: 'string', enum: ORIGENES.concat(['']), description: 'Cómo llegó: Talentum, Referido Asesores (lo recomendó un asesor), Referido Coldwell (lo derivó Coldwell Banker) u Otro' },
       proximoContacto: { type: 'string', description: 'Fecha del próximo contacto, YYYY-MM-DD. Vacío para borrarla.' },
       entrevista: { type: 'string', description: 'Fecha y hora de la próxima entrevista, YYYY-MM-DDTHH:MM (hora local). Para modalidad, lugar, participantes o una 2ª/3ª entrevista usá agendar_entrevista.' },
-      motivo: { type: 'string', enum: MOTIVOS.concat(['']), description: 'Motivo por el que no avanza' }
+      motivo: { type: 'string', enum: MOTIVOS.concat(['']), description: 'Motivo por el que no avanza' },
+      responsable: { type: 'string', enum: ['Eri', 'Vero', 'Rami', ''], description: 'Quién del equipo maneja a este candidato ahora. Vacío para quitarlo.' }
     };
     var createProps = clone(props);
     createProps.estado = { type: 'string', enum: stageEnum, description: 'Etapa del embudo. Por defecto: coordinar' };
@@ -2318,7 +2310,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
           data.entrevista = '';
           data.entrevistas = dates.entrevista ? [cleanIv({ fecha: dates.entrevista })] : [];
           data.motivo = estado === 'descartado' ? (dates.motivo || '') : '';
-          data.asignado = me.id || '';
+          data.responsable = ['Eri', 'Vero', 'Rami'].indexOf(i.responsable) >= 0 ? i.responsable : '';
           if (estado === 'realizada' || estado === 'coordinar-ingreso') data.entrevistadoEl = now;
           var id = newId();
           create(id, data);
@@ -2333,8 +2325,9 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
         inputSchema: { type: 'object', properties: updProps, required: ['id'] },
         execute: function (i) {
           var c = need(i.id), fields = {}, names = [];
-          ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen'].forEach(function (k) {
+          ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'responsable'].forEach(function (k) {
             if (i[k] === undefined) return;
+            if (k === 'responsable' && ['Eri', 'Vero', 'Rami', ''].indexOf(str(i[k])) < 0) return;
             var v = str(i[k]);
             if (k === 'nombre' && !v) return;
             if (k === 'telefono') { var ph = fmtPhone(v); if (ph.ok && ph.text) v = ph.text; }
