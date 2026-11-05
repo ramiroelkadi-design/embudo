@@ -1343,8 +1343,9 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   /* ---------- etapas ---------- */
   function applyStage(id, to, extra) {
     var c = get(id);
-    var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '' };
+    var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '', responsable: c.responsable || '' };
     var fields = Object.assign({ estado: to }, extra || {});
+    if (to === 'coordinar-ingreso') fields.responsable = 'Vero';
     if ((to === 'realizada' || to === 'coordinar-ingreso') && !c.entrevistadoEl) fields.entrevistadoEl = new Date().toISOString();
     if (to !== 'descartado' && c.motivo && !('motivo' in fields)) fields.motivo = '';
     var nid = pushNote(id, { t: new Date().toISOString(), tipo: 'estado', texto: stageName(c.estado) + ' → ' + stageName(to) });
@@ -1747,7 +1748,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     $('#entrevLbl').textContent = real ? 'Entrevista realizada (queda marcado al pasar de etapa)' : 'Ya tuvo la entrevista';
   }
   function pickStage(id) {
-    if (isNew) { draft.estado = id; renderSeg(id); syncEntrev(null); return; }
+    if (isNew) { draft.estado = id; renderSeg(id); syncEntrev(null); if (id === 'coordinar-ingreso') $('#f-responsable').value = 'Vero'; return; }
     moveStage(openId, id);
   }
   function fillMotivos(sel) {
@@ -1926,6 +1927,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var data = { estado: draft.estado, creado: now, actualizado: now, ultimoContacto: now, editor: me.id || '' };
     if (!coll) data.notas = [];
     FIELD_KEYS.forEach(function (k) { data[k] = str($('#f-' + k).value); });
+    if (draft.estado === 'coordinar-ingreso') data.responsable = 'Vero';
     var ph = fmtPhone(data.telefono); if (ph.ok && ph.text) data.telefono = ph.text;
     data.entrevistas = collectIvs().filter(function (x) { return x.fecha; }); data.entrevista = '';
     if (draft.estado !== 'descartado') data.motivo = '';
@@ -2311,6 +2313,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
           data.entrevistas = dates.entrevista ? [cleanIv({ fecha: dates.entrevista })] : [];
           data.motivo = estado === 'descartado' ? (dates.motivo || '') : '';
           data.responsable = ['Eri', 'Vero', 'Rami'].indexOf(i.responsable) >= 0 ? i.responsable : '';
+          if (estado === 'coordinar-ingreso') data.responsable = 'Vero';
           if (estado === 'realizada' || estado === 'coordinar-ingreso') data.entrevistadoEl = now;
           var id = newId();
           create(id, data);
