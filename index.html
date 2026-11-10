@@ -280,7 +280,40 @@ a.btn { text-decoration: none; color: var(--ink); }
 .views { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); align-self: flex-start; }
 .vbtn { border: 0; background: transparent; padding: 7px 16px; min-height: 36px; border-radius: 8px; font-weight: 600; font-size: 14px; }
 .vbtn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-.v-cal #chips, .v-cal #agenda, .v-cal #board, .v-cal .legend { display: none !important; }
+.v-cal #chips, .v-cal #agenda, .v-cal #board, .v-cal .legend, .v-onb #chips, .v-onb #agenda, .v-onb #board, .v-onb .legend { display: none !important; }
+.vbtn .bn { margin-left: 6px; font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+.vbtn[aria-pressed="true"] .bn { background: rgba(255,255,255,0.25); color: inherit; }
+dialog#modal.wide { width: min(760px, calc(100% - 24px)); }
+.onb-head h2 { margin: 0 0 2px; font: 700 19px/1.2 var(--f-display); }
+.onb-head .hint { margin: 0 0 12px; }
+.onb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.pbar { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.pbar > i { display: block; height: 100%; background: var(--c-se-suma); border-radius: inherit; }
+.ob-nums { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ob-next { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--ink-2); }
+.ob-next .late { color: var(--late); }
+.onb-top { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: start; }
+.onb-prog { display: flex; flex-direction: column; gap: 6px; }
+.onb-prog .hint { margin: 0; }
+.onb-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.onb-filter .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; }
+.onb-prog { margin: 2px 0; }
+.wk-head { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; background: var(--surface); border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; position: sticky; top: 0; z-index: 1; font-size: 14.5px; }
+.wk-title { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 1px; }
+.wk-focus { font-size: 12.5px; color: var(--ink-2); }
+.wk-chev { width: 14px; color: var(--ink-2); }
+.wk-n { font-variant-numeric: tabular-nums; }
+.ob-group h3 { margin: 10px 0 2px; font: 600 14px/1.2 var(--f-display); position: sticky; top: 0; background: var(--surface); padding: 6px 0; z-index: 1; }
+.ob-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.ob-row input[type=checkbox] { width: 22px; height: 22px; margin-top: 1px; accent-color: var(--accent); flex: 0 0 auto; }
+.ob-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.ob-text { overflow-wrap: anywhere; }
+.ob-row.done .ob-text { color: var(--ink-2); text-decoration: line-through; }
+.ob-meta { font-size: 12.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.ob-na { flex: 0 0 auto; font-size: 12.5px; color: var(--ink-2); background: none; border: 0; text-decoration: underline; }
+.onb-add { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; }
+.onb-add input, .onb-add select { min-width: 0; padding: 9px 10px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+@media (max-width: 640px) { .onb-add { grid-template-columns: 1fr 1fr; } .onb-add input[type=text] { grid-column: 1 / -1; } .vbtn { padding: 7px 11px; } }
 .iv { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface-2); display: flex; flex-direction: column; gap: 10px; }
 .iv-head { display: flex; gap: 8px; align-items: center; }
 .iv-head h3 { margin: 0; font: 600 15px/1.2 var(--f-display); flex: 1; }
@@ -632,12 +665,14 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   <nav id="views" class="views" aria-label="Vista">
     <button type="button" class="vbtn" data-v="tablero" aria-pressed="true">Tablero</button>
     <button type="button" class="vbtn" data-v="cal" aria-pressed="false">Calendario</button>
+    <button type="button" class="vbtn" data-v="onb" aria-pressed="false">Onboarding<span id="onbN" class="bn" hidden></span></button>
   </nav>
   <p id="syncnote" class="note" hidden></p>
   <section id="agenda" class="agenda" aria-label="Agenda" hidden></section>
   <nav id="chips" class="chips" aria-label="Etapas"></nav>
   <main id="board"></main>
   <section id="cal" class="cal" aria-label="Calendario de entrevistas" hidden></section>
+  <section id="onb" class="onb" aria-label="Onboarding de agentes" hidden></section>
   <p class="legend">Dentro de cada columna van primero los candidatos con el contacto o la entrevista más próximos.</p>
 </div>
 
@@ -1343,9 +1378,10 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   /* ---------- etapas ---------- */
   function applyStage(id, to, extra) {
     var c = get(id);
-    var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '', responsable: c.responsable || '' };
+    var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '', responsable: c.responsable || '', incorporadoEl: c.incorporadoEl || '', obFin: c.obFin || '' };
     var fields = Object.assign({ estado: to }, extra || {});
     if (to === 'coordinar-ingreso') fields.responsable = 'Vero';
+    if (to === 'se-suma') { fields.incorporadoEl = new Date().toISOString(); fields.obFin = ''; }
     if ((to === 'realizada' || to === 'coordinar-ingreso') && !c.entrevistadoEl) fields.entrevistadoEl = new Date().toISOString();
     if (to !== 'descartado' && c.motivo && !('motivo' in fields)) fields.motivo = '';
     var nid = pushNote(id, { t: new Date().toISOString(), tipo: 'estado', texto: stageName(c.estado) + ' → ' + stageName(to) });
@@ -1551,8 +1587,13 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var sl = oldBoard ? oldBoard.scrollLeft : 0;
     $('#stats').textContent = statsText();
     document.body.classList.toggle('v-cal', view === 'cal');
+    document.body.classList.toggle('v-onb', view === 'onb');
     $('#cal').hidden = view !== 'cal';
-    if (view === 'cal') { renderCal(); renderMineBtn(); }
+    $('#onb').hidden = view !== 'onb';
+    onbCount();
+    if (onbOpen) fillOnb();
+    if (view === 'onb') renderOnb();
+    else if (view === 'cal') { renderCal(); renderMineBtn(); }
     else { renderAgenda(); renderChips(); renderBoard(); renderMineBtn(); }
     var nb = document.querySelector('.board');
     if (nb && sl) nb.scrollLeft = sl;
@@ -1655,8 +1696,251 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       el('span', { text: 'Si participan varios, la franja lleva sus colores.' }));
     box.replaceChildren.apply(box, [bar].concat(body, [legend]).filter(Boolean));
   }
+  /* ---------- onboarding de agentes nuevos ---------- */
+  /* Plan de 90 días. Se arma a partir de lo que hacen las grandes franquicias: RE/MAX (manual: prospección, vendedores, compradores, referidos, finanzas), Keller Williams (Ignite y BOLD: base de datos, plan de negocios, hábito diario de prospección), Century 21 (Launch21 y boot camp con seguimiento semanal) y los planes 30-60-90 (CRM, 100 contactos, role-play, primera captación, primera operación). Cada tarea: id, tema, tipo (cap = capacitación, acc = acción, hito), día límite desde el inicio, texto. */
+  var OB_TEMAS = ['Inducción', 'Objetivos y plan', 'Base de relaciones', 'Marca personal', 'Prospección', 'Captación y tasación', 'Legales', 'Negociación y compradores', 'Cierre y posventa', 'Gestión personal', 'Extra'];
+  var OB_TIPOS = { cap: 'Capacitación', acc: 'Acción', hito: 'Hito' };
+  var OB_PLAN = [
+    ['i1', 0, 'acc', 1, 'Reunión de bienvenida con la Broker y recorrida de la oficina'],
+    ['i2', 0, 'acc', 3, 'Firmar la documentación de alta y confirmar la matrícula vigente'],
+    ['i3', 0, 'acc', 3, 'Activar accesos: mail, CRM, portales y grupos de WhatsApp del equipo'],
+    ['i4', 0, 'acc', 5, 'Asignar mentor y fijar día y hora fijos de seguimiento semanal'],
+    ['i5', 0, 'acc', 7, 'Leer el manual del agente'],
+    ['i6', 0, 'cap', 7, 'Capacitación: cultura, estructura y procesos de la oficina'],
+    ['i7', 0, 'cap', 14, 'Capacitación: herramientas (CRM, portales, firma digital, carpeta compartida)'],
+    ['o1', 1, 'acc', 7, 'Escribir su "por qué" y su objetivo de ingresos a 12 meses'],
+    ['o3', 1, 'cap', 14, 'Capacitación: mentalidad, gestión del tiempo y bloques de prospección'],
+    ['o2', 1, 'acc', 14, 'Armar el plan de negocios 30-60-90 con el mentor'],
+    ['b1', 2, 'acc', 7, 'Armar la lista de contactos (familia, amigos, ex compañeros, vecinos, clientes anteriores)'],
+    ['b2', 2, 'acc', 14, 'Cargar los primeros 50 contactos en el CRM'],
+    ['b3', 2, 'acc', 21, 'Mandar a la base el mensaje de anuncio "ya soy agente de Coldwell Banker Juntos"'],
+    ['b4', 2, 'acc', 28, 'Llegar a 100 contactos cargados y clasificados (A / B / C)'],
+    ['b5', 2, 'acc', 84, 'Base segmentada y con seguimiento activo (cada contacto con su próxima acción)'],
+    ['m1', 3, 'acc', 5, 'Recibir tarjetas y material de marca'],
+    ['m2', 3, 'acc', 7, 'Poner el pie de página en el mail (logo, teléfono y matrícula)'],
+    ['m3', 3, 'acc', 7, 'Crear o profesionalizar el Instagram (foto, bio, link, destacadas)'],
+    ['m4', 3, 'acc', 14, 'Configurar WhatsApp Business (perfil y mensaje de bienvenida)'],
+    ['m5', 3, 'cap', 21, 'Capacitación: marketing inmobiliario (fotos, descripciones, portales, redes)'],
+    ['m6', 3, 'acc', 21, 'Publicar 3 posteos de presentación en Instagram'],
+    ['p1', 4, 'cap', 14, 'Capacitación: prospección (base, referidos, dueños directos, farming, avisos vencidos)'],
+    ['p2', 4, 'acc', 21, 'Role-play de llamada de prospección con el mentor'],
+    ['p3', 4, 'acc', 28, 'Conocer su zona: precios, stock y tiempos de venta'],
+    ['p4', 4, 'acc', 42, 'Instalar el hábito diario: bloque fijo de prospección con registro'],
+    ['p5', 4, 'acc', 63, 'Elegir su zona de farming y hacer la primera acción'],
+    ['c1', 5, 'cap', 28, 'Capacitación: tasación (método comparativo, relevamiento, informe de valor)'],
+    ['c2', 5, 'cap', 28, 'Capacitación: captación (presentación de servicios, exclusividad, autorización de venta)'],
+    ['c3', 5, 'acc', 35, 'Hacer una tasación acompañado por el mentor'],
+    ['c4', 5, 'acc', 42, 'Hacer su primera presentación de captación a un propietario'],
+    ['c5', 5, 'acc', 56, 'Publicar su primera propiedad con fotos profesionales'],
+    ['c6', 5, 'hito', 77, 'Conseguir su primera captación firmada'],
+    ['l1', 6, 'cap', 35, 'Capacitación legal I: documentación del inmueble, estudio de títulos, reserva, boleto y escritura'],
+    ['l2', 6, 'cap', 35, 'Capacitación legal II: locaciones (contrato, garantías, actualización) y honorarios'],
+    ['l3', 6, 'cap', 42, 'Capacitación: prevención de lavado de activos (UIF) y obligaciones del corredor'],
+    ['l4', 6, 'cap', 49, 'Capacitación: impuestos y gastos de la operación (sellos, ITI, escribanía)'],
+    ['l5', 6, 'cap', 56, 'Capacitación: financiamiento y créditos hipotecarios'],
+    ['n1', 7, 'cap', 49, 'Capacitación: negociación (objeciones, oferta y contraoferta, defensa de honorarios)'],
+    ['n2', 7, 'cap', 49, 'Capacitación: compradores (entrevista de calificación, visitas, seguimiento)'],
+    ['n3', 7, 'acc', 56, 'Coordinar y hacer su primera visita u open house'],
+    ['n4', 7, 'hito', 63, 'Check de mitad de camino con la Broker (revisión de números y actividad)'],
+    ['z1', 8, 'cap', 77, 'Capacitación: cierre, posventa y pedido de referidos'],
+    ['z2', 8, 'acc', 84, 'Pedir 3 testimonios o referidos a contactos y clientes'],
+    ['z3', 8, 'hito', 90, 'Primera reserva u operación en marcha'],
+    ['z4', 8, 'hito', 90, 'Revisión final de los 90 días con la Broker y plan del próximo trimestre'],
+    ['g1', 9, 'cap', 70, 'Capacitación: finanzas del agente (monotributo y facturación, presupuesto, flujo de ingresos)']
+  ].map(function (t) { return { id: t[0], tema: OB_TEMAS[t[1]], tipo: t[2], dia: t[3], texto: t[4] }; });
+  var OB_SEMANAS = ['Arranque: bienvenida, accesos y marca', 'Plan de negocios y base de contactos', 'Anuncio a la base y primeras prácticas', 'Captación, tasación y 100 contactos', 'Legales y primera tasación acompañada', 'Hábito diario y primera presentación', 'Impuestos, negociación y compradores', 'Primera visita y primera publicación', 'Mitad de camino con la Broker', 'Finanzas del agente', 'Primera captación firmada', 'Base segmentada y testimonios', 'Cierre de los 90 días'];
+  var onbWk = {}, onbOpen = null, onbFilter = 'todo', onbShowFin = false, obInit = {};
+
+  function obStart(c) {
+    var v = validDate(c.obInicio);
+    if (v) return v;
+    if (c.incorporadoEl) { var d = new Date(c.incorporadoEl); if (!isNaN(d)) return dayStr(d); }
+    return '';
+  }
+  function obTasks(c) {
+    var extra = Array.isArray(c.obx) ? c.obx : [];
+    return OB_PLAN.concat(extra.map(function (x) { return { id: x.id, tema: 'Extra', tipo: x.tipo === 'cap' ? 'cap' : 'acc', dia: +x.dia || 90, texto: x.texto || '', extra: true }; }))
+      .sort(function (a, b) { return a.dia - b.dia; });
+  }
+  function obVal(c, id) { return c['ob_' + id] || ''; }
+  function obInfo(c) {
+    var start = obStart(c) || todayStr();
+    var day = dayDiff(start) * -1 + 1;
+    var tasks = obTasks(c), tot = 0, done = 0, late = 0, soon = 0, cap = [0, 0], acc = [0, 0], next = [];
+    tasks.forEach(function (t) {
+      var v = obVal(c, t.id);
+      if (v === 'na') return;
+      tot++;
+      var g = t.tipo === 'cap' ? cap : acc;
+      g[1]++;
+      if (v) { done++; g[0]++; return; }
+      var due = dayStr(new Date(parseDay(start).getTime() + (t.dia - 1) * 864e5 + 36e5));
+      var left = dayDiff(due);
+      if (left < 0) late++; else if (left <= 3) soon++;
+      next.push({ t: t, due: due, left: left });
+    });
+    var seg = validDate(c.obSeg) || '';
+    var segDays = seg ? -dayDiff(seg) : null;
+    return { start: start, day: day, tot: tot, done: done, pct: tot ? Math.round(done * 100 / tot) : 0, late: late, soon: soon, cap: cap, acc: acc, next: next, seg: seg, segDays: segDays,
+      segLate: !c.obFin && day > 7 && (segDays === null || segDays > 7) };
+  }
+  function obDue(c, t) { var s = obStart(c) || todayStr(); return dayStr(new Date(parseDay(s).getTime() + (t.dia - 1) * 864e5 + 36e5)); }
+  function obWeek(t) { return Math.max(1, Math.ceil(t.dia / 7)); }
+
+  function bar(pct) { return el('div', { class: 'pbar', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' }, el('i', { style: 'width:' + pct + '%' })); }
+
+  function onbList() {
+    return cands.filter(function (c) { return c.estado === 'se-suma' && (!whoF || (whoF === '_none' ? !c.responsable : c.responsable === whoF)); });
+  }
+  function onbCard(c) {
+    var o = obInfo(c);
+    var tags = [];
+    if (c.responsable) tags.push(el('span', { class: 'who-tag' }, el('i', { class: 'pd', style: 'background:' + pColor(c.responsable) }), c.responsable));
+    if (c.obFin) tags.push(tag('ok', 'Finalizado'));
+    else {
+      if (o.late) tags.push(tag('late', o.late + (o.late === 1 ? ' tarea vencida' : ' tareas vencidas')));
+      if (o.segLate) tags.push(tag('today', o.segDays === null ? 'Sin seguimiento registrado' : 'Sin seguimiento hace ' + o.segDays + ' días'));
+    }
+    var nx = o.next.slice().sort(function (a, b) { return a.left - b.left; }).slice(0, 2);
+    return el('article', { class: 'card ob-card' + (c.responsable ? ' has-who' : ''), style: c.responsable ? '--who:' + pColor(c.responsable) : '' },
+      el('button', { type: 'button', class: 'card-main', 'data-focus': 'onb:' + c.id, onclick: function () { openOnb(c.id); } },
+        el('span', { class: 'card-name', text: c.nombre || 'Sin nombre' }),
+        el('span', { class: 'card-meta', text: (c.obFin ? 'Onboarding completo' : 'Semana ' + Math.max(1, Math.ceil(Math.max(o.day, 1) / 7)) + ' de 13 · día ' + Math.max(o.day, 1) + ' (ingresó el ' + fmtDay(o.start) + ')') + (c.inmobiliaria ? ' · ' + c.inmobiliaria : '') }),
+        bar(o.pct),
+        el('span', { class: 'ob-nums', text: o.pct + '% · ' + o.done + ' de ' + o.tot + ' tareas · Capacitación ' + o.cap[0] + '/' + o.cap[1] + ' · Acciones ' + o.acc[0] + '/' + o.acc[1] }),
+        !c.obFin && nx.length ? el('span', { class: 'ob-next' }, nx.map(function (n) { return el('span', { class: n.left < 0 ? 'late' : '', text: (n.left < 0 ? 'Vencida: ' : 'Próxima: ') + n.t.texto }); })) : null),
+      tags.length ? el('div', { class: 'card-tags' }, tags) : null);
+  }
+  function renderOnb() {
+    var box = $('#onb');
+    var all = onbList();
+    var act = all.filter(function (c) { return !c.obFin; }), fin = all.filter(function (c) { return c.obFin; });
+    // los que ya estaban en "Se incorporó" sin fecha de inicio: se fija una vez
+    act.concat(fin).forEach(function (c) {
+      if (!obStart(c) && !obInit[c.id]) { obInit[c.id] = true; var d = c.actualizado ? dayStr(new Date(c.actualizado)) : todayStr(); setTimeout(function () { patch(c.id, { obInicio: d }); }, 0); }
+    });
+    function urg(c) { var o = obInfo(c); return o.late * 1000 + (o.segLate ? 500 : 0) + o.day; }
+    act.sort(function (a, b) { return urg(b) - urg(a); });
+    var late = act.filter(function (c) { return obInfo(c).late > 0; }).length;
+    var segl = act.filter(function (c) { return obInfo(c).segLate; }).length;
+    var head = el('div', { class: 'onb-head' },
+      el('h2', { text: 'Onboarding de agentes' }),
+      el('p', { class: 'hint', text: act.length
+        ? act.length + (act.length === 1 ? ' agente en proceso' : ' agentes en proceso') + (late ? ' · ' + late + ' con tareas vencidas' : ' · ninguno con tareas vencidas') + (segl ? ' · ' + segl + ' sin seguimiento reciente' : '')
+        : 'Cuando un candidato pasa a "Se incorporó" aparece acá solo, con el plan de 90 días.' }));
+    var parts = [head];
+    if (act.length) parts.push(el('div', { class: 'onb-grid' }, act.map(onbCard)));
+    if (fin.length) {
+      parts.push(el('button', { type: 'button', class: 'btn ghost', text: (onbShowFin ? 'Ocultar' : 'Ver') + ' finalizados (' + fin.length + ')', onclick: function () { onbShowFin = !onbShowFin; renderOnb(); } }));
+      if (onbShowFin) parts.push(el('div', { class: 'onb-grid' }, fin.map(onbCard)));
+    }
+    var key = document.activeElement && document.activeElement.getAttribute ? document.activeElement.getAttribute('data-focus') : null;
+    box.replaceChildren.apply(box, parts);
+    if (key && key.indexOf('onb:') === 0) { var n = keyedNode(key); if (n) n.focus({ preventScroll: true }); }
+  }
+  function onbCount() {
+    var n = cands.filter(function (c) { return c.estado === 'se-suma' && !c.obFin; }).length;
+    var b = $('#onbN'); if (b) { b.textContent = n ? String(n) : ''; b.hidden = !n; }
+  }
+
+  function obSet(c, id, v) { var o = {}; o['ob_' + id] = v; patch(c.id, o); }
+  function openOnb(id) {
+    onbOpen = id; onbWk = {};
+    var p = showModal('', el('div'), []);
+    $('#modal').classList.add('wide');
+    fillOnb();
+    p.then(function () { onbOpen = null; $('#modal').classList.remove('wide'); });
+  }
+  function fillOnb() {
+    var c = get(onbOpen);
+    if (!c || c.estado !== 'se-suma') { if ($('#modal').open) closeModal(null); return; }
+    var d = $('#modal'), st = d.scrollTop;
+    var af = document.activeElement && document.activeElement.getAttribute ? document.activeElement.getAttribute('data-ob') : null;
+    var o = obInfo(c);
+    $('#modalTitle').textContent = 'Onboarding: ' + (c.nombre || 'Sin nombre');
+    var tasks = obTasks(c).filter(function (t) {
+      var v = obVal(c, t.id);
+      if (onbFilter === 'cap') return t.tipo === 'cap';
+      if (onbFilter === 'acc') return t.tipo !== 'cap';
+      if (onbFilter === 'pend') return !v;
+      return true;
+    });
+    var startIn = el('input', { type: 'date', value: o.start, 'aria-label': 'Fecha de inicio', onchange: function (e) { var v = validDate(e.target.value); if (v) patch(c.id, { obInicio: v }); } });
+    var whoSelEl = el('select', { 'aria-label': 'Responsable', onchange: function (e) { patch(c.id, { responsable: e.target.value }); } },
+      el('option', { value: '', text: 'Sin asignar' }), ['Eri', 'Vero', 'Rami'].map(function (n) { return el('option', { value: n, text: n }); }));
+    whoSelEl.value = c.responsable || '';
+    var top = el('div', { class: 'onb-top' },
+      el('label', { class: 'field' }, el('span', { text: 'Inicio del onboarding' }), startIn),
+      el('label', { class: 'field' }, el('span', { text: 'Responsable' }), whoSelEl),
+      el('div', { class: 'field' }, el('span', { text: 'Seguimiento semanal' }),
+        el('button', { type: 'button', class: 'btn', text: 'Registrar seguimiento hoy', onclick: function () { patch(c.id, { obSeg: todayStr() }); toast('Seguimiento registrado'); } }),
+        el('span', { class: 'sm', text: o.seg ? 'Último: ' + (o.segDays === 0 ? 'hoy' : 'hace ' + o.segDays + ' días') : 'Todavía no se registró' })));
+    var prog = el('div', { class: 'onb-prog' }, bar(o.pct),
+      el('p', { class: 'hint', text: o.pct + '% completo · ' + o.done + ' de ' + o.tot + ' tareas · Capacitación ' + o.cap[0] + '/' + o.cap[1] + ' · Acciones ' + o.acc[0] + '/' + o.acc[1] + (o.late ? ' · ' + o.late + ' vencidas' : '') }));
+    var fil = el('div', { class: 'onb-filter' }, [['todo', 'Todo'], ['pend', 'Pendientes'], ['cap', 'Capacitaciones'], ['acc', 'Acciones']].map(function (f) {
+      return el('button', { type: 'button', class: 'chip' + (onbFilter === f[0] ? ' on' : ''), 'aria-pressed': String(onbFilter === f[0]), text: f[1], onclick: function () { onbFilter = f[0]; fillOnb(); } });
+    }));
+    var groups = [], full = obTasks(c), curW = Math.max(1, Math.ceil(Math.max(o.day, 1) / 7)), byW = {};
+    tasks.forEach(function (t) { var w = obWeek(t); (byW[w] = byW[w] || []).push(t); });
+    Object.keys(byW).map(Number).sort(function (x, y) { return x - y; }).forEach(function (w) {
+      var list = byW[w], wl = full.filter(function (t) { return obWeek(t) === w; });
+      var tot = 0, dn = 0, lt = 0;
+      wl.forEach(function (t) { var v = obVal(c, t.id); if (v === 'na') return; tot++; if (v) dn++; else if (dayDiff(obDue(c, t)) < 0) lt++; });
+      var d1 = dayStr(new Date(parseDay(o.start).getTime() + (w - 1) * 7 * 864e5 + 36e5)), d2 = dayStr(new Date(parseDay(o.start).getTime() + (w * 7 - 1) * 864e5 + 36e5));
+      var open = onbWk[w] !== undefined ? onbWk[w] : (w === curW || lt > 0) && dn < tot;
+      groups.push(el('section', { class: 'ob-group' },
+        el('button', { type: 'button', class: 'wk-head', 'aria-expanded': String(open), 'data-ob': 'w-' + w, onclick: function () { onbWk[w] = !open; fillOnb(); } },
+          el('span', { class: 'wk-chev', text: open ? '▾' : '▸' }),
+          el('span', { class: 'wk-title' }, el('span', {}, el('b', { text: 'Semana ' + w }), el('span', { class: 'sm', text: ' · ' + fmtDay(d1) + ' al ' + fmtDay(d2) })), el('span', { class: 'wk-focus', text: OB_SEMANAS[w - 1] || 'Seguimiento' })),
+          w === curW && !c.obFin ? tag('today', 'Esta semana') : null,
+          lt ? tag('late', lt + ' vencida' + (lt > 1 ? 's' : '')) : (tot && dn === tot ? tag('ok', 'Completa') : null),
+          el('span', { class: 'sm wk-n', text: dn + '/' + tot })),
+        open ? list.map(function (t) { return obRow(c, t); }) : null));
+    });
+    if (!groups.length) groups.push(el('p', { class: 'hint', text: 'No hay tareas en este filtro.' }));
+    var tNew = el('input', { type: 'text', placeholder: 'Tarea extra para este agente', 'aria-label': 'Tarea extra', maxlength: '140' });
+    var tTipo = el('select', { 'aria-label': 'Tipo' }, el('option', { value: 'acc', text: 'Acción' }), el('option', { value: 'cap', text: 'Capacitación' }));
+    var tDue = el('input', { type: 'date', 'aria-label': 'Fecha límite' });
+    var add = el('div', { class: 'onb-add' }, tNew, tTipo, tDue,
+      el('button', { type: 'button', class: 'btn', text: 'Agregar', onclick: function () {
+        var tx = tNew.value.trim(); if (!tx) { tNew.focus(); return; }
+        var dv = validDate(tDue.value), dia = dv ? Math.max(0, Math.round((parseDay(dv) - parseDay(o.start)) / 864e5)) : 90;
+        var xs = (Array.isArray(c.obx) ? c.obx.slice() : []); xs.push({ id: 'x' + uid().slice(0, 6), texto: tx, tipo: tTipo.value, dia: dia });
+        patch(c.id, { obx: xs });
+      } }));
+    var body = el('div', { class: 'onb-body' }, top, prog, fil, groups, el('span', { class: 'label', text: 'Agregar tarea' }), add);
+    $('#modalBody').replaceChildren(body);
+    var act = $('#modalActions');
+    act.replaceChildren(
+      el('button', { type: 'button', class: 'btn ghost', text: 'Ver ficha y notas', onclick: function () { var id = c.id; closeModal(null); openSheet(id); } }),
+      c.obFin
+        ? el('button', { type: 'button', class: 'btn', text: 'Reabrir onboarding', onclick: function () { patch(c.id, { obFin: '' }); } })
+        : el('button', { type: 'button', class: 'btn' + (o.pct === 100 ? ' primary' : ''), text: 'Marcar como finalizado', onclick: function () { patch(c.id, { obFin: todayStr() }); toast('Onboarding de ' + (c.nombre || 'agente') + ' finalizado'); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Cerrar', onclick: function () { closeModal(null); } }));
+    d.scrollTop = st;
+    if (af) { var n = d.querySelector('[data-ob="' + af + '"]'); if (n) n.focus({ preventScroll: true }); }
+  }
+  function obRow(c, t) {
+    var v = obVal(c, t.id), na = v === 'na', done = !!v && !na;
+    var due = obDue(c, t), left = dayDiff(due);
+    var meta = [t.tema, OB_TIPOS[t.tipo]];
+    var chip = null;
+    if (done) chip = el('span', { class: 'sm', text: 'Hecha el ' + fmtDay(v) });
+    else if (na) chip = el('span', { class: 'sm', text: 'No aplica' });
+    else chip = tag(left < 0 ? 'late' : left <= 3 ? 'today' : 'muted', (left < 0 ? 'Venció el ' : 'Para el ') + fmtDay(due));
+    return el('div', { class: 'ob-row' + (done || na ? ' done' : '') },
+      el('input', { type: 'checkbox', checked: done, disabled: na, 'data-ob': 'k-' + t.id, 'aria-label': t.texto, onchange: function (e) { obSet(c, t.id, e.target.checked ? todayStr() : ''); } }),
+      el('div', { class: 'ob-main' },
+        el('span', { class: 'ob-text', text: t.texto }),
+        el('span', { class: 'ob-meta' }, meta.join(' · '), ' ', chip)),
+      el('button', { type: 'button', class: 'icon-btn ob-na', 'data-ob': 'n-' + t.id, text: na ? 'Volver a activar' : (t.extra ? 'Quitar' : 'No aplica'), onclick: function () {
+        if (t.extra) { patch(c.id, { obx: c.obx.filter(function (x) { return x.id !== t.id; }) }); return; }
+        obSet(c, t.id, na ? '' : 'na');
+      } }));
+  }
+
   function setView(v) {
-    view = v === 'cal' ? 'cal' : 'tablero';
+    view = v === 'cal' ? 'cal' : v === 'onb' ? 'onb' : 'tablero';
     lsSet(VIEW_KEY, view);
     document.querySelectorAll('.vbtn[data-v]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === view)); });
     render();
@@ -1928,6 +2212,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     if (!coll) data.notas = [];
     FIELD_KEYS.forEach(function (k) { data[k] = str($('#f-' + k).value); });
     if (draft.estado === 'coordinar-ingreso') data.responsable = 'Vero';
+    if (draft.estado === 'se-suma') data.incorporadoEl = now;
     var ph = fmtPhone(data.telefono); if (ph.ok && ph.text) data.telefono = ph.text;
     data.entrevistas = collectIvs().filter(function (x) { return x.fecha; }); data.entrevista = '';
     if (draft.estado !== 'descartado') data.motivo = '';
@@ -2108,6 +2393,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       return el('tr', {}, el('td', {}, el('i', { class: 'dot s-' + s.id }), ' ' + s.name), el('td', { text: n + (total ? ' · ' + Math.round(n * 100 / total) + '%' : '') }));
     });
     var inc = cands.filter(function (c) { return c.estado === 'se-suma'; }).length;
+    var inOb = cands.filter(function (c) { return c.estado === 'se-suma' && !c.obFin; }).length;
     var ents = cands.filter(wasInterviewed);
     var incEnt = ents.filter(function (c) { return c.estado === 'se-suma'; }).length;
     var orig = {};
@@ -2123,7 +2409,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var body = el('div', { class: 'field' },
       el('p', { class: 'hint', text: 'Pasaron por entrevista: ' + ents.length + ' (' + entMes + ' este mes). De ellos se incorporaron ' + incEnt + (ents.length ? ' (' + Math.round(incEnt * 100 / ents.length) + '%).' : '.') }),
       el('table', { class: 'stat-table' }, el('tbody', {}, rows)),
-      el('p', { class: 'hint', text: total ? 'Conversión: ' + inc + ' incorporados de ' + total + ' cargados (' + Math.round(inc * 100 / total) + '%).' : 'Todavía no hay candidatos.' }));
+      el('p', { class: 'hint', text: total ? 'Conversión: ' + inc + ' incorporados de ' + total + ' cargados (' + Math.round(inc * 100 / total) + '%).' + (inOb ? ' En onboarding: ' + inOb + '.' : '') : 'Todavía no hay candidatos.' }));
     var motivos = {};
     cands.filter(function (c) { return c.estado === 'descartado'; }).forEach(function (c) { var m = c.motivo || 'Sin especificar'; motivos[m] = (motivos[m] || 0) + 1; });
     if (ok2.length) {
@@ -2190,7 +2476,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var data = { version: 1, exportado: new Date().toISOString(), candidatos: all.map(function (r) { var o = clone(r.c); delete o.notas; o.notas = r.notes; return o; }) };
     await saveFile('respaldo-embudo-' + todayStr() + '.json', JSON.stringify(data, null, 1));
   }
-  var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'responsable', 'editor', 'entrevistadoEl'];
+  var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'responsable', 'editor', 'entrevistadoEl', 'incorporadoEl', 'obInicio', 'obSeg', 'obFin', 'obx'];
   $('#importFile').addEventListener('change', function (e) {
     var f = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -2214,6 +2500,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
         var id = str(src.id) || newId();
         var d = {};
         KEEP.forEach(function (k) { if (src[k] !== undefined) d[k] = src[k]; });
+        Object.keys(src).forEach(function (k) { if (/^ob_/.test(k) && src[k]) d[k] = src[k]; });
         if (!d.nombre) throw new Error('sin nombre');
         d.estado = stage(d.estado) ? d.estado : (d.estado === 'nuevo' ? 'coordinar' : 'coordinar');
         var notes = Array.isArray(src.notas) ? src.notas : [];
@@ -2313,7 +2600,8 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
           data.entrevistas = dates.entrevista ? [cleanIv({ fecha: dates.entrevista })] : [];
           data.motivo = estado === 'descartado' ? (dates.motivo || '') : '';
           data.responsable = ['Eri', 'Vero', 'Rami'].indexOf(i.responsable) >= 0 ? i.responsable : '';
-          if (estado === 'coordinar-ingreso') data.responsable = 'Vero';
+          if (estado === 'coordinar-ingreso' && !data.responsable) data.responsable = 'Vero';
+          if (estado === 'se-suma') data.incorporadoEl = now;
           if (estado === 'realizada' || estado === 'coordinar-ingreso') data.entrevistadoEl = now;
           var id = newId();
           create(id, data);
@@ -2414,6 +2702,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
           var o = { id: c.id, etapa: stageName(c.estado), pasoPorEntrevista: wasInterviewed(c) };
           FIELD_KEYS.forEach(function (k) { o[k] = c[k] || ''; });
           o.entrevistas = ivsOf(c);
+          if (c.estado === 'se-suma') { var ob = obInfo(c); o.onboarding = { inicio: ob.start, avancePct: ob.pct, tareasHechas: ob.done, tareasTotal: ob.tot, vencidas: ob.late, finalizado: !!c.obFin }; }
           var ns = notesOf(c);
           if (coll) { try { ns = await fetchNotes(c.id); } catch (e) {} }
           o.notas = ns.slice(-20).map(function (n) { return { fecha: n.t, tipo: n.tipo || 'nota', texto: n.texto }; });
@@ -2651,7 +2940,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   document.querySelectorAll('[data-icon]').forEach(function (n) { n.replaceWith(icon(n.getAttribute('data-icon'), +n.getAttribute('data-size') || 18)); });
   collapsed = loadCols();
   loadTeam();
-  view = lsGet(VIEW_KEY) === 'cal' ? 'cal' : 'tablero';
+  view = lsGet(VIEW_KEY) === 'cal' ? 'cal' : lsGet(VIEW_KEY) === 'onb' ? 'onb' : 'tablero';
   calMode = lsGet(VIEW_KEY + '-mode') === 'mes' ? 'mes' : 'semana';
   document.querySelectorAll('.vbtn[data-v]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === view)); });
   micBlocked = lsGet(MIC_KEY) === '1';
