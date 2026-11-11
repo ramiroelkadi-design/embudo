@@ -109,7 +109,7 @@ select.btn { font-family: inherit; color: inherit; }
 .agenda-row h2 { margin: 0 6px 0 0; font: 600 12px/1 var(--f-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
 .agenda-item { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 5px 12px; font-size: 14px; max-width: 100%; }
 .agenda-item b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tag.late { background: var(--late-bg); color: var(--late); }
 .tag.today { background: var(--today-bg); color: var(--today); }
 .tag.soon { background: var(--soon-bg); color: var(--soon); }
@@ -161,6 +161,8 @@ body.dragging .col-empty { display: block; }
 .card:hover { border-color: var(--accent); }
 .card.dragging { opacity: 0.45; }
 .card-main { display: flex; flex-direction: column; gap: 3px; width: 100%; min-width: 0; padding: 4px 6px; background: none; border: 0; border-radius: 6px; text-align: left; }
+.card-top { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; }
+.card-top .avatar { margin-top: -1px; }
 .card-name { font-weight: 600; font-size: 15.5px; overflow-wrap: anywhere; }
 .card-meta { color: var(--ink-2); font-size: 13px; overflow-wrap: anywhere; }
 .card-note { color: var(--ink-2); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
@@ -304,6 +306,8 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
 .cal-day.today { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .cal-dh { font: 600 13px/1.2 var(--f-body); text-transform: capitalize; color: var(--ink-2); }
 .cal-day.today .cal-dh { color: var(--accent); }
+.cal-card-main .sm.warn { color: var(--today); font-weight: 600; }
+.cal-card-main .sm .ico { vertical-align: -2px; margin-right: 4px; }
 .cal-none { margin: 0; font-size: 12.5px; color: var(--ink-2); }
 .cal-card { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px 7px 14px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .cal-card::before, .cal-ev::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--bar, var(--line)); border-radius: 8px 0 0 8px; }
@@ -395,7 +399,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   .col-head { min-height: 44px; }
   .vbtn { min-height: 44px; }
   .icon-btn { min-width: 44px; }
-  .toast button { min-height: 44px; }
+  .toast button, .linkbtn, .rm { min-height: 44px; }
 }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .sm { font-size: 13px; color: var(--ink-2); }
@@ -985,7 +989,8 @@ a.ob-chip { text-decoration: underline; }
     sp.innerHTML = '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONS[name] + '</svg>';
     return sp;
   }
-  function tag(cls, text) { return el('span', { class: 'tag ' + cls, text: text }); }
+  var TAG_ICO = { late: 'alert', ok: 'check' };
+  function tag(cls, text, ico) { ico = ico || TAG_ICO[cls]; return el('span', { class: 'tag ' + cls }, ico ? icon(ico, 14) : null, text); }
 
   /* ---------- fechas ---------- */
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -1452,6 +1457,15 @@ a.ob-chip { text-decoration: underline; }
     if (coll) rawDeleteNote(c.id, nid); else f.notas = rest;
     patch(c.id, f);
   }
+  function restoreNote(id, n) {
+    var c = get(id); if (!c) return;
+    var all = notesOf(c).filter(function (x) { return x.id !== n.id; }).concat([n]).sort(function (a, b) { return String(a.t) < String(b.t) ? -1 : 1; });
+    var last = null;
+    all.forEach(function (x) { if (x.tipo !== 'estado') last = x; });
+    var f = { ultimaNota: last ? { texto: last.texto, t: last.t } : { texto: '', t: '' }, textoNotas: manualText(all) };
+    if (coll) enqueue(id, function () { return coll.doc(id).collection('notas').doc(n.id).set(n); }); else f.notas = all;
+    patch(id, f);
+  }
   function listenNotes(id) {
     stopNotes(); notesReady = false;
     if (!coll) { notesReady = true; return; }
@@ -1626,7 +1640,6 @@ a.ob-chip { text-decoration: underline; }
     var wa = fmtPhone(c.telefono).wa;
     var meta = [c.inmobiliaria, c.origen].filter(Boolean).join(' · ');
     var tags = [];
-    if (c.responsable) tags.push(el('span', { class: 'who-tag' }, el('i', { class: 'pd', style: 'background:' + pColor(c.responsable) }), c.responsable));
     if (ent) tags.push(tag(ent.cls, ent.text));
     if (due) tags.push(tag(due.cls, due.text));
     if (c.estado !== 'realizada' && wasInterviewed(c)) tags.push(tag('ok', 'Entrevistado'));
@@ -1635,7 +1648,7 @@ a.ob-chip { text-decoration: underline; }
     var t = lastTouch(c);
     var e = el('article', { class: 'card' + (c.responsable ? ' has-who' : ''), style: c.responsable ? '--who:' + pColor(c.responsable) : '', draggable: 'true' },
       el('button', { type: 'button', class: 'card-main', 'data-focus': 'card:' + id, onclick: function () { openSheet(id); } },
-        el('span', { class: 'card-name', text: name }),
+        el('span', { class: 'card-top' }, el('span', { class: 'card-name', text: name }), c.responsable ? avatar(c.responsable) : null),
         meta && el('span', { class: 'card-meta', text: meta }),
         last && el('span', { class: 'card-note', text: last })),
       tags.length ? el('div', { class: 'card-tags' }, tags) : null,
@@ -1746,10 +1759,11 @@ a.ob-chip { text-decoration: underline; }
       el('button', { type: 'button', class: 'cal-card-main', 'aria-label': evLabel(e), 'data-focus': 'evc:' + e.c.id + ':' + e.n, onclick: function () { openFromCal(e); } },
         el('span', { class: 't', text: e.time }),
         el('span', { class: 'nm', text: e.c.nombre || 'Sin nombre' }),
-        el('span', { class: 'sm', text: 'Entrevista ' + e.n + (e.iv.modalidad ? ' · ' + MODOS[e.iv.modalidad] : ' · modalidad sin definir') }),
+        e.iv.modalidad ? el('span', { class: 'sm', text: 'Entrevista ' + e.n + ' · ' + MODOS[e.iv.modalidad] }) : el('span', { class: 'sm warn' }, icon('alert', 13), 'Entrevista ' + e.n + ' · modalidad sin definir'),
         whoLine(e.iv.asistentes)),
       sp && el('button', { type: 'button', class: 'linkbtn', onclick: function () { openGcal(sp); }, text: 'Agregar a Google Calendar' }));
   }
+  function relDay(ds) { var d = dayDiff(ds); return d === 0 ? ' · Hoy' : d === 1 ? ' · Mañana' : d === -1 ? ' · Ayer' : ''; }
   function calTitle() {
     if (calMode === 'mes') return cap(calRef.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' }));
     var s = startOfWeek(calRef), e = addD(s, 6);
@@ -1793,7 +1807,7 @@ a.ob-chip { text-decoration: underline; }
         var d = addD(s, i), ds = dayStr(d), list = byDay[ds] || [];
         total += list.length;
         days.push(el('div', { class: 'cal-day' + (ds === today ? ' today' : '') + (list.length ? '' : ' empty'), role: 'group', 'aria-label': d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) },
-          el('div', { class: 'cal-dh', text: d.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric' }).replace('.', '') }),
+          el('div', { class: 'cal-dh', text: d.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric' }).replace('.', '') + relDay(ds) }),
           list.map(evCard),
           !list.length && el('p', { class: 'cal-none', text: 'Sin entrevistas' })));
       }
@@ -1813,7 +1827,7 @@ a.ob-chip { text-decoration: underline; }
       var sl = byDay[calSel] || [];
       body = [el('div', { class: 'cal-month' }, cells),
         el('div', { class: 'day-list' },
-          el('h3', { text: cap(parseDay(calSel).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })) }),
+          el('h3', { text: cap(parseDay(calSel).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })) + relDay(calSel) }),
           sl.length ? sl.map(evCard) : el('p', { class: 'hint', text: 'Sin entrevistas este día.' }))];
     }
     var legend = el('p', { class: 'cal-legend' }, EQUIPO.map(function (n) { return el('span', {}, el('i', { style: 'background:' + pColor(n) }), n); }),
@@ -2475,6 +2489,7 @@ a.ob-chip { text-decoration: underline; }
     ['sheet', 'chat', 'onbp'].forEach(function (x) { if (x !== which) $('#' + x).hidden = true; });
     if (which === 'sheet') stopMic(); else if (which === 'chat') stopNotes();
     if (which !== 'onbp') { onbOpen = null; try { if (history.state && history.state.onb) history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+    if (which !== 'onbp' && isMobile()) { try { if (!(history.state && history.state.pnl)) history.pushState({ pnl: which }, '', location.pathname + location.search); } catch (e) {} }
     var p = $('#' + which);
     p.hidden = false;
     p.setAttribute('aria-modal', String(isMobile()));
@@ -2482,10 +2497,12 @@ a.ob-chip { text-decoration: underline; }
     if (isMobile()) { $('#app').inert = true; document.body.classList.add('lock'); }
   }
   function closePanels(noHist) {
+    noHist = noHist === true;
     stopMic(); stopNotes(); closeMenu(true);
     $('#sheet').hidden = true; $('#chat').hidden = true; $('#onbp').hidden = true;
     var hadOnb = !!onbOpen; onbOpen = null; onbMenu = null; onbEdit = null;
     if (hadOnb && !noHist) { try { if (history.state && history.state.onb) history.back(); } catch (e) {} }
+    else if (!noHist) { try { if (history.state && history.state.pnl) history.back(); } catch (e) {} }
     document.body.classList.remove('docked', 'panel-open', 'lock');
     $('#app').inert = false;
     openId = null; isNew = false; focusVal = {};
@@ -2561,12 +2578,11 @@ a.ob-chip { text-decoration: underline; }
       return el('li', { class: n.tipo === 'estado' ? 'estado' : '' },
         el('time', { datetime: n.t, text: fmtStamp(n.t) + (who ? ' · ' + who : '') }),
         n.tipo === 'estado' ? el('span') : el('button', {
-          type: 'button', class: 'rm' + (rmArm === n.id ? ' sure' : ''), text: rmArm === n.id ? '¿Quitar?' : 'Quitar',
+          type: 'button', class: 'rm', text: 'Quitar', 'aria-label': 'Quitar la nota del ' + fmtStamp(n.t),
           onclick: function () {
-            if (rmArm === n.id) { rmArm = null; removeNote(get(openId), n.id); return; }
-            rmArm = n.id; clearTimeout(rmTimer);
-            rmTimer = setTimeout(function () { rmArm = null; renderTimeline(get(openId)); }, 3500);
-            renderTimeline(get(openId));
+            var cid = openId, note = n;
+            removeNote(get(cid), n.id);
+            toast('Nota quitada.', { action: { label: 'Deshacer', fn: function () { restoreNote(cid, note); } } });
           }
         }),
         el('span', { class: 'txt', text: n.texto }));
@@ -3450,7 +3466,10 @@ a.ob-chip { text-decoration: underline; }
     setTab(ts[i]); $('#onbT-' + ts[i]).focus();
   });
   document.addEventListener('click', function (e) { if (onbMenu && !e.target.closest('.ob-menu') && !e.target.closest('.ob-more')) { onbMenu = null; fillOnb(); } });
-  window.addEventListener('popstate', function (e) { if (onbOpen && !(e.state && e.state.onb)) closePanels(true); });
+  window.addEventListener('popstate', function (e) {
+    if (onbOpen && !(e.state && e.state.onb)) closePanels(true);
+    else if (!(e.state && e.state.pnl) && (!$('#sheet').hidden || !$('#chat').hidden)) closePanels(true);
+  });
   window.addEventListener('offline', function () { toast('Sin conexión. Los cambios pueden no guardarse hasta que vuelva.', { kind: 'error', sticky: true }); });
   window.addEventListener('online', function () { toast('La conexión volvió.'); });
 
