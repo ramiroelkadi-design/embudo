@@ -284,36 +284,6 @@ a.btn { text-decoration: none; color: var(--ink); }
 .vbtn .bn { margin-left: 6px; font-size: 12px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
 .vbtn[aria-pressed="true"] .bn { background: rgba(255,255,255,0.25); color: inherit; }
 dialog#modal.wide { width: min(760px, calc(100% - 24px)); }
-.onb-head h2 { margin: 0 0 2px; font: 700 19px/1.2 var(--f-display); }
-.onb-head .hint { margin: 0 0 12px; }
-.onb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin-bottom: 12px; }
-.pbar { height: 8px; border-radius: 999px; background: var(--line); overflow: hidden; }
-.pbar > i { display: block; height: 100%; background: var(--c-se-suma); border-radius: inherit; }
-.ob-nums { font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.ob-next { display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--ink-2); }
-.ob-next .late { color: var(--late); }
-.onb-top { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: start; }
-.onb-prog { display: flex; flex-direction: column; gap: 6px; }
-.onb-prog .hint { margin: 0; }
-.onb-filter { display: flex; flex-wrap: wrap; gap: 6px; }
-.onb-filter .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; }
-.onb-prog { margin: 2px 0; }
-.wk-head { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; background: var(--surface); border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; position: sticky; top: 0; z-index: 1; font-size: 14.5px; }
-.wk-title { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 1px; }
-.wk-focus { font-size: 12.5px; color: var(--ink-2); }
-.wk-chev { width: 14px; color: var(--ink-2); }
-.wk-n { font-variant-numeric: tabular-nums; }
-.ob-group h3 { margin: 10px 0 2px; font: 600 14px/1.2 var(--f-display); position: sticky; top: 0; background: var(--surface); padding: 6px 0; z-index: 1; }
-.ob-row { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.ob-row input[type=checkbox] { width: 22px; height: 22px; margin-top: 1px; accent-color: var(--accent); flex: 0 0 auto; }
-.ob-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
-.ob-text { overflow-wrap: anywhere; }
-.ob-row.done .ob-text { color: var(--ink-2); text-decoration: line-through; }
-.ob-meta { font-size: 12.5px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
-.ob-na { flex: 0 0 auto; font-size: 12.5px; color: var(--ink-2); background: none; border: 0; text-decoration: underline; }
-.onb-add { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; }
-.onb-add input, .onb-add select { min-width: 0; padding: 9px 10px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
-@media (max-width: 640px) { .onb-add { grid-template-columns: 1fr 1fr; } .onb-add input[type=text] { grid-column: 1 / -1; } .vbtn { padding: 7px 11px; } }
 .iv { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface-2); display: flex; flex-direction: column; gap: 10px; }
 .iv-head { display: flex; gap: 8px; align-items: center; }
 .iv-head h3 { margin: 0; font: 600 15px/1.2 var(--f-display); flex: 1; }
@@ -427,6 +397,127 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   .icon-btn { min-width: 44px; }
   .toast button { min-height: 44px; }
 }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sm { font-size: 13px; color: var(--ink-2); }
+.v-onb #add, .v-onb #onlyInt { display: none !important; }
+.onb-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.onb-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.onb-title h2 { margin: 0; font: 700 19px/1.2 var(--f-display); }
+.onb-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.onb-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.onb-opts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.views.mini .vbtn { padding: 5px 12px; min-height: 34px; }
+.onb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.ob-card .card-main { gap: 7px; padding: 10px 12px; }
+.ob-top { display: flex; gap: 8px; justify-content: space-between; align-items: flex-start; }
+.ob-top .card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ob-status { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.ob-why { font-size: 13px; color: var(--ink-2); }
+.tag svg { vertical-align: -2px; margin-right: 4px; }
+.avatar { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--line); background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 700; line-height: 1; }
+.avatar.none { border-style: dashed; color: var(--ink-2); font-weight: 500; }
+.avatar.big { width: 30px; height: 30px; }
+.pbar { position: relative; display: block; height: 8px; border-radius: 999px; background: var(--line); overflow: visible; }
+.pbar > i { display: block; height: 100%; background: var(--c-se-suma); border-radius: 999px; }
+.pbar > .exp { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); opacity: 0.65; border-radius: 1px; }
+.ob-nums { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ob-two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ob-two > span { display: flex; flex-direction: column; gap: 4px; }
+.ob-two .pbar { height: 5px; }
+.ob-next { display: flex; flex-direction: column; gap: 1px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 13.5px; }
+.ob-next.late .sm:last-child, .ob-next.late .sm:first-child { color: var(--late); }
+.ob-next-t { overflow-wrap: anywhere; }
+/* cronograma */
+.mx-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin-bottom: 12px; }
+.ob-matrix { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 760px; font-size: 13px; }
+.ob-matrix th, .ob-matrix td { padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--line); }
+.ob-matrix thead th { position: sticky; top: 0; background: var(--surface-2); font-weight: 600; color: var(--ink-2); }
+.ob-matrix .mx-name { position: sticky; left: 0; z-index: 1; background: var(--surface); text-align: left; min-width: 190px; padding: 8px 10px; font-weight: 500; border-right: 1px solid var(--line); }
+.ob-matrix thead .mx-name { background: var(--surface-2); }
+.mx-agent { display: flex; gap: 8px; align-items: center; background: none; border: 0; padding: 0; font-weight: 600; text-align: left; margin-bottom: 4px; }
+.mx { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 30px; padding: 2px 6px; border-radius: 8px; border: 1px solid transparent; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+button.mx { cursor: pointer; }
+.mx-done { background: var(--ok-bg); color: var(--ok); }
+.mx-late { background: var(--late-bg); color: var(--late); }
+.mx-cur { background: var(--today-bg); color: var(--today); }
+.mx-fut { background: var(--surface-2); color: var(--ink-2); }
+.mx.now { outline: 2px solid var(--ink); outline-offset: -2px; }
+.mx-empty { color: var(--ink-2); font-weight: 400; }
+.mx-leg { padding: 10px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+/* panel */
+.onb-panel .head-title h2:focus { outline: none; }
+.onb-sub { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.onb-prog { padding: 10px 16px 8px; display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--line); }
+.onb-prog p { margin: 0; }
+.ob-types { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--ink-2); }
+.ob-types span { display: inline-flex; gap: 5px; align-items: center; }
+.onb-tabs { display: flex; gap: 4px; padding: 6px 12px 0; border-bottom: 1px solid var(--line); }
+.onb-tabs button { padding: 9px 14px; min-height: 42px; background: none; border: 0; border-bottom: 3px solid transparent; font-weight: 600; font-size: 14.5px; color: var(--ink-2); }
+.onb-tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+.onb-pbody { gap: 0 !important; padding: 0 0 16px !important; }
+.onb-pane { display: flex; flex-direction: column; gap: 18px; padding: 16px; }
+.row-end { display: flex; justify-content: flex-end; }
+.row-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.onb-fbar { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 12px; position: sticky; top: 0; z-index: 3; background: var(--surface); border-bottom: 1px solid var(--line); }
+.onb-filter { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; }
+.onb-filter::-webkit-scrollbar { display: none; }
+.onb-filter .chip { min-height: 36px; padding: 6px 12px; font-size: 13.5px; }
+.onb-filter .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 600; }
+.sm-btn { min-height: 34px; padding: 4px 10px; font-size: 13px; white-space: nowrap; }
+.pad { padding: 16px; }
+h3.wk { margin: 0; font: inherit; }
+.wk-head { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; background: var(--surface-2); border: 0; border-bottom: 1px solid var(--line); padding: 10px 12px; min-height: 52px; font-size: 14.5px; }
+.wk-chev { display: inline-flex; color: var(--ink-2); transform: rotate(-90deg); transition: transform 0.15s; }
+.wk-chev.open { transform: none; }
+.wk-title { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 1px; }
+.wk-focus { font-size: 13px; color: var(--ink-2); }
+.wk-n { font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+.ob-list { list-style: none; margin: 0; padding: 0; }
+.ob-row { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: start; border-bottom: 1px solid var(--line); padding: 2px 4px 2px 12px; }
+.ob-lab { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; min-height: 52px; cursor: pointer; min-width: 0; }
+.ob-lab input { width: 24px; height: 24px; margin: 1px 0 0; flex: 0 0 auto; accent-color: var(--accent); }
+.ob-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ob-text { overflow-wrap: anywhere; }
+.ob-ico { display: inline-flex; vertical-align: -3px; margin-right: 6px; color: var(--ink-2); }
+.ob-row.hito .ob-text { font-weight: 700; }
+.ob-row.hito .ob-ico { color: var(--accent); }
+.ob-row.done .ob-text, .ob-row.na .ob-text { color: var(--ink-2); }
+.ob-row.done, .ob-row.na { opacity: 0.78; }
+.ob-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 13px; }
+.due { color: var(--ink-2); font-size: 13px; }
+.due.soon { color: var(--today); font-weight: 600; }
+.due.late { color: var(--late); font-weight: 700; }
+.ob-chip { display: inline-flex; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; color: var(--ink); }
+a.ob-chip { text-decoration: underline; }
+.ob-more { align-self: start; margin-top: 4px; border-color: transparent; background: none; min-width: 44px; min-height: 44px; }
+.ob-count { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; padding: 0 0 10px 36px; }
+.ob-count input { width: 64px; padding: 8px; font-size: 16px; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.ob-count .icon-btn { min-width: 40px; min-height: 40px; font-size: 18px; }
+.ob-cbar { flex: 1; min-width: 40px; }
+.ob-note { grid-column: 1 / -1; margin: 0; padding: 0 0 10px 36px; font-size: 13.5px; color: var(--ink-2); overflow-wrap: anywhere; }
+.ob-menu { grid-column: 1 / -1; display: flex; flex-direction: column; margin: 0 0 8px 36px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); box-shadow: 0 4px 14px rgba(10, 18, 34, 0.12); }
+.ob-edit { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px 36px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.ob-edit .wide { grid-column: 1 / -1; }
+.ob-edit-act { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+.foot-note { margin-right: auto; display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--ink-2); }
+.foot-note.warn { color: var(--late); font-weight: 600; }
+#onbFoot { justify-content: flex-end; }
+.onb-panel :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pe-list { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.pe-row { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.pe-row input[type=text] { width: 100%; padding: 9px 10px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.pe-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.pe-opts select, .pe-opts input { padding: 7px 8px; font-size: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; max-width: 150px; }
+.pe-opts input[type=number] { width: 80px; }
+@media (max-width: 899px) {
+  .onb-edit { grid-template-columns: 1fr; margin-left: 0; }
+  .ob-count, .ob-note, .ob-menu { margin-left: 0; padding-left: 36px; }
+  .ob-menu { margin-left: 36px; padding-left: 4px; }
+  .onb-prog { padding: 8px 14px 6px; }
+  #whoSel { width: 100px; }
+}
+@media (prefers-reduced-motion: reduce) { .wk-chev { transition: none; } }
+@media (max-width: 640px) { .vbtn { padding: 7px 11px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 <style>
@@ -655,7 +746,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     <div class="tools">
       <input id="q" class="search" type="search" placeholder="Buscar en candidatos y notas" aria-label="Buscar en candidatos y notas" autocomplete="off">
       <button id="searchBtn" class="btn icon mob-only" type="button" aria-label="Buscar" aria-pressed="false"><span data-icon="search"></span></button>
-      <select id="whoSel" class="btn" aria-label="Filtrar por responsable"><option value="">Todos</option><option value="Eri">Eri</option><option value="Vero">Vero</option><option value="Rami">Rami</option><option value="_none">Sin asignar</option></select>
+      <select id="whoSel" class="btn" aria-label="Filtrar por responsable"><option value="">Responsable</option><option value="Eri">Eri</option><option value="Vero">Vero</option><option value="Rami">Rami</option><option value="_none">Sin asignar</option></select>
       <button id="onlyInt" class="btn" type="button" aria-pressed="false">Entrevistados</button>
       <button id="openChat" class="btn desk-only" type="button" hidden><span data-icon="chat" data-size="16"></span>Chat</button>
       <button id="add" class="btn primary" type="button" aria-label="Agregar candidato"><span data-icon="plus" data-size="16"></span><span class="lbl">Candidato</span></button>
@@ -746,6 +837,29 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   <div id="foot" class="panel-foot" hidden></div>
 </aside>
 
+<aside id="onbp" class="panel onb-panel" role="dialog" aria-modal="false" aria-labelledby="onbTitle" hidden>
+  <div class="panel-head">
+    <button id="onbBack" class="btn ghost icon mob-only" type="button" aria-label="Volver a Onboarding"><span data-icon="back"></span></button>
+    <div class="head-title">
+      <h2 id="onbTitle" tabindex="-1">Onboarding</h2>
+      <div id="onbSub" class="onb-sub"></div>
+    </div>
+    <div class="head-actions">
+      <button id="onbPrev" class="btn ghost icon" type="button" aria-label="Agente anterior"><span data-icon="left"></span></button>
+      <button id="onbNext" class="btn ghost icon" type="button" aria-label="Agente siguiente"><span data-icon="right"></span></button>
+      <button id="onbClose" class="btn ghost desk-only" type="button" aria-label="Cerrar el onboarding">Cerrar</button>
+    </div>
+  </div>
+  <div id="onbProg" class="onb-prog"></div>
+  <div class="onb-tabs" role="tablist" aria-label="Secciones del onboarding">
+    <button type="button" role="tab" id="onbT-plan" aria-controls="onbBody" aria-selected="true">Plan</button>
+    <button type="button" role="tab" id="onbT-notas" aria-controls="onbBody" aria-selected="false">Notas</button>
+    <button type="button" role="tab" id="onbT-datos" aria-controls="onbBody" aria-selected="false">Datos</button>
+  </div>
+  <div id="onbBody" class="panel-body onb-pbody" role="tabpanel" aria-labelledby="onbT-plan"></div>
+  <div id="onbFoot" class="panel-foot"></div>
+</aside>
+
 <aside id="chat" class="panel" role="dialog" aria-modal="false" aria-labelledby="chatTitle" hidden>
   <div class="panel-head">
     <button id="chatBack" class="btn ghost icon mob-only" type="button" aria-label="Volver al tablero"><span data-icon="back"></span></button>
@@ -812,7 +926,11 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     right: '<path d="M9 6l6 6-6 6"/>',
     back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
     chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
-    mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>'
+    mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+    book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    check: '<path d="M5 13l4 4L19 7"/>',
+    flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
+    alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>'
   };
 
   /* ---------- estado ---------- */
@@ -1341,9 +1459,11 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       notesMap[id] = s.docs.map(function (d) { var o = clone(d.data() || {}); o.id = d.id; return o; });
       notesReady = true;
       if (openId === id) renderTimeline(get(id));
+      if (onbOpen === id) fillOnb();
     }, function () {
       notesReady = true; notesMap[id] = notesMap[id] || [];
       if (openId === id) renderTimeline(get(id));
+      if (onbOpen === id) fillOnb();
     });
   }
   function stopNotes() { if (notesUnsub) { try { notesUnsub(); } catch (e) {} notesUnsub = null; } }
@@ -1378,10 +1498,10 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   /* ---------- etapas ---------- */
   function applyStage(id, to, extra) {
     var c = get(id);
-    var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '', responsable: c.responsable || '', incorporadoEl: c.incorporadoEl || '', obFin: c.obFin || '' };
+    var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '', responsable: c.responsable || '', incorporadoEl: c.incorporadoEl || '', obFin: c.obFin || '', obRes: c.obRes || '', obMotivo: c.obMotivo || '' };
     var fields = Object.assign({ estado: to }, extra || {});
     if (to === 'coordinar-ingreso') fields.responsable = 'Vero';
-    if (to === 'se-suma') { fields.incorporadoEl = new Date().toISOString(); fields.obFin = ''; }
+    if (to === 'se-suma') { fields.incorporadoEl = new Date().toISOString(); fields.obFin = ''; fields.obRes = ''; fields.obMotivo = ''; }
     if ((to === 'realizada' || to === 'coordinar-ingreso') && !c.entrevistadoEl) fields.entrevistadoEl = new Date().toISOString();
     if (to !== 'descartado' && c.motivo && !('motivo' in fields)) fields.motivo = '';
     var nid = pushNote(id, { t: new Date().toISOString(), tipo: 'estado', texto: stageName(c.estado) + ' → ' + stageName(to) });
@@ -1397,6 +1517,10 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   async function moveStage(id, to) {
     var c = get(id); if (!c || c.estado === to) return;
     var extra = {};
+    if (c.estado === 'se-suma' && to !== 'se-suma' && !c.obFin) {
+      var oi = obInfo(c);
+      if (oi.done > 0) { var okm = await confirmBox('¿Sacar de Onboarding?', (c.nombre || 'El agente') + ' lleva el ' + oi.pct + '% de su onboarding. Si lo pasás a «' + stageName(to) + '», deja de aparecer en Onboarding. Lo avanzado queda guardado.', 'Mover igual', false); if (!okm) return; }
+    }
     if (to === 'mas-adelante') {
       var d = await askWhen('contacto', c.proximoContacto || '');
       if (d === null) return;
@@ -1581,6 +1705,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   }
   function render() {
     if (dragging) { pendingRender = true; return; }
+    obHashOpen();
     var a = document.activeElement;
     var key = a && a.getAttribute ? a.getAttribute('data-focus') : null;
     var oldBoard = document.querySelector('.board');
@@ -1697,10 +1822,14 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     box.replaceChildren.apply(box, [bar].concat(body, [legend]).filter(Boolean));
   }
   /* ---------- onboarding de agentes nuevos ---------- */
-  /* Plan de 90 días. Se arma a partir de lo que hacen las grandes franquicias: RE/MAX (manual: prospección, vendedores, compradores, referidos, finanzas), Keller Williams (Ignite y BOLD: base de datos, plan de negocios, hábito diario de prospección), Century 21 (Launch21 y boot camp con seguimiento semanal) y los planes 30-60-90 (CRM, 100 contactos, role-play, primera captación, primera operación). Cada tarea: id, tema, tipo (cap = capacitación, acc = acción, hito), día límite desde el inicio, texto. */
+  /* Plan de 90 días armado a partir de RE/MAX (manual del agente), Keller Williams (Ignite y BOLD), Century 21 (Launch21 y boot camp) y planes 30-60-90. Cada objetivo: id, tema, tipo (cap = capacitación, acc = acción, hito), día límite desde el ingreso (sirve para ubicarlo en una semana), texto y meta (cantidad, opcional). Se puede editar desde "Editar plan". */
   var OB_TEMAS = ['Inducción', 'Objetivos y plan', 'Base de relaciones', 'Marca personal', 'Prospección', 'Captación y tasación', 'Legales', 'Negociación y compradores', 'Cierre y posventa', 'Gestión personal', 'Extra'];
   var OB_TIPOS = { cap: 'Capacitación', acc: 'Acción', hito: 'Hito' };
-  var OB_PLAN = [
+  var OB_TIPOS_PL = { cap: 'Capacitaciones', acc: 'Acciones', hito: 'Hitos' };
+  var OB_ICO = { cap: 'book', acc: 'check', hito: 'flag' };
+  var OB_META = { b2: 50, b4: 100, m6: 3, z2: 3 };
+  var OB_SEMANAS = ['Arranque: bienvenida, accesos y marca', 'Plan de negocios y base de contactos', 'Anuncio a la base y primeras prácticas', 'Captación, tasación y 100 contactos', 'Legales y primera tasación acompañada', 'Hábito diario y primera presentación', 'Impuestos, negociación y compradores', 'Primera visita y primera publicación', 'Mitad de camino con la Broker', 'Finanzas del agente', 'Primera captación firmada', 'Base segmentada y testimonios', 'Cierre de los 90 días'];
+  var OB_DEFAULT = [
     ['i1', 0, 'acc', 1, 'Reunión de bienvenida con la Broker y recorrida de la oficina'],
     ['i2', 0, 'acc', 3, 'Firmar la documentación de alta y confirmar la matrícula vigente'],
     ['i3', 0, 'acc', 3, 'Activar accesos: mail, CRM, portales y grupos de WhatsApp del equipo'],
@@ -1747,92 +1876,211 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     ['z3', 8, 'hito', 90, 'Primera reserva u operación en marcha'],
     ['z4', 8, 'hito', 90, 'Revisión final de los 90 días con la Broker y plan del próximo trimestre'],
     ['g1', 9, 'cap', 70, 'Capacitación: finanzas del agente (monotributo y facturación, presupuesto, flujo de ingresos)']
-  ].map(function (t) { return { id: t[0], tema: OB_TEMAS[t[1]], tipo: t[2], dia: t[3], texto: t[4] }; });
-  var OB_SEMANAS = ['Arranque: bienvenida, accesos y marca', 'Plan de negocios y base de contactos', 'Anuncio a la base y primeras prácticas', 'Captación, tasación y 100 contactos', 'Legales y primera tasación acompañada', 'Hábito diario y primera presentación', 'Impuestos, negociación y compradores', 'Primera visita y primera publicación', 'Mitad de camino con la Broker', 'Finanzas del agente', 'Primera captación firmada', 'Base segmentada y testimonios', 'Cierre de los 90 días'];
-  var onbWk = {}, onbOpen = null, onbFilter = 'todo', onbShowFin = false, obInit = {};
+  ].map(function (t) { return { id: t[0], tema: OB_TEMAS[t[1]], tipo: t[2], dia: t[3], texto: t[4], meta: OB_META[t[0]] || 0 }; });
+  var PLAN_KEY = 'embudo-plan';
+  var obPlanDoc = null, planColl = null;
+  var onbWk = {}, onbOpen = null, onbTab = 'plan', onbFilter = 'todo', onbMenu = null, onbEdit = null, onbKeep = {}, onbScrollTo = 0;
+  var onbF = 'todos', onbSort = 'urg', onbMode = 'tarjetas', onbShowFin = false, onbOrder = [], obInit = {}, obHashDone = false;
 
+  /* ----- plan (editable, compartido) ----- */
+  function sanPlan(d) {
+    var arr = d && Array.isArray(d.tareas) ? d.tareas : [];
+    var out = arr.map(function (t) {
+      return { id: str(t.id) || ('p' + uid().slice(1, 7)), tema: OB_TEMAS.indexOf(t.tema) >= 0 ? t.tema : 'Extra', tipo: t.tipo === 'cap' || t.tipo === 'hito' ? t.tipo : 'acc',
+        dia: Math.min(98, Math.max(1, parseInt(t.dia, 10) || 7)), texto: str(t.texto).slice(0, 200), meta: Math.max(0, parseInt(t.meta, 10) || 0) };
+    }).filter(function (t) { return t.texto; });
+    return out.length ? { version: parseInt(d.version, 10) || 1, editado: str(d.editado), por: str(d.por), tareas: out } : null;
+  }
+  function obPlan() { return obPlanDoc ? obPlanDoc.tareas : OB_DEFAULT; }
+  function loadPlanLocal() { try { obPlanDoc = sanPlan(JSON.parse(lsGet(PLAN_KEY) || 'null')); } catch (e) { obPlanDoc = null; } }
+  function savePlan(tareas) {
+    var doc = { version: (obPlanDoc ? obPlanDoc.version : 1) + 1, editado: new Date().toISOString(), por: meName(), tareas: tareas };
+    obPlanDoc = sanPlan(doc);
+    if (planColl) planColl.doc('onboarding').set(doc).catch(function () { toast('No se pudo guardar el plan.', { kind: 'error' }); });
+    else lsSet(PLAN_KEY, JSON.stringify(doc));
+    render();
+  }
+  function meName() { return (me.name || '').split(' ')[0] || ''; }
+
+  /* ----- fechas: semanas de lunes a domingo; la semana 1 va del ingreso al primer domingo completo ----- */
+  function dowOf(d) { return (d.getDay() + 6) % 7; }
+  function obGeo(start) {
+    var S = parseDay(start), d = dowOf(S), mon2 = addD(S, d <= 1 ? 7 - d : 14 - d);
+    return { S: S, mon2: mon2, w1End: addD(mon2, -1) };
+  }
+  function obRange(g, w) { if (w <= 1) return [g.S, g.w1End]; var a = addD(g.mon2, 7 * (w - 2)); return [a, addD(a, 6)]; }
+  function obWeekOfDate(g, ds) { var d = parseDay(ds); if (d <= g.w1End) return 1; return 2 + Math.floor(Math.round((d - g.mon2) / 864e5) / 7); }
+  function fmtRange(r) {
+    var a = r[0], b = r[1], f = function (d, m) { return d.getDate() + (m ? ' ' + d.toLocaleDateString('es-AR', { month: 'short' }).replace('.', '') : ''); };
+    return a.getMonth() === b.getMonth() ? f(a) + '–' + f(b, true) : f(a, true) + '–' + f(b, true);
+  }
   function obStart(c) {
     var v = validDate(c.obInicio);
     if (v) return v;
     if (c.incorporadoEl) { var d = new Date(c.incorporadoEl); if (!isNaN(d)) return dayStr(d); }
     return '';
   }
-  function obTasks(c) {
-    var extra = Array.isArray(c.obx) ? c.obx : [];
-    return OB_PLAN.concat(extra.map(function (x) { return { id: x.id, tema: 'Extra', tipo: x.tipo === 'cap' ? 'cap' : 'acc', dia: +x.dia || 90, texto: x.texto || '', extra: true }; }))
-      .sort(function (a, b) { return a.dia - b.dia; });
+  function obM(c, id) { var m = c['obm_' + id]; return m && typeof m === 'object' ? m : {}; }
+  function obDue(c, t, g) {
+    var m = obM(c, t.id);
+    if (validDate(m.fecha)) return m.fecha;
+    if (t.fecha && validDate(t.fecha)) return t.fecha;
+    var w = Math.max(1, Math.ceil((t.dia || 1) / 7)), d;
+    if (w <= 1) {
+      d = addD(g.S, Math.max(0, (t.dia || 1) - 1));
+      if (d > g.w1End) d = g.w1End;
+      var dw = dowOf(d);
+      if (dw >= 5) { var back = addD(d, -(dw - 4)); if (back >= g.S) d = back; }
+    } else d = addD(obRange(g, w)[0], 4);
+    return dayStr(d);
   }
-  function obVal(c, id) { return c['ob_' + id] || ''; }
+  function obEnrich(c, g) {
+    var extra = (Array.isArray(c.obx) ? c.obx : []).map(function (x) { return { id: x.id, tema: 'Extra', tipo: x.tipo === 'cap' ? 'cap' : 'acc', dia: +x.dia || 90, fecha: validDate(x.fecha) || (x.dia ? dayStr(addD(g.S, Math.max(0, +x.dia - 1))) : ''), texto: x.texto || '', meta: 0, extra: true }; });
+    var today = todayStr();
+    return obPlan().concat(extra).map(function (t, i) {
+      var due = obDue(c, t, g), v = c['ob_' + t.id] || '', na = v === 'na', k = +c['obk_' + t.id] || 0;
+      return { id: t.id, tema: t.tema, tipo: t.tipo, texto: t.texto, meta: t.meta || 0, extra: !!t.extra, i: i, due: due, w: obWeekOfDate(g, due), left: dayDiff(due),
+        v: v, na: na, done: !!v && !na, by: c['obp_' + t.id] || '', k: k, m: obM(c, t.id), late: !v && due < today };
+    }).sort(function (a, b) { return a.w - b.w || (a.due < b.due ? -1 : a.due > b.due ? 1 : 0) || a.i - b.i; });
+  }
   function obInfo(c) {
-    var start = obStart(c) || todayStr();
-    var day = dayDiff(start) * -1 + 1;
-    var tasks = obTasks(c), tot = 0, done = 0, late = 0, soon = 0, cap = [0, 0], acc = [0, 0], next = [];
+    var start = obStart(c) || todayStr(), g = obGeo(start), today = todayStr(), tasks = obEnrich(c, g);
+    var o = { start: start, g: g, tasks: tasks, tot: 0, done: 0, late: 0, soon: 0, exp: 0, cap: [0, 0], acc: [0, 0], hito: [0, 0], next: null };
+    o.cur = Math.max(1, obWeekOfDate(g, today));
+    o.day = -dayDiff(start) + 1;
     tasks.forEach(function (t) {
-      var v = obVal(c, t.id);
-      if (v === 'na') return;
-      tot++;
-      var g = t.tipo === 'cap' ? cap : acc;
-      g[1]++;
-      if (v) { done++; g[0]++; return; }
-      var due = dayStr(new Date(parseDay(start).getTime() + (t.dia - 1) * 864e5 + 36e5));
-      var left = dayDiff(due);
-      if (left < 0) late++; else if (left <= 3) soon++;
-      next.push({ t: t, due: due, left: left });
+      if (t.na) return;
+      o.tot++;
+      var gr = t.tipo === 'cap' ? o.cap : t.tipo === 'hito' ? o.hito : o.acc; gr[1]++;
+      if (t.due <= today) o.exp++;
+      if (t.done) { o.done++; gr[0]++; return; }
+      if (t.left < 0) o.late++; else if (t.left <= 3) o.soon++;
+      if (!o.next || t.due < o.next.due) o.next = t;
+      if (t.w === o.cur) o.weekPend = (o.weekPend || 0) + 1;
     });
-    var seg = validDate(c.obSeg) || '';
-    var segDays = seg ? -dayDiff(seg) : null;
-    return { start: start, day: day, tot: tot, done: done, pct: tot ? Math.round(done * 100 / tot) : 0, late: late, soon: soon, cap: cap, acc: acc, next: next, seg: seg, segDays: segDays,
-      segLate: !c.obFin && day > 7 && (segDays === null || segDays > 7) };
+    o.pct = o.tot ? Math.round(o.done * 100 / o.tot) : 0;
+    o.expPct = o.tot ? Math.round(o.exp * 100 / o.tot) : 0;
+    o.seg = validDate(c.obSeg) || '';
+    o.segDays = o.seg ? -dayDiff(o.seg) : null;
+    o.segLate = !c.obFin && o.day > 7 && (o.segDays === null || o.segDays > 7);
+    o.reasons = [];
+    if (o.late) o.reasons.push(o.late + (o.late === 1 ? ' vencido' : ' vencidos'));
+    if (o.segLate) o.reasons.push(o.segDays === null ? 'sin seguimiento' : 'sin seguimiento hace ' + o.segDays + ' d');
+    o.status = c.obFin ? (c.obRes === 'abandono' ? 'out' : 'done') : (o.late >= 3 ? 'bad' : (o.late > 0 || o.segLate) ? 'warn' : 'ok');
+    return o;
   }
-  function obDue(c, t) { var s = obStart(c) || todayStr(); return dayStr(new Date(parseDay(s).getTime() + (t.dia - 1) * 864e5 + 36e5)); }
-  function obWeek(t) { return Math.max(1, Math.ceil(t.dia / 7)); }
+  var OB_PILL = { ok: ['ok', 'check', 'En ritmo'], warn: ['today', 'alert', 'Atención'], bad: ['late', 'alert', 'Atrasado'], done: ['ok', 'check', 'Completo'], out: ['muted', 'alert', 'No continuó'] };
+  function obPill(o) { var p = OB_PILL[o.status]; return el('span', { class: 'tag ' + p[0] }, icon(p[1], 14), p[2]); }
+  function avatar(name, big) {
+    return name ? el('span', { class: 'avatar' + (big ? ' big' : ''), style: 'border-color:' + pColor(name), title: 'Responsable: ' + name, role: 'img', 'aria-label': 'Responsable: ' + name, text: name.charAt(0) })
+      : el('span', { class: 'avatar none' + (big ? ' big' : ''), title: 'Sin responsable', role: 'img', 'aria-label': 'Sin responsable', text: '?' });
+  }
+  function bar(pct, exp, label) {
+    return el('div', { class: 'pbar', role: 'progressbar', 'aria-label': label || 'Avance', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' },
+      el('i', { style: 'width:' + pct + '%' }), exp != null && exp > 0 && exp < 100 ? el('b', { class: 'exp', style: 'left:' + exp + '%', title: 'Dónde debería ir hoy' }) : null);
+  }
+  function dueText(t) {
+    var l = t.left;
+    if (l < 0) return 'Venció hace ' + (-l) + (l === -1 ? ' día' : ' días');
+    if (l === 0) return 'Vence hoy';
+    if (l === 1) return 'Vence mañana';
+    if (l <= 14) return 'Vence en ' + l + ' días';
+    return 'Vence el ' + fmtDay(t.due);
+  }
+  function short(s, n) { s = String(s || ''); return s.length > (n || 46) ? s.slice(0, (n || 46) - 1) + '…' : s; }
 
-  function bar(pct) { return el('div', { class: 'pbar', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' }, el('i', { style: 'width:' + pct + '%' })); }
-
+  /* ----- lista de agentes ----- */
   function onbList() {
-    return cands.filter(function (c) { return c.estado === 'se-suma' && (!whoF || (whoF === '_none' ? !c.responsable : c.responsable === whoF)); });
+    var q = norm(query);
+    return cands.filter(function (c) {
+      if (c.estado !== 'se-suma') return false;
+      if (whoF && (whoF === '_none' ? c.responsable : c.responsable !== whoF)) return false;
+      if (q && norm((c.nombre || '') + ' ' + (c.inmobiliaria || '') + ' ' + (c.textoNotas || '')).indexOf(q) < 0) return false;
+      return true;
+    });
   }
-  function onbCard(c) {
-    var o = obInfo(c);
-    var tags = [];
-    if (c.responsable) tags.push(el('span', { class: 'who-tag' }, el('i', { class: 'pd', style: 'background:' + pColor(c.responsable) }), c.responsable));
-    if (c.obFin) tags.push(tag('ok', 'Finalizado'));
-    else {
-      if (o.late) tags.push(tag('late', o.late + (o.late === 1 ? ' tarea vencida' : ' tareas vencidas')));
-      if (o.segLate) tags.push(tag('today', o.segDays === null ? 'Sin seguimiento registrado' : 'Sin seguimiento hace ' + o.segDays + ' días'));
-    }
-    var nx = o.next.slice().sort(function (a, b) { return a.left - b.left; }).slice(0, 2);
-    return el('article', { class: 'card ob-card' + (c.responsable ? ' has-who' : ''), style: c.responsable ? '--who:' + pColor(c.responsable) : '' },
-      el('button', { type: 'button', class: 'card-main', 'data-focus': 'onb:' + c.id, onclick: function () { openOnb(c.id); } },
-        el('span', { class: 'card-name', text: c.nombre || 'Sin nombre' }),
-        el('span', { class: 'card-meta', text: (c.obFin ? 'Onboarding completo' : 'Semana ' + Math.max(1, Math.ceil(Math.max(o.day, 1) / 7)) + ' de 13 · día ' + Math.max(o.day, 1) + ' (ingresó el ' + fmtDay(o.start) + ')') + (c.inmobiliaria ? ' · ' + c.inmobiliaria : '') }),
-        bar(o.pct),
-        el('span', { class: 'ob-nums', text: o.pct + '% · ' + o.done + ' de ' + o.tot + ' tareas · Capacitación ' + o.cap[0] + '/' + o.cap[1] + ' · Acciones ' + o.acc[0] + '/' + o.acc[1] }),
-        !c.obFin && nx.length ? el('span', { class: 'ob-next' }, nx.map(function (n) { return el('span', { class: n.left < 0 ? 'late' : '', text: (n.left < 0 ? 'Vencida: ' : 'Próxima: ') + n.t.texto }); })) : null),
-      tags.length ? el('div', { class: 'card-tags' }, tags) : null);
+  function onbCard(c, o) {
+    var nx = o.next, fin = !!c.obFin;
+    var sub = fin ? (c.obRes === 'abandono' ? 'Dejó el proceso el ' : 'Completó el proceso el ') + fmtDay(validDate(c.obFin) || todayStr()) : 'Semana ' + Math.min(o.cur, 13) + ' de 13';
+    var pct = (o.cap[1] ? Math.round(o.cap[0] * 100 / o.cap[1]) : 0), pcta = (o.acc[1] ? Math.round(o.acc[0] * 100 / o.acc[1]) : 0);
+    return el('article', { class: 'card ob-card' },
+      el('button', { type: 'button', class: 'card-main', 'data-focus': 'onb:' + c.id, 'aria-label': (c.nombre || 'Sin nombre') + ', ' + sub + ', ' + OB_PILL[o.status][2] + '. Abrir el onboarding', onclick: function () { openOnb(c.id); } },
+        el('span', { class: 'ob-top' }, el('span', { class: 'card-name', text: c.nombre || 'Sin nombre' }), avatar(c.responsable)),
+        el('span', { class: 'card-meta', text: sub }),
+        el('span', { class: 'ob-status' }, obPill(o), o.reasons.length && !fin ? el('span', { class: 'ob-why', text: o.reasons.join(' · ') }) : null),
+        bar(o.pct, fin ? 0 : o.expPct, 'Avance total'),
+        el('span', { class: 'ob-nums', text: o.pct + '% · ' + o.done + ' de ' + o.tot + ' objetivos' + (!fin && o.expPct > o.pct ? ' · debería ir en ' + o.expPct + '%' : '') }),
+        el('span', { class: 'ob-two' },
+          el('span', {}, el('span', { class: 'sm', text: 'Capacitación ' + o.cap[0] + '/' + o.cap[1] }), bar(pct, 0, 'Capacitación')),
+          el('span', {}, el('span', { class: 'sm', text: 'Acciones ' + o.acc[0] + '/' + o.acc[1] }), bar(pcta, 0, 'Acciones'))),
+        !fin && nx ? el('span', { class: 'ob-next' + (nx.late ? ' late' : '') }, el('span', { class: 'sm', text: nx.late ? 'Más urgente' : 'Siguiente' }), el('span', { class: 'ob-next-t', text: nx.texto }), el('span', { class: 'sm', text: dueText(nx) })) : null));
+  }
+  function matrixCell(c, o, w) {
+    var wl = o.tasks.filter(function (t) { return t.w === w && !t.na; });
+    var td = el('td');
+    if (!wl.length) { td.append(el('span', { class: 'mx mx-empty', text: '·', 'aria-label': 'Sin objetivos esta semana' })); return td; }
+    var dn = wl.filter(function (t) { return t.done; }).length, lt = wl.filter(function (t) { return t.late; }).length;
+    var cls = dn === wl.length ? 'mx-done' : lt ? 'mx-late' : w === o.cur ? 'mx-cur' : w < o.cur ? 'mx-late' : 'mx-fut';
+    var st = dn === wl.length ? 'completa' : lt ? lt + ' vencidos' : w === o.cur ? 'semana actual' : 'futura';
+    td.append(el('button', { type: 'button', class: 'mx ' + cls + (w === o.cur ? ' now' : ''), 'aria-label': c.nombre + ', semana ' + w + ': ' + dn + ' de ' + wl.length + ' hechos, ' + st, title: 'Semana ' + w + ' · ' + fmtRange(obRange(o.g, w)), onclick: function () { openOnb(c.id, { week: w }); } },
+      dn === wl.length ? icon('check', 14) : el('span', { text: dn + '/' + wl.length })));
+    return td;
+  }
+  function onbMatrix(list) {
+    var head = el('tr', {}, el('th', { scope: 'col', class: 'mx-name', text: 'Agente' }));
+    for (var w = 1; w <= 13; w++) head.append(el('th', { scope: 'col', text: 'S' + w, title: OB_SEMANAS[w - 1] }));
+    var rows = list.map(function (x) {
+      var tr = el('tr', {}, el('th', { scope: 'row', class: 'mx-name' }, el('button', { type: 'button', class: 'mx-agent', onclick: function () { openOnb(x.c.id); } }, avatar(x.c.responsable), el('span', { text: x.c.nombre || 'Sin nombre' })), obPill(x.o)));
+      for (var w = 1; w <= 13; w++) tr.append(matrixCell(x.c, x.o, w));
+      return tr;
+    });
+    return el('div', { class: 'mx-wrap' },
+      el('table', { class: 'ob-matrix' }, el('caption', { class: 'sr', text: 'Avance de cada agente por semana' }), el('thead', {}, head), el('tbody', {}, rows)),
+      el('p', { class: 'hint mx-leg' }, el('span', { class: 'mx mx-done' }, icon('check', 14)), ' Semana completa  ', el('span', { class: 'mx mx-late', text: 'n/m' }), ' Con vencidos  ', el('span', { class: 'mx mx-cur', text: 'n/m' }), ' Semana actual  ', el('span', { class: 'mx mx-fut', text: 'n/m' }), ' Por venir. Tocá una semana para abrirla.'));
   }
   function renderOnb() {
     var box = $('#onb');
-    var all = onbList();
-    var act = all.filter(function (c) { return !c.obFin; }), fin = all.filter(function (c) { return c.obFin; });
-    // los que ya estaban en "Se incorporó" sin fecha de inicio: se fija una vez
-    act.concat(fin).forEach(function (c) {
-      if (!obStart(c) && !obInit[c.id]) { obInit[c.id] = true; var d = c.actualizado ? dayStr(new Date(c.actualizado)) : todayStr(); setTimeout(function () { patch(c.id, { obInicio: d }); }, 0); }
+    var all = onbList().map(function (c) { return { c: c, o: obInfo(c) }; });
+    all.forEach(function (x) {
+      var c = x.c;
+      if (!c.obFin && !obStart(c) && !obInit[c.id]) { obInit[c.id] = true; var d = c.actualizado ? dayStr(new Date(c.actualizado)) : todayStr(); setTimeout(function () { patch(c.id, { obInicio: d }); }, 0); }
     });
-    function urg(c) { var o = obInfo(c); return o.late * 1000 + (o.segLate ? 500 : 0) + o.day; }
-    act.sort(function (a, b) { return urg(b) - urg(a); });
-    var late = act.filter(function (c) { return obInfo(c).late > 0; }).length;
-    var segl = act.filter(function (c) { return obInfo(c).segLate; }).length;
+    var act = all.filter(function (x) { return !x.c.obFin; }), fin = all.filter(function (x) { return x.c.obFin; });
+    var nLate = act.filter(function (x) { return x.o.late > 0; }).length;
+    var nSeg = act.filter(function (x) { return x.o.segLate; }).length;
+    var nWeek = act.filter(function (x) { return x.o.weekPend > 0; }).length;
+    var shown = act.filter(function (x) { return onbF === 'atrasados' ? x.o.late > 0 : onbF === 'seg' ? x.o.segLate : onbF === 'semana' ? x.o.weekPend > 0 : true; });
+    var urg = function (x) { return x.o.late * 1000 + (x.o.segLate ? 500 : 0) + (x.o.late ? 0 : x.o.cur); };
+    shown.sort(function (a, b) {
+      if (onbSort === 'nombre') return (a.c.nombre || '').localeCompare(b.c.nombre || '', 'es');
+      if (onbSort === 'avance') return a.o.pct - b.o.pct;
+      if (onbSort === 'ingreso') return a.o.start < b.o.start ? 1 : a.o.start > b.o.start ? -1 : 0;
+      return urg(b) - urg(a);
+    });
+    onbOrder = shown.map(function (x) { return x.c.id; });
+    var chips = [['todos', 'Todos', act.length], ['atrasados', 'Con vencidos', nLate], ['seg', 'Sin seguimiento', nSeg], ['semana', 'Con objetivos esta semana', nWeek]].map(function (f) {
+      return el('button', { type: 'button', class: 'chip' + (onbF === f[0] ? ' on' : ''), 'aria-pressed': String(onbF === f[0]), onclick: function () { onbF = f[0]; renderOnb(); } }, f[1], el('span', { class: 'n', text: String(f[2]) }));
+    });
+    var sortSel = el('select', { class: 'btn', 'aria-label': 'Ordenar', onchange: function (e) { onbSort = e.target.value; renderOnb(); } },
+      [['urg', 'Más urgentes primero'], ['nombre', 'Por nombre'], ['avance', 'Menos avance primero'], ['ingreso', 'Ingresaron más recién']].map(function (s) { return el('option', { value: s[0], text: s[1] }); }));
+    sortSel.value = onbSort;
+    var modeBtns = el('div', { class: 'views mini', role: 'group', 'aria-label': 'Vista' }, [['tarjetas', 'Tarjetas'], ['cronograma', 'Cronograma']].map(function (m) {
+      return el('button', { type: 'button', class: 'vbtn', 'aria-pressed': String(onbMode === m[0]), text: m[1], onclick: function () { onbMode = m[0]; renderOnb(); } });
+    }));
     var head = el('div', { class: 'onb-head' },
-      el('h2', { text: 'Onboarding de agentes' }),
-      el('p', { class: 'hint', text: act.length
-        ? act.length + (act.length === 1 ? ' agente en proceso' : ' agentes en proceso') + (late ? ' · ' + late + ' con tareas vencidas' : ' · ninguno con tareas vencidas') + (segl ? ' · ' + segl + ' sin seguimiento reciente' : '')
-        : 'Cuando un candidato pasa a "Se incorporó" aparece acá solo, con el plan de 90 días.' }));
+      el('div', { class: 'onb-title' }, el('h2', { text: 'Onboarding de agentes' }),
+        el('button', { type: 'button', class: 'btn ghost', text: 'Editar plan', onclick: showPlanEditor })),
+      el('p', { class: 'hint', text: act.length ? act.length + (act.length === 1 ? ' agente en proceso' : ' agentes en proceso') + (nLate ? ' · ' + nLate + ' con objetivos vencidos' : ' · ninguno con objetivos vencidos') : 'Cuando un candidato pasa a «Se incorporó» aparece acá solo, con el plan de 90 días.' }),
+      act.length ? el('div', { class: 'onb-tools' }, el('div', { class: 'onb-chips' }, chips), el('div', { class: 'onb-opts' }, modeBtns, onbMode === 'tarjetas' ? sortSel : null)) : null);
     var parts = [head];
-    if (act.length) parts.push(el('div', { class: 'onb-grid' }, act.map(onbCard)));
+    if (act.length) {
+      if (!shown.length) parts.push(el('p', { class: 'hint', text: 'Ningún agente cumple este filtro.' }));
+      else if (onbMode === 'cronograma') parts.push(onbMatrix(shown));
+      else parts.push(el('div', { class: 'onb-grid' }, shown.map(function (x) { return onbCard(x.c, x.o); })));
+    }
     if (fin.length) {
       parts.push(el('button', { type: 'button', class: 'btn ghost', text: (onbShowFin ? 'Ocultar' : 'Ver') + ' finalizados (' + fin.length + ')', onclick: function () { onbShowFin = !onbShowFin; renderOnb(); } }));
-      if (onbShowFin) parts.push(el('div', { class: 'onb-grid' }, fin.map(onbCard)));
+      if (onbShowFin) parts.push(el('div', { class: 'onb-grid' }, fin.map(function (x) { return onbCard(x.c, x.o); })));
     }
     var key = document.activeElement && document.activeElement.getAttribute ? document.activeElement.getAttribute('data-focus') : null;
     box.replaceChildren.apply(box, parts);
@@ -1842,101 +2090,333 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var n = cands.filter(function (c) { return c.estado === 'se-suma' && !c.obFin; }).length;
     var b = $('#onbN'); if (b) { b.textContent = n ? String(n) : ''; b.hidden = !n; }
   }
-
-  function obSet(c, id, v) { var o = {}; o['ob_' + id] = v; patch(c.id, o); }
-  function openOnb(id) {
-    onbOpen = id; onbWk = {};
-    var p = showModal('', el('div'), []);
-    $('#modal').classList.add('wide');
-    fillOnb();
-    p.then(function () { onbOpen = null; $('#modal').classList.remove('wide'); });
+  function obHashOpen() {
+    if (obHashDone || loading) return;
+    obHashDone = true;
+    var m = /^#onb-(.+)$/.exec(location.hash || '');
+    var c = m && get(decodeURIComponent(m[1]));
+    if (c && c.estado === 'se-suma') {
+      view = 'onb';
+      document.querySelectorAll('.vbtn[data-v]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === view)); });
+      setTimeout(function () { openOnb(c.id); }, 0);
+    }
   }
+
+  /* ----- panel de un agente ----- */
+  function openOnb(id, opt) {
+    opt = opt || {};
+    var c = get(id); if (!c) return;
+    if (!lastFocus) lastFocus = document.activeElement;
+    closeMenu(true);
+    if (onbOpen !== id) { onbWk = {}; onbTab = 'plan'; onbFilter = 'todo'; onbMenu = null; onbEdit = null; onbKeep = {}; }
+    onbOpen = id;
+    if (opt.week) { onbWk[opt.week] = true; onbScrollTo = opt.week; onbTab = 'plan'; }
+    showPanel('onbp');
+    onbOpen = id;
+    listenNotes(id);
+    fillOnb();
+    try {
+      if (history.state && history.state.onb) history.replaceState({ onb: id }, '', '#onb-' + id);
+      else history.pushState({ onb: id }, '', '#onb-' + id);
+    } catch (e) {}
+    if (!opt.week) { var h = $('#onbTitle'); if (h) h.focus({ preventScroll: true }); }
+  }
+  function onbNav(dir) {
+    var i = onbOrder.indexOf(onbOpen), n = onbOrder[i + dir];
+    if (i < 0 || !n) return;
+    openOnb(n);
+  }
+  function setTab(t) { onbTab = t; onbEdit = null; onbMenu = null; fillOnb(); var b = $('#onbBody'); if (b) b.scrollTop = 0; }
+
   function fillOnb() {
     var c = get(onbOpen);
-    if (!c || c.estado !== 'se-suma') { if ($('#modal').open) closeModal(null); return; }
-    var d = $('#modal'), st = d.scrollTop;
+    var p = $('#onbp');
+    if (!c || c.estado !== 'se-suma') { if (!p.hidden) { closePanels(); if (c) toast((c.nombre || 'El agente') + ' ya no está en Onboarding.'); } onbOpen = null; return; }
+    if (p.hidden) return;
+    var body = $('#onbBody'), st = body.scrollTop;
     var af = document.activeElement && document.activeElement.getAttribute ? document.activeElement.getAttribute('data-ob') : null;
-    var o = obInfo(c);
-    $('#modalTitle').textContent = 'Onboarding: ' + (c.nombre || 'Sin nombre');
-    var tasks = obTasks(c).filter(function (t) {
-      var v = obVal(c, t.id);
-      if (onbFilter === 'cap') return t.tipo === 'cap';
-      if (onbFilter === 'acc') return t.tipo !== 'cap';
-      if (onbFilter === 'pend') return !v;
+    var o = obInfo(c), fin = !!c.obFin;
+    $('#onbTitle').textContent = c.nombre || 'Sin nombre';
+    $('#onbSub').replaceChildren(obPill(o), el('span', { class: 'sm', text: fin ? (c.obRes === 'abandono' ? 'Dejó el proceso' : 'Proceso completo') : 'Semana ' + Math.min(o.cur, 13) + ' de 13 · ' + fmtRange(obRange(o.g, Math.min(o.cur, 13))) }), c.responsable ? avatar(c.responsable) : null);
+    var i = onbOrder.indexOf(onbOpen);
+    $('#onbPrev').disabled = i <= 0; $('#onbNext').disabled = i < 0 || i >= onbOrder.length - 1;
+    $('#onbProg').replaceChildren(
+      bar(o.pct, fin ? 0 : o.expPct, 'Avance total'),
+      el('p', { class: 'ob-nums', text: o.pct + '% · ' + o.done + ' de ' + o.tot + ' objetivos' + (!fin && o.expPct > o.pct ? ' · debería ir en ' + o.expPct + '%' : '') }),
+      el('p', { class: 'ob-types' }, ['cap', 'acc', 'hito'].map(function (k) { var g = o[k]; return el('span', {}, icon(OB_ICO[k], 14), OB_TIPOS_PL[k] + ' ' + g[0] + '/' + g[1]); })));
+    ['plan', 'notas', 'datos'].forEach(function (t) { var b = $('#onbT-' + t); b.setAttribute('aria-selected', String(onbTab === t)); b.tabIndex = onbTab === t ? 0 : -1; b.classList.toggle('on', onbTab === t); });
+    body.setAttribute('aria-labelledby', 'onbT-' + onbTab);
+    body.replaceChildren(onbTab === 'plan' ? obPlanTab(c, o) : onbTab === 'notas' ? obNotesTab(c) : obDataTab(c, o));
+    obFoot(c, o);
+    if (onbScrollTo) {
+      var tgt = $('#wkb-' + onbScrollTo); onbScrollTo = 0;
+      if (tgt) { tgt.scrollIntoView({ block: 'start' }); tgt.focus({ preventScroll: true }); return; }
+    }
+    body.scrollTop = st;
+    if (af) { var n = body.querySelector('[data-ob="' + af + '"]'); if (n) n.focus({ preventScroll: true }); }
+  }
+
+  function obFoot(c, o) {
+    var f = $('#onbFoot'), fin = !!c.obFin, full = o.pct === 100;
+    var note = el('span', { class: 'foot-note' + (o.segLate ? ' warn' : '') },
+      o.segLate ? icon('alert', 14) : null,
+      fin ? '' : (o.seg ? 'Último seguimiento: ' + (o.segDays === 0 ? 'hoy' : 'hace ' + o.segDays + (o.segDays === 1 ? ' día' : ' días')) : 'Todavía no hay seguimientos'));
+    var btns = fin ? [el('button', { type: 'button', class: 'btn', text: 'Reabrir onboarding', onclick: function () { reopenOnb(c); } })]
+      : [el('button', { type: 'button', class: 'btn' + (full ? '' : ' primary'), text: 'Registrar seguimiento', onclick: function () { askSeguimiento(c); } }),
+        full ? el('button', { type: 'button', class: 'btn primary', text: 'Marcar como finalizado', onclick: function () { finishOnb(c); } }) : null];
+    f.replaceChildren.apply(f, [note].concat(btns).filter(Boolean));
+  }
+
+  /* ----- pestaña Plan ----- */
+  function obPlanTab(c, o) {
+    var filters = [['todo', 'Todo'], ['pend', 'Pendientes'], ['cap', 'Capacitaciones'], ['acc', 'Acciones'], ['hito', 'Hitos']];
+    var bar0 = el('div', { class: 'onb-filter', role: 'group', 'aria-label': 'Filtrar objetivos' }, filters.map(function (f) {
+      return el('button', { type: 'button', class: 'chip' + (onbFilter === f[0] ? ' on' : ''), 'aria-pressed': String(onbFilter === f[0]), text: f[1], 'data-ob': 'f-' + f[0], onclick: function () { onbFilter = f[0]; onbKeep = {}; fillOnb(); } });
+    }));
+    var shown = o.tasks.filter(function (t) {
+      if (onbFilter === 'pend') return (!t.done && !t.na) || onbKeep[t.id];
+      if (onbFilter === 'cap' || onbFilter === 'acc' || onbFilter === 'hito') return t.tipo === onbFilter;
       return true;
     });
-    var startIn = el('input', { type: 'date', value: o.start, 'aria-label': 'Fecha de inicio', onchange: function (e) { var v = validDate(e.target.value); if (v) patch(c.id, { obInicio: v }); } });
-    var whoSelEl = el('select', { 'aria-label': 'Responsable', onchange: function (e) { patch(c.id, { responsable: e.target.value }); } },
-      el('option', { value: '', text: 'Sin asignar' }), ['Eri', 'Vero', 'Rami'].map(function (n) { return el('option', { value: n, text: n }); }));
-    whoSelEl.value = c.responsable || '';
-    var top = el('div', { class: 'onb-top' },
-      el('label', { class: 'field' }, el('span', { text: 'Inicio del onboarding' }), startIn),
-      el('label', { class: 'field' }, el('span', { text: 'Responsable' }), whoSelEl),
-      el('div', { class: 'field' }, el('span', { text: 'Seguimiento semanal' }),
-        el('button', { type: 'button', class: 'btn', text: 'Registrar seguimiento hoy', onclick: function () { patch(c.id, { obSeg: todayStr() }); toast('Seguimiento registrado'); } }),
-        el('span', { class: 'sm', text: o.seg ? 'Último: ' + (o.segDays === 0 ? 'hoy' : 'hace ' + o.segDays + ' días') : 'Todavía no se registró' })));
-    var prog = el('div', { class: 'onb-prog' }, bar(o.pct),
-      el('p', { class: 'hint', text: o.pct + '% completo · ' + o.done + ' de ' + o.tot + ' tareas · Capacitación ' + o.cap[0] + '/' + o.cap[1] + ' · Acciones ' + o.acc[0] + '/' + o.acc[1] + (o.late ? ' · ' + o.late + ' vencidas' : '') }));
-    var fil = el('div', { class: 'onb-filter' }, [['todo', 'Todo'], ['pend', 'Pendientes'], ['cap', 'Capacitaciones'], ['acc', 'Acciones']].map(function (f) {
-      return el('button', { type: 'button', class: 'chip' + (onbFilter === f[0] ? ' on' : ''), 'aria-pressed': String(onbFilter === f[0]), text: f[1], onclick: function () { onbFilter = f[0]; fillOnb(); } });
-    }));
-    var groups = [], full = obTasks(c), curW = Math.max(1, Math.ceil(Math.max(o.day, 1) / 7)), byW = {};
-    tasks.forEach(function (t) { var w = obWeek(t); (byW[w] = byW[w] || []).push(t); });
-    Object.keys(byW).map(Number).sort(function (x, y) { return x - y; }).forEach(function (w) {
-      var list = byW[w], wl = full.filter(function (t) { return obWeek(t) === w; });
-      var tot = 0, dn = 0, lt = 0;
-      wl.forEach(function (t) { var v = obVal(c, t.id); if (v === 'na') return; tot++; if (v) dn++; else if (dayDiff(obDue(c, t)) < 0) lt++; });
-      var d1 = dayStr(new Date(parseDay(o.start).getTime() + (w - 1) * 7 * 864e5 + 36e5)), d2 = dayStr(new Date(parseDay(o.start).getTime() + (w * 7 - 1) * 864e5 + 36e5));
-      var open = onbWk[w] !== undefined ? onbWk[w] : (w === curW || lt > 0) && dn < tot;
-      groups.push(el('section', { class: 'ob-group' },
-        el('button', { type: 'button', class: 'wk-head', 'aria-expanded': String(open), 'data-ob': 'w-' + w, onclick: function () { onbWk[w] = !open; fillOnb(); } },
-          el('span', { class: 'wk-chev', text: open ? '▾' : '▸' }),
-          el('span', { class: 'wk-title' }, el('span', {}, el('b', { text: 'Semana ' + w }), el('span', { class: 'sm', text: ' · ' + fmtDay(d1) + ' al ' + fmtDay(d2) })), el('span', { class: 'wk-focus', text: OB_SEMANAS[w - 1] || 'Seguimiento' })),
-          w === curW && !c.obFin ? tag('today', 'Esta semana') : null,
-          lt ? tag('late', lt + ' vencida' + (lt > 1 ? 's' : '')) : (tot && dn === tot ? tag('ok', 'Completa') : null),
-          el('span', { class: 'sm wk-n', text: dn + '/' + tot })),
-        open ? list.map(function (t) { return obRow(c, t); }) : null));
+    var byW = {}; shown.forEach(function (t) { (byW[t.w] = byW[t.w] || []).push(t); });
+    var weeks = Object.keys(byW).map(Number).sort(function (a, b) { return a - b; });
+    var openAll = weeks.some(function (w) { return !isOpenWk(w, o); });
+    var tog = el('button', { type: 'button', class: 'btn ghost sm-btn', text: openAll ? 'Abrir todas' : 'Cerrar todas', onclick: function () { weeks.forEach(function (w) { onbWk[w] = openAll; }); fillOnb(); } });
+    var out = [el('div', { class: 'onb-fbar' }, bar0, tog)];
+    if (!weeks.length) out.push(el('p', { class: 'hint pad', text: 'No hay objetivos con este filtro.' }));
+    weeks.forEach(function (w) {
+      var list = byW[w].slice().sort(function (a, b) { return (a.done || a.na ? 1 : 0) - (b.done || b.na ? 1 : 0) || 0; });
+      var wl = o.tasks.filter(function (t) { return t.w === w && !t.na; });
+      var dn = wl.filter(function (t) { return t.done; }).length, lt = wl.filter(function (t) { return t.late; }).length;
+      var open = isOpenWk(w, o);
+      var focus = OB_SEMANAS[Math.min(w, 13) - 1] || 'Seguimiento';
+      out.push(el('section', { class: 'ob-group' },
+        el('h3', { class: 'wk' }, el('button', { type: 'button', id: 'wkb-' + w, class: 'wk-head', 'aria-expanded': String(open), 'aria-controls': 'wkl-' + w, 'data-ob': 'w-' + w, onclick: function () { onbWk[w] = !open; fillOnb(); } },
+          el('span', { class: 'wk-chev' + (open ? ' open' : '') }, icon('chev', 18)),
+          el('span', { class: 'wk-title' }, el('span', { class: 'wk-line' }, el('b', { text: 'Semana ' + w }), ' ', el('span', { class: 'sm', text: fmtRange(obRange(o.g, w)) })), el('span', { class: 'wk-focus', text: focus })),
+          w === o.cur && !c.obFin ? el('span', { class: 'tag today', text: 'Esta semana' }) : null,
+          lt ? el('span', { class: 'tag late', text: lt + (lt === 1 ? ' vencido' : ' vencidos') }) : (wl.length && dn === wl.length ? el('span', { class: 'tag ok', text: 'Completa' }) : null),
+          el('span', { class: 'sm wk-n', text: dn + '/' + wl.length }))),
+        open ? el('ul', { class: 'ob-list', id: 'wkl-' + w }, list.map(function (t) { return obRow(c, t); })) : null));
     });
-    if (!groups.length) groups.push(el('p', { class: 'hint', text: 'No hay tareas en este filtro.' }));
-    var tNew = el('input', { type: 'text', placeholder: 'Tarea extra para este agente', 'aria-label': 'Tarea extra', maxlength: '140' });
-    var tTipo = el('select', { 'aria-label': 'Tipo' }, el('option', { value: 'acc', text: 'Acción' }), el('option', { value: 'cap', text: 'Capacitación' }));
-    var tDue = el('input', { type: 'date', 'aria-label': 'Fecha límite' });
-    var add = el('div', { class: 'onb-add' }, tNew, tTipo, tDue,
-      el('button', { type: 'button', class: 'btn', text: 'Agregar', onclick: function () {
-        var tx = tNew.value.trim(); if (!tx) { tNew.focus(); return; }
-        var dv = validDate(tDue.value), dia = dv ? Math.max(0, Math.round((parseDay(dv) - parseDay(o.start)) / 864e5)) : 90;
-        var xs = (Array.isArray(c.obx) ? c.obx.slice() : []); xs.push({ id: 'x' + uid().slice(0, 6), texto: tx, tipo: tTipo.value, dia: dia });
-        patch(c.id, { obx: xs });
-      } }));
-    var body = el('div', { class: 'onb-body' }, top, prog, fil, groups, el('span', { class: 'label', text: 'Agregar tarea' }), add);
-    $('#modalBody').replaceChildren(body);
-    var act = $('#modalActions');
-    act.replaceChildren(
-      el('button', { type: 'button', class: 'btn ghost', text: 'Ver ficha y notas', onclick: function () { var id = c.id; closeModal(null); openSheet(id); } }),
-      c.obFin
-        ? el('button', { type: 'button', class: 'btn', text: 'Reabrir onboarding', onclick: function () { patch(c.id, { obFin: '' }); } })
-        : el('button', { type: 'button', class: 'btn' + (o.pct === 100 ? ' primary' : ''), text: 'Marcar como finalizado', onclick: function () { patch(c.id, { obFin: todayStr() }); toast('Onboarding de ' + (c.nombre || 'agente') + ' finalizado'); } }),
-      el('button', { type: 'button', class: 'btn primary', text: 'Cerrar', onclick: function () { closeModal(null); } }));
-    d.scrollTop = st;
-    if (af) { var n = d.querySelector('[data-ob="' + af + '"]'); if (n) n.focus({ preventScroll: true }); }
+    return el('div', { class: 'onb-plan' }, out);
+  }
+  function isOpenWk(w, o) {
+    if (onbWk[w] !== undefined) return onbWk[w];
+    var wl = o.tasks.filter(function (t) { return t.w === w && !t.na; });
+    var pend = wl.some(function (t) { return !t.done; });
+    return pend && (w === o.cur || wl.some(function (t) { return t.late; }));
   }
   function obRow(c, t) {
-    var v = obVal(c, t.id), na = v === 'na', done = !!v && !na;
-    var due = obDue(c, t), left = dayDiff(due);
-    var meta = [t.tema, OB_TIPOS[t.tipo]];
-    var chip = null;
-    if (done) chip = el('span', { class: 'sm', text: 'Hecha el ' + fmtDay(v) });
-    else if (na) chip = el('span', { class: 'sm', text: 'No aplica' });
-    else chip = tag(left < 0 ? 'late' : left <= 3 ? 'today' : 'muted', (left < 0 ? 'Venció el ' : 'Para el ') + fmtDay(due));
-    return el('div', { class: 'ob-row' + (done || na ? ' done' : '') },
-      el('input', { type: 'checkbox', checked: done, disabled: na, 'data-ob': 'k-' + t.id, 'aria-label': t.texto, onchange: function (e) { obSet(c, t.id, e.target.checked ? todayStr() : ''); } }),
-      el('div', { class: 'ob-main' },
-        el('span', { class: 'ob-text', text: t.texto }),
-        el('span', { class: 'ob-meta' }, meta.join(' · '), ' ', chip)),
-      el('button', { type: 'button', class: 'icon-btn ob-na', 'data-ob': 'n-' + t.id, text: na ? 'Volver a activar' : (t.extra ? 'Quitar' : 'No aplica'), onclick: function () {
-        if (t.extra) { patch(c.id, { obx: c.obx.filter(function (x) { return x.id !== t.id; }) }); return; }
-        obSet(c, t.id, na ? '' : 'na');
-      } }));
+    var cls = 'ob-row' + (t.done ? ' done' : '') + (t.na ? ' na' : '') + (t.late ? ' late' : '') + (t.tipo === 'hito' ? ' hito' : '');
+    var cb = el('input', { type: 'checkbox', checked: t.done, disabled: t.na, 'data-ob': 'k-' + t.id, onchange: function (e) { obToggle(c, t, e.target.checked); } });
+    var due;
+    if (t.done) due = el('span', { class: 'sm', text: 'Hecha el ' + fmtDay(t.v) + (t.by ? ' por ' + t.by : '') + (t.v > t.due ? ' · con atraso' : '') });
+    else if (t.na) due = el('span', { class: 'sm', text: 'No aplica' });
+    else due = el('span', { class: 'due' + (t.late ? ' late' : t.left <= 3 ? ' soon' : ''), title: fmtDT(t.due + 'T00:00').split(' · ')[0], text: dueText(t) });
+    var extras = [];
+    if (t.m.resp) extras.push(el('span', { class: 'ob-chip', text: t.m.resp === 'El agente' ? 'A cargo: el agente' : 'A cargo: ' + t.m.resp }));
+    if (t.m.link) extras.push(el('a', { class: 'ob-chip link', href: t.m.link, target: '_blank', rel: 'noopener', text: linkLabel(t.m.link) }));
+    var li = el('li', { class: cls },
+      el('label', { class: 'ob-lab' }, cb,
+        el('span', { class: 'ob-main' },
+          el('span', { class: 'ob-text' }, el('span', { class: 'ob-ico', title: OB_TIPOS[t.tipo] + (t.tema && t.tema !== 'Extra' ? ' · ' + t.tema : '') }, icon(OB_ICO[t.tipo], 16)), t.texto),
+          el('span', { class: 'ob-meta' }, due, extras))),
+      el('button', { type: 'button', class: 'icon-btn ob-more', 'aria-label': 'Más opciones: ' + short(t.texto, 40), 'aria-haspopup': 'menu', 'aria-expanded': String(onbMenu === t.id), 'data-ob': 'm-' + t.id, onclick: function () { onbMenu = onbMenu === t.id ? null : t.id; fillOnb(); } }, icon('dots', 18)));
+    if (t.meta) li.append(obCounter(c, t));
+    if (t.m.nota) li.append(el('p', { class: 'ob-note', text: t.m.nota }));
+    if (onbMenu === t.id) li.append(el('div', { class: 'ob-menu', role: 'menu' },
+      el('button', { type: 'button', role: 'menuitem', class: 'menu-item', text: 'Nota, link, responsable o fecha…', 'data-ob': 'mi-' + t.id, onclick: function () { onbEdit = t.id; onbMenu = null; fillOnb(); } }),
+      el('button', { type: 'button', role: 'menuitem', class: 'menu-item', text: t.na ? 'Volver a activar' : 'Marcar como «No aplica»', onclick: function () { onbMenu = null; obNa(c, t); } }),
+      t.extra ? el('button', { type: 'button', role: 'menuitem', class: 'menu-item danger', text: 'Quitar este objetivo', onclick: function () { onbMenu = null; obRemoveExtra(c, t); } }) : null));
+    if (onbEdit === t.id) li.append(obEditor(c, t));
+    return li;
+  }
+  function linkLabel(u) { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return 'Link'; } }
+  function obCounter(c, t) {
+    var k = t.k, n = t.meta, pct = Math.min(100, Math.round(k * 100 / n));
+    var inp = el('input', { type: 'number', min: '0', inputmode: 'numeric', value: String(k), 'aria-label': 'Cantidad hecha: ' + short(t.texto, 40), 'data-ob': 'c-' + t.id, onchange: function (e) { obSetCount(c, t, parseInt(e.target.value, 10) || 0); } });
+    return el('div', { class: 'ob-count' },
+      el('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Restar uno', text: '−', onclick: function () { obSetCount(c, t, Math.max(0, k - 1)); } }),
+      inp, el('span', { class: 'sm', text: 'de ' + n }),
+      el('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Sumar uno', text: '+', onclick: function () { obSetCount(c, t, k + 1); } }),
+      el('span', { class: 'ob-cbar' }, bar(pct, 0, 'Cantidad')));
+  }
+  function obEditor(c, t) {
+    var resp = el('select', { 'aria-label': 'A cargo de' }, el('option', { value: '', text: 'Sin asignar' }), ['El agente', 'Eri', 'Vero', 'Rami'].map(function (n) { return el('option', { value: n, text: n }); }));
+    resp.value = t.m.resp || '';
+    var fecha = el('input', { type: 'date', value: validDate(t.m.fecha) || t.due, 'aria-label': 'Fecha límite' });
+    var link = el('input', { type: 'url', placeholder: 'https://…', value: t.m.link || '', 'aria-label': 'Link', maxlength: '300' });
+    var nota = el('input', { type: 'text', placeholder: 'Nota breve', value: t.m.nota || '', 'aria-label': 'Nota', maxlength: '200' });
+    return el('div', { class: 'ob-edit' },
+      el('label', { class: 'field' }, el('span', { text: 'A cargo de' }), resp),
+      el('label', { class: 'field' }, el('span', { text: 'Fecha límite' }), fecha),
+      el('label', { class: 'field wide' }, el('span', { text: 'Link (por ejemplo, el Instagram)' }), link),
+      el('label', { class: 'field wide' }, el('span', { text: 'Nota' }), nota),
+      el('div', { class: 'ob-edit-act' },
+        el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { onbEdit = null; fillOnb(); } }),
+        el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () {
+          var m = {}, u = str(link.value);
+          if (resp.value) m.resp = resp.value;
+          if (u) m.link = /^https?:\/\//i.test(u) ? u : 'https://' + u;
+          if (str(nota.value)) m.nota = str(nota.value).slice(0, 200);
+          var fv = validDate(fecha.value);
+          if (fv && fv !== t.due) m.fecha = fv;
+          var f = {}; f['obm_' + t.id] = m;
+          onbEdit = null; patch(c.id, f);
+        } })));
+  }
+
+  function obToggle(c, t, on) {
+    var prev = { v: c['ob_' + t.id] || '', p: c['obp_' + t.id] || '', k: c['obk_' + t.id] || 0 };
+    var f = {}; f['ob_' + t.id] = on ? todayStr() : ''; f['obp_' + t.id] = on ? meName() : '';
+    if (t.meta) f['obk_' + t.id] = on ? Math.max(t.k, t.meta) : Math.min(t.k, Math.max(0, t.meta - 1));
+    onbKeep[t.id] = true;
+    patch(c.id, f);
+    toast((on ? 'Hecho: ' : 'Reabierto: ') + short(t.texto), { ms: 5000, action: { label: 'Deshacer', fn: function () { var g = {}; g['ob_' + t.id] = prev.v; g['obp_' + t.id] = prev.p; if (t.meta) g['obk_' + t.id] = prev.k; patch(c.id, g); } } });
+  }
+  function obSetCount(c, t, k) {
+    k = Math.max(0, Math.min(99999, k));
+    var f = {}; f['obk_' + t.id] = k;
+    if (k >= t.meta && !t.done) { f['ob_' + t.id] = todayStr(); f['obp_' + t.id] = meName(); }
+    else if (k < t.meta && t.done) { f['ob_' + t.id] = ''; f['obp_' + t.id] = ''; }
+    onbKeep[t.id] = true;
+    patch(c.id, f);
+  }
+  function obNa(c, t) {
+    var prev = c['ob_' + t.id] || '', f = {}; f['ob_' + t.id] = t.na ? '' : 'na'; f['obp_' + t.id] = '';
+    onbKeep[t.id] = true;
+    patch(c.id, f);
+    toast((t.na ? 'Reactivado: ' : 'No aplica: ') + short(t.texto), { ms: 5000, action: { label: 'Deshacer', fn: function () { var g = {}; g['ob_' + t.id] = prev; patch(c.id, g); } } });
+  }
+  function obRemoveExtra(c, t) {
+    var prev = (Array.isArray(c.obx) ? c.obx : []).slice();
+    patch(c.id, { obx: prev.filter(function (x) { return x.id !== t.id; }) });
+    toast('Se quitó: ' + short(t.texto), { ms: 6000, action: { label: 'Deshacer', fn: function () { patch(c.id, { obx: prev }); } } });
+  }
+
+  /* ----- pestaña Notas ----- */
+  function obNotesTab(c) {
+    var ta = el('textarea', { rows: '3', placeholder: 'Anotá algo sobre su incorporación', 'aria-label': 'Nueva nota', maxlength: '2000' });
+    var all = notesOf(c).slice().reverse(), list;
+    if (coll && !notesReady) list = el('p', { class: 'hint', text: 'Cargando notas…' });
+    else if (!all.length) list = el('p', { class: 'hint', text: 'Todavía no hay notas.' });
+    else list = el('ol', { class: 'timeline' }, all.slice(0, 60).map(function (n) {
+      return el('li', { class: n.tipo === 'estado' ? 'estado' : '' }, el('time', { datetime: n.t, text: fmtStamp(n.t) + (n.autor && n.autor !== me.id ? ' · ' + authorLabel(n.autor) : '') }), el('span', { class: 'txt', text: n.texto }));
+    }));
+    return el('div', { class: 'onb-pane' },
+      el('label', { class: 'field' }, el('span', { text: 'Nueva nota' }), ta),
+      el('div', { class: 'row-end' }, el('button', { type: 'button', class: 'btn primary', text: 'Guardar nota', onclick: function () { var tx = str(ta.value); if (!tx) { ta.focus(); return; } pushNote(c.id, { t: new Date().toISOString(), tipo: 'nota', texto: tx }); ta.value = ''; toast('Nota guardada'); } })),
+      el('span', { class: 'label', text: 'Historial' }), list);
+  }
+
+  /* ----- pestaña Datos ----- */
+  function obDataTab(c, o) {
+    var fin = !!c.obFin;
+    var startIn = el('input', { type: 'date', value: o.start, 'aria-label': 'Fecha de inicio' });
+    startIn.addEventListener('change', async function (e) {
+      var v = validDate(e.target.value);
+      if (!v || v === o.start) { fillOnb(); return; }
+      var ok = await confirmBox('¿Cambiar la fecha de inicio?', 'Todas las fechas límite de ' + (c.nombre || 'este agente') + ' se mueven con la nueva fecha. Lo ya tildado se mantiene.', 'Cambiar fecha', false);
+      if (ok) patch(c.id, { obInicio: v }); else fillOnb();
+    });
+    var who = el('select', { 'aria-label': 'Responsable', onchange: function (e) { patch(c.id, { responsable: e.target.value }); } }, el('option', { value: '', text: 'Sin asignar' }), EQUIPO.map(function (n) { return el('option', { value: n, text: n }); }));
+    who.value = c.responsable || '';
+    var out = [
+      el('label', { class: 'field' }, el('span', { text: 'Inicio del onboarding' }), startIn, el('span', { class: 'sm', text: 'Semana 1: ' + fmtRange(obRange(o.g, 1)) + '. Desde ahí, semanas de lunes a domingo.' })),
+      el('label', { class: 'field' }, el('span', { text: 'Responsable del onboarding' }), who),
+      el('div', { class: 'field' }, el('span', { text: 'Seguimiento semanal' }),
+        el('p', { class: 'hint', text: o.seg ? 'Último: ' + (o.segDays === 0 ? 'hoy' : 'hace ' + o.segDays + ' días') + ' (' + fmtDay(o.seg) + ')' : 'Todavía no se registró ninguno.' }),
+        fin ? null : el('button', { type: 'button', class: 'btn', text: 'Registrar seguimiento', onclick: function () { askSeguimiento(c); } })),
+      el('div', { class: 'field' }, el('span', { text: 'Cerrar el proceso' }),
+        fin ? el('p', { class: 'hint', text: (c.obRes === 'abandono' ? 'No continuó (' + fmtDay(validDate(c.obFin) || todayStr()) + ')' + (c.obMotivo ? ': ' + c.obMotivo : '') : 'Finalizado el ' + fmtDay(validDate(c.obFin) || todayStr())) + '.' }) : null,
+        el('div', { class: 'row-wrap' }, fin ? el('button', { type: 'button', class: 'btn', text: 'Reabrir onboarding', onclick: function () { reopenOnb(c); } }) : [
+          el('button', { type: 'button', class: 'btn', text: 'Marcar como finalizado', onclick: function () { finishOnb(c); } }),
+          el('button', { type: 'button', class: 'btn danger', text: 'No continuó…', onclick: function () { dropOnb(c); } })])),
+      el('div', { class: 'field' }, el('span', { text: 'Más' }),
+        el('button', { type: 'button', class: 'btn ghost', text: 'Ver la ficha del candidato', onclick: function () { var id = c.id; lastFocus = null; openSheet(id); } }),
+        el('p', { class: 'hint', text: 'Plan de onboarding versión ' + (obPlanDoc ? obPlanDoc.version : 1) + ' · ' + obPlan().length + ' objetivos.' }))
+    ];
+    return el('div', { class: 'onb-pane' }, out);
+  }
+
+  function reopenOnb(c) { patch(c.id, { obFin: '', obRes: '', obMotivo: '' }); toast('Onboarding reabierto'); }
+  async function finishOnb(c) {
+    var o = obInfo(c);
+    if (o.pct < 100) { var ok = await confirmBox('¿Finalizar el onboarding?', (c.nombre || 'El agente') + ' tiene completo el ' + o.pct + '% (' + o.done + ' de ' + o.tot + ' objetivos). Podés reabrirlo después.', 'Finalizar', false); if (!ok) return; }
+    patch(c.id, { obFin: todayStr(), obRes: 'completo', obMotivo: '' });
+    toast('Onboarding de ' + (c.nombre || 'agente') + ' finalizado', { action: { label: 'Deshacer', fn: function () { patch(c.id, { obFin: '', obRes: '' }); } } });
+  }
+  function dropOnb(c) {
+    var ta = el('textarea', { rows: '3', placeholder: 'Motivo (opcional)', 'aria-label': 'Motivo', maxlength: '300' });
+    showModal('¿' + (c.nombre || 'El agente') + ' no continúa?', el('div', { class: 'field' }, el('p', { class: 'hint', text: 'Se saca de la lista activa y queda en «finalizados». Podés reabrirlo después.' }), ta), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn danger', text: 'Confirmar', onclick: function () { closeModal(str(ta.value)); } })
+    ]).then(function (v) {
+      if (v === null) return;
+      patch(c.id, { obFin: todayStr(), obRes: 'abandono', obMotivo: v });
+      toast((c.nombre || 'El agente') + ' quedó como «No continuó»', { action: { label: 'Deshacer', fn: function () { patch(c.id, { obFin: '', obRes: '', obMotivo: '' }); } } });
+    });
+  }
+  function askSeguimiento(c) {
+    var d = el('input', { type: 'date', value: todayStr(), 'aria-label': 'Fecha del seguimiento' });
+    var tx = el('textarea', { rows: '3', placeholder: '¿Qué se habló? (opcional)', 'aria-label': 'Notas del seguimiento', maxlength: '1500' });
+    var nxt = el('input', { type: 'date', value: addDays(7), 'aria-label': 'Fecha del próximo seguimiento' });
+    var cb = el('input', { type: 'checkbox' });
+    var body = el('div', { class: 'field' },
+      el('label', { class: 'field' }, el('span', { text: 'Fecha' }), d),
+      el('label', { class: 'field' }, el('span', { text: 'Qué se habló' }), tx),
+      el('label', { class: 'check' }, cb, 'Agendar el próximo seguimiento en Google Calendar'),
+      el('label', { class: 'field' }, el('span', { text: 'Próximo seguimiento' }), nxt));
+    showModal('Seguimiento de ' + (c.nombre || 'agente'), body, [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () { closeModal({ d: validDate(d.value) || todayStr(), t: str(tx.value), n: cb.checked ? validDate(nxt.value) : '' }); } })
+    ]).then(function (r) {
+      if (!r) return;
+      patch(c.id, { obSeg: r.d });
+      pushNote(c.id, { t: new Date().toISOString(), tipo: 'nota', texto: 'Seguimiento de onboarding' + (r.t ? ': ' + r.t : '.') });
+      toast('Seguimiento registrado');
+      if (r.n) {
+        var sp = contactSpec(c, r.n);
+        if (sp) { sp.title = 'Seguimiento de onboarding · ' + (c.nombre || 'agente') + ' (Coldwell Banker Juntos)'; sp.details = detailsOf(c, ['Seguimiento semanal del onboarding']); openGcal(sp); }
+      }
+    });
+  }
+
+  /* ----- editor del plan ----- */
+  function showPlanEditor() {
+    var rows = obPlan().map(function (t) { return { id: t.id, tema: t.tema, tipo: t.tipo, dia: t.dia, texto: t.texto, meta: t.meta || 0, w: Math.max(1, Math.ceil(t.dia / 7)), w0: Math.max(1, Math.ceil(t.dia / 7)) }; });
+    var list = el('div', { class: 'pe-list' });
+    function draw() {
+      list.replaceChildren.apply(list, rows.map(function (r, i) {
+        var tx = el('input', { type: 'text', value: r.texto, 'aria-label': 'Objetivo', maxlength: '200', oninput: function (e) { r.texto = e.target.value; } });
+        var tp = el('select', { 'aria-label': 'Tipo', onchange: function (e) { r.tipo = e.target.value; } }, ['cap', 'acc', 'hito'].map(function (k) { return el('option', { value: k, text: OB_TIPOS[k] }); })); tp.value = r.tipo;
+        var wk = el('select', { 'aria-label': 'Semana', onchange: function (e) { r.w = +e.target.value; } }, Array.apply(null, Array(13)).map(function (_, j) { return el('option', { value: String(j + 1), text: 'Semana ' + (j + 1) }); })); wk.value = String(r.w);
+        var tm = el('select', { 'aria-label': 'Tema', onchange: function (e) { r.tema = e.target.value; } }, OB_TEMAS.map(function (k) { return el('option', { value: k, text: k }); })); tm.value = r.tema;
+        var mt = el('input', { type: 'number', min: '0', placeholder: 'Meta', value: r.meta ? String(r.meta) : '', 'aria-label': 'Meta de cantidad (opcional)', oninput: function (e) { r.meta = parseInt(e.target.value, 10) || 0; } });
+        return el('div', { class: 'pe-row' }, tx, el('div', { class: 'pe-opts' }, tp, wk, tm, mt, el('button', { type: 'button', class: 'btn danger sm-btn', text: 'Quitar', onclick: function () { rows.splice(i, 1); draw(); } })));
+      }));
+    }
+    draw();
+    var body = el('div', { class: 'pe' },
+      el('p', { class: 'hint', text: 'Los cambios valen para todos los agentes en onboarding, nuevos y actuales. Lo que ya tildaron se mantiene. «Meta» agrega un contador (por ejemplo, 100 contactos).' }),
+      list,
+      el('button', { type: 'button', class: 'btn', text: 'Agregar objetivo', onclick: function () { rows.push({ id: 'p' + uid().slice(1, 7), tema: 'Extra', tipo: 'acc', dia: 7, texto: '', meta: 0, w: 1, w0: 0 }); draw(); var inp = list.querySelector('.pe-row:last-child input'); if (inp) inp.focus(); } }));
+    $('#modal').classList.add('wide');
+    showModal('Plan de onboarding', body, [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Restaurar el original', onclick: function () { closeModal('reset'); } }),
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar plan', onclick: function () { closeModal('save'); } })
+    ]).then(async function (r) {
+      $('#modal').classList.remove('wide');
+      if (r === 'reset') { var ok = await confirmBox('¿Restaurar el plan original?', 'Se pierden los cambios que hiciste al plan.', 'Restaurar', true); if (ok) { savePlan(OB_DEFAULT.map(function (t) { return Object.assign({}, t); })); toast('Plan restaurado'); } return; }
+      if (r !== 'save') return;
+      var out = rows.filter(function (x) { return str(x.texto); }).map(function (x) {
+        return { id: x.id, tema: x.tema, tipo: x.tipo, texto: str(x.texto), meta: x.meta || 0, dia: x.w === x.w0 ? x.dia : (x.w <= 1 ? 7 : x.w * 7) };
+      });
+      if (!out.length) { toast('El plan no puede quedar vacío.', { kind: 'error' }); return; }
+      savePlan(out); toast('Plan guardado');
+    });
   }
 
   function setView(v) {
@@ -1992,18 +2472,20 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     f.hidden = !sample;
   }
   function showPanel(which) {
-    var other = which === 'sheet' ? 'chat' : 'sheet';
-    if (which === 'sheet') stopMic(); else stopNotes();
-    $('#' + other).hidden = true;
+    ['sheet', 'chat', 'onbp'].forEach(function (x) { if (x !== which) $('#' + x).hidden = true; });
+    if (which === 'sheet') stopMic(); else if (which === 'chat') stopNotes();
+    if (which !== 'onbp') { onbOpen = null; try { if (history.state && history.state.onb) history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
     var p = $('#' + which);
     p.hidden = false;
     p.setAttribute('aria-modal', String(isMobile()));
     document.body.classList.add('docked', 'panel-open');
     if (isMobile()) { $('#app').inert = true; document.body.classList.add('lock'); }
   }
-  function closePanels() {
+  function closePanels(noHist) {
     stopMic(); stopNotes(); closeMenu(true);
-    $('#sheet').hidden = true; $('#chat').hidden = true;
+    $('#sheet').hidden = true; $('#chat').hidden = true; $('#onbp').hidden = true;
+    var hadOnb = !!onbOpen; onbOpen = null; onbMenu = null; onbEdit = null;
+    if (hadOnb && !noHist) { try { if (history.state && history.state.onb) history.back(); } catch (e) {} }
     document.body.classList.remove('docked', 'panel-open', 'lock');
     $('#app').inert = false;
     openId = null; isNew = false; focusVal = {};
@@ -2476,7 +2958,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var data = { version: 1, exportado: new Date().toISOString(), candidatos: all.map(function (r) { var o = clone(r.c); delete o.notas; o.notas = r.notes; return o; }) };
     await saveFile('respaldo-embudo-' + todayStr() + '.json', JSON.stringify(data, null, 1));
   }
-  var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'responsable', 'editor', 'entrevistadoEl', 'incorporadoEl', 'obInicio', 'obSeg', 'obFin', 'obx'];
+  var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'responsable', 'editor', 'entrevistadoEl', 'incorporadoEl', 'obInicio', 'obSeg', 'obFin', 'obRes', 'obMotivo', 'obx'];
   $('#importFile').addEventListener('change', function (e) {
     var f = e.target.files && e.target.files[0];
     e.target.value = '';
@@ -2500,7 +2982,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
         var id = str(src.id) || newId();
         var d = {};
         KEEP.forEach(function (k) { if (src[k] !== undefined) d[k] = src[k]; });
-        Object.keys(src).forEach(function (k) { if (/^ob_/.test(k) && src[k]) d[k] = src[k]; });
+        Object.keys(src).forEach(function (k) { if (/^ob[mkp]?_/.test(k) && src[k] !== undefined && src[k] !== '') d[k] = src[k]; });
         if (!d.nombre) throw new Error('sin nombre');
         d.estado = stage(d.estado) ? d.estado : (d.estado === 'nuevo' ? 'coordinar' : 'coordinar');
         var notes = Array.isArray(src.notas) ? src.notas : [];
@@ -2709,6 +3191,68 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
           return o;
         }
       }
+      ,
+      {
+        name: 'ver_onboarding',
+        description: 'Muestra el onboarding de los agentes incorporados (candidatos en la etapa "se-suma"). Sin id devuelve el resumen de todos (avance, vencidos, seguimiento). Con id devuelve además los objetivos pendientes con su id, para poder marcarlos.',
+        inputSchema: { type: 'object', properties: { id: { type: 'string', description: 'id del candidato (opcional)' } } },
+        execute: function (i) {
+          if (!str(i.id)) {
+            return cands.filter(function (c) { return c.estado === 'se-suma' && !c.obFin; }).map(function (c) {
+              var o = obInfo(c);
+              return { id: c.id, nombre: c.nombre || '', responsable: c.responsable || '', semana: Math.min(o.cur, 13), avancePct: o.pct, deberiaIrEnPct: o.expPct, vencidos: o.late, ultimoSeguimiento: o.seg || null, sinSeguimientoReciente: o.segLate };
+            });
+          }
+          var c = need(i.id);
+          if (c.estado !== 'se-suma') throw new Error('Ese candidato no está en «Se incorporó».');
+          var o = obInfo(c);
+          return { id: c.id, nombre: c.nombre || '', avancePct: o.pct, hechos: o.done, total: o.tot, vencidos: o.late, ultimoSeguimiento: o.seg || null,
+            pendientes: o.tasks.filter(function (t) { return !t.done && !t.na; }).slice(0, 40).map(function (t) { return { id: t.id, objetivo: t.texto, tipo: t.tipo, vence: t.due, vencido: t.late, meta: t.meta || undefined, cantidad: t.meta ? t.k : undefined }; }) };
+        }
+      },
+      {
+        name: 'marcar_objetivo_onboarding',
+        description: 'Marca un objetivo del onboarding de un agente incorporado como hecho, pendiente o no_aplica. Si el objetivo tiene meta de cantidad (por ejemplo 100 contactos) se puede pasar cantidad. Usá antes ver_onboarding con id para conocer los ids.',
+        inputSchema: { type: 'object', required: ['id', 'objetivo'], properties: {
+          id: { type: 'string', description: 'id del candidato' },
+          objetivo: { type: 'string', description: 'id del objetivo (lo más seguro) o parte de su texto' },
+          estado: { type: 'string', enum: ['hecho', 'pendiente', 'no_aplica'] },
+          cantidad: { type: 'number', description: 'Cantidad lograda, solo para objetivos con meta' }
+        } },
+        execute: function (i) {
+          var c = need(i.id);
+          if (c.estado !== 'se-suma') throw new Error('Ese candidato no está en «Se incorporó».');
+          var tasks = obInfo(c).tasks, q = norm(i.objetivo), hits = tasks.filter(function (t) { return t.id === str(i.objetivo); });
+          if (!hits.length) hits = tasks.filter(function (t) { return norm(t.texto).indexOf(q) >= 0; });
+          if (!hits.length) throw new Error('No encontré ese objetivo. Usá ver_onboarding con el id del candidato.');
+          if (hits.length > 1) throw new Error('Hay varios objetivos que coinciden: ' + hits.slice(0, 5).map(function (t) { return t.id + ' = ' + t.texto; }).join('; ') + '. Elegí uno por id.');
+          var t = hits[0], f = {};
+          if (t.meta && i.cantidad != null && !i.estado) { obSetCount(c, t, Math.round(+i.cantidad) || 0); }
+          else {
+            var est = i.estado || 'hecho';
+            if (est === 'hecho') { f['ob_' + t.id] = todayStr(); f['obp_' + t.id] = meName(); if (t.meta) f['obk_' + t.id] = Math.max(t.k, i.cantidad != null ? Math.round(+i.cantidad) : t.meta); }
+            else if (est === 'no_aplica') { f['ob_' + t.id] = 'na'; f['obp_' + t.id] = ''; }
+            else { f['ob_' + t.id] = ''; f['obp_' + t.id] = ''; if (t.meta && i.cantidad != null) f['obk_' + t.id] = Math.round(+i.cantidad) || 0; }
+            patch(c.id, f);
+          }
+          chg('Onboarding de ' + (c.nombre || 'agente') + ': ' + short(t.texto, 60) + ' → ' + (i.estado || (i.cantidad != null ? i.cantidad + ' de ' + t.meta : 'hecho')), c.id);
+          return { ok: true, objetivo: t.texto };
+        }
+      },
+      {
+        name: 'registrar_seguimiento_onboarding',
+        description: 'Registra la reunión de seguimiento semanal de un agente incorporado, con una nota opcional de lo hablado.',
+        inputSchema: { type: 'object', required: ['id'], properties: { id: { type: 'string' }, nota: { type: 'string' }, fecha: { type: 'string', description: 'YYYY-MM-DD; por defecto hoy' } } },
+        execute: function (i) {
+          var c = need(i.id);
+          if (c.estado !== 'se-suma') throw new Error('Ese candidato no está en «Se incorporó».');
+          var d = validDate(i.fecha) || todayStr();
+          patch(c.id, { obSeg: d });
+          pushNote(c.id, { t: new Date().toISOString(), tipo: 'nota', texto: 'Seguimiento de onboarding' + (str(i.nota) ? ': ' + str(i.nota) : '.') });
+          chg('Seguimiento de onboarding de ' + (c.nombre || 'agente') + ' · ' + fmtDay(d), c.id);
+          return { ok: true };
+        }
+      }
     ];
   }
 
@@ -2736,6 +3280,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
       '- Origen: Talentum, Referido Asesores, Referido Coldwell u Otro; solo si el usuario lo dijo.',
       '- Nunca inventes datos que el usuario no dijo. No podés borrar candidatos ni notas.',
       '- Si el usuario pregunta algo sobre un candidato, usá ver_candidato y respondé.',
+      '- Onboarding: los candidatos en "se-suma" siguen un plan de 90 días. Para avances ("a Lucía ya le cargó los 50 contactos") usá ver_onboarding con id y después marcar_objetivo_onboarding; para preguntas como "quién está atrasado" usá ver_onboarding sin id; para una reunión de seguimiento usá registrar_seguimiento_onboarding.',
       '- Respondé en español rioplatense, en una a tres oraciones, sin markdown ni listas, confirmando qué hiciste (nombre, etapa, fecha) o qué necesitás saber.',
       '',
       'Hoy es ' + hoy + '.',
@@ -2890,8 +3435,22 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     var m = $('#menu');
     if (!m.hidden) { closeMenu(); return; }
     if ($('#modal').open) return;
-    if (!$('#sheet').hidden || !$('#chat').hidden) closePanels();
+    if (onbMenu || onbEdit) { onbMenu = null; onbEdit = null; fillOnb(); return; }
+    if (!$('#sheet').hidden || !$('#chat').hidden || !$('#onbp').hidden) closePanels();
   });
+  $('#onbClose').addEventListener('click', function () { closePanels(); });
+  $('#onbBack').addEventListener('click', function () { closePanels(); });
+  $('#onbPrev').addEventListener('click', function () { onbNav(-1); });
+  $('#onbNext').addEventListener('click', function () { onbNav(1); });
+  ['plan', 'notas', 'datos'].forEach(function (t) { $('#onbT-' + t).addEventListener('click', function () { setTab(t); }); });
+  $('.onb-tabs').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var ts = ['plan', 'notas', 'datos'], i = ts.indexOf(onbTab) + (e.key === 'ArrowRight' ? 1 : -1);
+    if (i < 0 || i > 2) return;
+    setTab(ts[i]); $('#onbT-' + ts[i]).focus();
+  });
+  document.addEventListener('click', function (e) { if (onbMenu && !e.target.closest('.ob-menu') && !e.target.closest('.ob-more')) { onbMenu = null; fillOnb(); } });
+  window.addEventListener('popstate', function (e) { if (onbOpen && !(e.state && e.state.onb)) closePanels(true); });
   window.addEventListener('offline', function () { toast('Sin conexión. Los cambios pueden no guardarse hasta que vuelva.', { kind: 'error', sticky: true }); });
   window.addEventListener('online', function () { toast('La conexión volvió.'); });
 
@@ -2908,6 +3467,8 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
     if (!db) { fallbackLocal(); return; }
     coll = db.collection('candidatos');
     eqColl = db.collection('equipo');
+    obPlanDoc = null; planColl = db.collection('planes');
+    planColl.onSnapshot(function (sn) { var f = null; sn.docs.forEach(function (d) { if (d.id === 'onboarding') f = sanPlan(clone(d.data() || {})); }); obPlanDoc = f; render(); }, function () {});
     eqColl.onSnapshot(function (sn) {
       var t = {};
       sn.docs.forEach(function (d) { var o = clone(d.data() || {}); if (o.email) t[d.id] = o.email; });
@@ -2940,6 +3501,7 @@ fieldset.who { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap;
   document.querySelectorAll('[data-icon]').forEach(function (n) { n.replaceWith(icon(n.getAttribute('data-icon'), +n.getAttribute('data-size') || 18)); });
   collapsed = loadCols();
   loadTeam();
+  loadPlanLocal();
   view = lsGet(VIEW_KEY) === 'cal' ? 'cal' : lsGet(VIEW_KEY) === 'onb' ? 'onb' : 'tablero';
   calMode = lsGet(VIEW_KEY + '-mode') === 'mes' ? 'mes' : 'semana';
   document.querySelectorAll('.vbtn[data-v]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-v') === view)); });
