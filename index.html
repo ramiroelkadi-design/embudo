@@ -712,6 +712,8 @@ button.g-tr:hover { background: var(--surface-2); }
 .g-sec > textarea { width: 100%; padding: 10px 12px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; resize: vertical; min-height: 84px; }
 .g-dl { display: block; }
 .g-dl input { width: 100%; padding: 10px 12px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.g-baja { display: flex; flex-direction: column; gap: 8px; }
+.g-baja p { margin: 0; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -4853,7 +4855,8 @@ button.g-tr:hover { background: var(--surface-2); }
     else if (gOpen.tab === 'ops') aseOps(a, s, y);
     else aseResumen(a, s, y);
     if (isNew) gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }), el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }), el('button', { type: 'button', class: 'btn primary', text: 'Guardar asesor', onclick: saveNewAse })]);
-    else gFoot([]);
+    else gFoot([el('span', { class: 'foot-note', text: d.actualizado ? 'Guardado ' + ago(d.actualizado) + (d.editorNombre ? ' por ' + d.editorNombre : '') : '' }),
+      d.activo === false ? el('button', { type: 'button', class: 'btn', text: 'Reincorporar', onclick: function () { aseReincorporar(a); } }) : el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja…', onclick: function () { aseBaja(a); } })]);
   }
   function aseResumen(a, s, y) {
     var now = new Date().getFullYear();
@@ -4902,8 +4905,6 @@ button.g-tr:hover { background: var(--surface-2); }
     var set = gSetter('asesores', function (f) { if ('activo' in f || 'apodo' in f || 'nombre' in f) { gFill(); render(); } });
     var y = new Date().getFullYear(), obj = d.objetivos || {};
     function setObj(yy) { return function (f) { var o = Object.assign({}, gRec() ? (gRec().objetivos || {}) : (gOpen.draft.objetivos || {})); if (f.v == null) delete o[yy]; else o[yy] = f.v; set({ objetivos: o }); }; }
-    var act = el('input', { type: 'checkbox' }); act.checked = d.activo !== false;
-    act.addEventListener('change', function () { set({ activo: act.checked, baja: act.checked ? '' : todayStr() }); });
     gBody([el('div', { class: 'g-pane' },
       sect('Datos personales', [
         el('div', { class: 'grid' },
@@ -4921,13 +4922,45 @@ button.g-tr:hover { background: var(--surface-2); }
           fld('Fee mensual (U$S)', inNum(d.fee, set, 'fee'))),
         el('div', { class: 'grid' }, [y - 1, y, y + 1].map(function (yy) { return fld('Objetivo ' + yy + ' (U$S)', inNum(obj[yy], setObj(String(yy)), 'v')); })),
         el('p', { class: 'sm', text: 'El objetivo es de facturación bruta (comisión total de sus operaciones). Mes a mes se reparte con la estacionalidad de ⋯ → Ajustes de gestión.' })]),
-      sect('Estado', [el('label', { class: 'check' }, act, 'Activo en la oficina' + (d.activo === false && d.baja ? ' (baja el ' + dmy(d.baja) + ')' : '')),
-        fld('Notas', inArea(d.notas, set, 'notas'))]),
+      isNew ? sect('Notas', [fld('Notas', inArea(d.notas, set, 'notas'))]) : sect('Estado en la oficina', [
+        d.activo === false
+          ? el('div', { class: 'g-baja' }, el('p', {}, el('b', { text: 'Dado de baja' + (d.baja ? ' el ' + dmy(d.baja) : '') }), d.motivoBaja ? el('span', { class: 'sm', text: ' · ' + d.motivoBaja }) : null),
+              el('p', { class: 'sm', text: 'No suma al objetivo de la oficina y no aparece para elegir en reservas ni cierres nuevos. Sus operaciones y estadísticas se conservan.' }),
+              el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', text: 'Reincorporar', onclick: function () { aseReincorporar(a); } })))
+          : el('div', { class: 'g-baja' }, el('p', { class: 'sm', text: 'Activo' + (d.ingreso ? ' desde el ' + dmy(d.ingreso) : '') + '.' }),
+              el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja…', onclick: function () { aseBaja(a); } }))),
+        fld('Notas', inArea(d.notas, set, 'notas')), histList(d.historial)]),
       isNew ? null : el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn danger', text: 'Eliminar de la nómina', onclick: function () {
         var used = G.cierres.some(function (c) { return cShare(c, a.id); }) || G.reservas.some(function (r) { return (r.asesorIds || []).indexOf(a.id) >= 0; });
         if (used) { toast('Tiene cierres o reservas cargados: mejor dalo de baja (destildá "Activo") para no perder sus estadísticas.', { kind: 'error' }); return; }
         delRec('asesores', a, (a.apodo || a.nombre) + ' de la nómina');
       } })))]);
+  }
+  async function aseBaja(a) {
+    if (!a) return;
+    var nombre = a.apodo || a.nombre || 'el asesor';
+    var fecha = el('input', { type: 'date', value: todayStr() });
+    var mot = el('select', {}, ['Renuncia', 'Se fue a otra inmobiliaria', 'Desvinculación', 'Pausa / licencia', 'Otro'].map(function (x) { return el('option', { value: x, text: x }); }));
+    var det = el('input', { type: 'text', placeholder: 'Detalle (opcional)' });
+    var act = G.reservas.filter(function (r) { return rActive(r) && (r.asesorIds || []).indexOf(a.id) >= 0; }).length;
+    var body = el('div', { class: 'field' },
+      el('div', { class: 'grid' }, fld('Fecha de baja', fecha), fld('Motivo', mot)), fld('Detalle', det),
+      el('p', { class: 'hint', text: 'Sus cierres y estadísticas se conservan. Deja de sumar al objetivo de la oficina y no aparece para elegir en reservas ni cierres nuevos.' }),
+      act ? el('p', { class: 'warn', text: 'Tiene ' + act + (act === 1 ? ' reserva activa' : ' reservas activas') + ': revisá quién las sigue.' }) : null);
+    var ok = await showModal('Dar de baja a ' + nombre, body, [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja', onclick: function () { closeModal(true); } })]);
+    if (!ok) return;
+    var motivo = mot.value + (det.value.trim() ? ': ' + det.value.trim() : '');
+    var cur = gGet('asesores', a.id) || a;
+    var f = { activo: false, baja: validDate(fecha.value) || todayStr(), motivoBaja: motivo, historial: gLog(cur, 'Baja: ' + motivo) };
+    gUpd('asesores', a.id, f); gFill(); render();
+    toast(nombre + ' quedó dado de baja.', { action: { label: 'Deshacer', fn: function () { var c2 = gGet('asesores', a.id); gUpd('asesores', a.id, { activo: true, baja: '', motivoBaja: '', historial: gLog(c2 || a, 'Se deshizo la baja') }); gFill(); render(); } } });
+  }
+  function aseReincorporar(a) {
+    var cur = gGet('asesores', a.id) || a;
+    gUpd('asesores', a.id, { activo: true, baja: '', motivoBaja: '', historial: gLog(cur, 'Reincorporado') });
+    gFill(); render(); toast((a.apodo || a.nombre) + ' volvió a estar activo.');
   }
   function saveNewAse() {
     var d = gOpen.draft, msg = $('#gMsg');
