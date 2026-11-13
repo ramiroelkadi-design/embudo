@@ -3907,17 +3907,17 @@ button.g-tr:hover { background: var(--surface-2); }
   }
   function cierresDe(y, m) { return G.cierres.filter(function (c) { return yearOf(c.fecha) === y && (!m || monthOf(c.fecha) === m); }); }
   function cStats(list) {
-    var s = { n: list.length, puntas: 0, ventas: 0, alq: 0, bruto: 0, neto: 0, fact: 0, volVenta: 0, comVenta: 0, baseVenta: 0, comp: { no: 0, red: 0, fuera: 0, directo: 0 }, liq: 0 };
+    var s = { n: list.length, puntas: 0, ventas: 0, alq: 0, bruto: 0, neto: 0, fact: 0, volVenta: 0, comVenta: 0, baseVenta: 0, comp: { no: 0, red: 0, fuera: 0, directo: 0 }, liq: 0, pctSum: 0, pctN: 0 };
     list.forEach(function (c) {
       var b = cBruto(c);
       s.puntas += cNPuntas(c); s.bruto += b; s.neto += cNeto(c);
       s.fact += Math.min(b, +c.facturadoUSD || 0);
-      if (c.operacion === 'venta') { s.ventas++; var v = cValorUSD(c); s.volVenta += v; s.comVenta += b; s.baseVenta += v * cNPuntas(c); } else s.alq++;
+      if (c.operacion === 'venta') { s.ventas++; var v = cValorUSD(c); s.volVenta += v; s.comVenta += b; s.baseVenta += v * cNPuntas(c); if (v > 0) { s.pctSum += b / v; s.pctN++; } } else s.alq++;
       s.comp[c.compartida || 'no'] = (s.comp[c.compartida || 'no'] || 0) + 1;
       if (c.liquidado) s.liq++;
     });
     s.ticket = s.ventas ? s.volVenta / s.ventas : null;
-    s.pctCom = s.baseVenta ? s.comVenta / s.baseVenta : null;
+    s.pctCom = s.pctN ? s.pctSum / s.pctN : null;
     s.pctNeto = s.bruto ? s.neto / s.bruto : null;
     s.sinFact = Math.max(0, s.bruto - s.fact);
     return s;
@@ -4155,7 +4155,7 @@ button.g-tr:hover { background: var(--surface-2); }
       kpi('Comisión bruta', usdK(s.bruto), 'Total de comisiones de las operaciones'),
       kpi('Neto oficina', usdK(s.neto), (s.pctNeto != null ? pctTxt(s.pctNeto) + ' del bruto' : '') + ' · después de asesores, martillero, franquicia e impuestos'),
       kpi('Ticket promedio de venta', s.ticket != null ? usdK(s.ticket) : '–', s.ventas ? 'Valor de cierre promedio de ' + s.ventas + ' ventas' : 'Sin ventas en el período'),
-      kpi('Comisión promedio por punta', s.pctCom != null ? pctTxt(s.pctCom, 2) : '–', 'En ventas: comisión sobre el valor de cada punta'),
+      kpi('Comisión promedio de venta', s.pctCom != null ? pctTxt(s.pctCom, 2) : '–', s.pctN ? 'Promedio del % total cobrado en cada venta (' + s.pctN + ' ventas)' : 'Sin ventas en el período'),
       kpi('Facturado', usdK(s.fact), el('span', { class: 'kpi-s' }, factBar, el('span', { class: 'leg' }, el('span', {}, el('i', { class: 'st-fact' }), 'Facturado ' + (s.bruto ? pctTxt(s.fact / s.bruto, 0) : '–')), el('span', {}, el('i', { class: 'st-sin' }), 'Sin facturar ' + usdK(s.sinFact))))),
       kpi('Operaciones compartidas', String((s.comp.red || 0) + (s.comp.fuera || 0)) + ' de ' + s.n, el('span', { class: 'kpi-s' }, compBar, compLeg)));
     var chart = cieChart(y, m, box);
