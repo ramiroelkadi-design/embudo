@@ -5025,8 +5025,15 @@ button.g-tr:hover { background: var(--surface-2); }
     if (!sets.length) return null;
     var total = sets.reduce(function (s, x) { return s + x[1].length; }, 0);
     var desc = sets.map(function (x) { return x[1].length + ' ' + x[0]; }).join(', ');
-    var ok = await confirmBox('Importar datos de gestión', 'Se van a cargar ' + desc + '. Los que ya existen con el mismo identificador se reemplazan por la versión del archivo.', 'Importar', false);
+    var repl = Array.isArray(data.reemplazar) ? data.reemplazar.filter(function (n) { return G[n]; }) : [];
+    var toDel = [];
+    repl.forEach(function (n) { var keep = {}; (data[n] || []).forEach(function (x) { if (x.id) keep[x.id] = 1; }); G[n].forEach(function (x) { if (x.importado && !keep[x.id]) toDel.push([n, x.id]); }); });
+    var ok = await confirmBox('Importar datos de gestión', 'Se van a cargar ' + desc + '.' + (toDel.length ? ' Antes se borran ' + toDel.length + ' ' + repl.join(' y ') + ' importadas anteriormente que no están en este archivo (las que cargaron a mano en la plataforma se mantienen).' : '') + ' Los registros con el mismo identificador se reemplazan por la versión del archivo.', 'Importar', false);
     if (!ok) return { done: 0, failed: 0, cancelled: true };
+    for (var dx = 0; dx < toDel.length; dx++) {
+      try { if (gDb) await gCols[toDel[dx][0]].doc(toDel[dx][1]).delete(); } catch (e) {}
+      G[toDel[dx][0]] = G[toDel[dx][0]].filter(function (x) { return x.id !== toDel[dx][1]; });
+    }
     var done = 0, failed = 0, kill = toast('Importando… 0 de ' + total, { sticky: true });
     for (var s = 0; s < sets.length; s++) {
       var n = sets[s][0], list = sets[s][1];
