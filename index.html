@@ -714,6 +714,45 @@ button.g-tr:hover { background: var(--surface-2); }
 .g-dl input { width: 100%; padding: 10px 12px; font-size: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .g-baja { display: flex; flex-direction: column; gap: 8px; }
 .g-baja p { margin: 0; }
+.g-splits { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 10px; }
+.g-splits > .btn { align-self: flex-start; }
+.g-split-row { display: grid; grid-template-columns: 1fr 110px 40px; gap: 8px; align-items: end; }
+.team-t { color: var(--accent); font-weight: 600; }
+.g-sal-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+.g-sal-item { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.g-sal-item.hoy { border-color: var(--accent); background: var(--accent-soft); }
+.g-sal-ico { font-size: 20px; }
+.g-sal-t { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.g-sal-t .linkish { text-decoration: none; color: var(--ink); }
+button.g-tr.g-closed { background: var(--ok-bg); box-shadow: inset 4px 0 0 var(--ok); }
+button.g-tr.g-closed:hover { background: var(--ok-bg); filter: brightness(0.98); }
+button.g-tr.g-down { opacity: 0.7; }
+.g-plan { min-width: 980px; font-size: 13.5px; }
+.g-plan th[scope=row] { max-width: 220px; white-space: normal; }
+.g-plan tr.g-plan-ok th[scope=row], .g-plan tr.g-plan-ok td { background: var(--ok-bg); }
+.g-plan tr.g-plan-late td, .g-plan tr.g-plan-late th { opacity: 0.65; }
+.g-plan-m td, .g-plan-m th { text-align: right; }
+.g-plan-m tr.fut td { color: var(--ink-2); }
+.late-t { color: var(--late); font-weight: 600; }
+td.ok-t { display: table-cell; }
+.g-panel.wide { width: min(900px, 100%); }
+.tstats { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.ts-toggle { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; justify-content: space-between; border: 0; background: none; padding: 2px 0; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.ts-toggle .sm { color: var(--accent); font-weight: 600; }
+.tstats .kpi { background: var(--surface-2); }
+.ts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; }
+.tstats .g-card { background: var(--surface-2); }
+.hbars { display: flex; flex-direction: column; gap: 6px; }
+.hbar { display: grid; grid-template-columns: minmax(110px, 40%) 1fr 30px; gap: 8px; align-items: center; border: 0; background: none; padding: 2px 0; font: inherit; color: inherit; text-align: left; }
+button.hbar { cursor: pointer; border-radius: 6px; }
+button.hbar:hover .hbar-l { text-decoration: underline; }
+.hbar-l { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar-t { height: 12px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.hbar-t i { display: block; height: 100%; border-radius: 999px; }
+.hbar b { font-variant-numeric: tabular-nums; font-size: 13.5px; text-align: right; }
+.ts6 .bc-bars i { width: 26%; }
+.ts6 .bc-v { font-size: 10.5px; }
+@media (max-width: 899px) { .ts-grid { grid-template-columns: 1fr; } }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -955,9 +994,10 @@ button.g-tr:hover { background: var(--surface-2); }
     <span class="vsep" aria-hidden="true"></span>
     <button type="button" class="vbtn" data-v="res" aria-pressed="false">Reservas<span id="resN" class="bn alert" hidden></span></button>
     <button type="button" class="vbtn" data-v="cie" aria-pressed="false">Cierres</button>
-    <button type="button" class="vbtn" data-v="ase" aria-pressed="false">Asesores</button>
+    <button type="button" class="vbtn" data-v="ase" aria-pressed="false">Asesores<span id="aseN" class="bn" hidden></span></button>
   </nav>
   <p id="syncnote" class="note" hidden></p>
+  <section id="tstats" class="tstats" aria-label="Estadísticas del embudo" hidden></section>
   <section id="agenda" class="agenda" aria-label="Agenda" hidden></section>
   <nav id="chips" class="chips" aria-label="Etapas"></nav>
   <main id="board"></main>
@@ -1947,6 +1987,8 @@ button.g-tr:hover { background: var(--surface-2); }
     if (onbOpen) fillOnb();
     if (G_VIEWS[view]) gRenderView();
     else if (view === 'onb') renderOnb();
+    $('#tstats').hidden = view !== 'tablero';
+    if (view === 'tablero') renderTStats();
     else if (view === 'cal') { renderCal(); renderMineBtn(); }
     else { renderAgenda(); renderChips(); renderBoard(); renderMineBtn(); }
     var nb = document.querySelector('.board');
@@ -3709,9 +3751,9 @@ button.g-tr:hover { background: var(--surface-2); }
   var G_VIEWS = { res: 'reservas', cie: 'cierres', ase: 'asesores' };
   var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   var MES3 = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-  var ORIGENES = ['Dueño Vende', 'Familiar / Amigo', 'Otro agente de la red', 'Otra Inmobiliaria', 'Cliente Antiguo', 'Referido de Colega', 'Referido de Contacto', 'Guardias Captaciones', 'Oficina Mail / Llamado / Puerta', 'Letrero / Cartel', 'Web de la red', 'Acciones Indirectas', 'Facebook', 'Instagram', 'Zonaprop', 'Argenprop', 'Mercado Libre', 'Otros Portales', 'Reubicación', 'Cliente de Visita'];
+  var ORIG_CLI = ['Dueño Vende', 'Familiar / Amigo', 'Otro agente de la red', 'Otra Inmobiliaria', 'Cliente Antiguo', 'Referido de Colega', 'Referido de Contacto', 'Guardias Captaciones', 'Oficina Mail / Llamado / Puerta', 'Letrero / Cartel', 'Web de la red', 'Acciones Indirectas', 'Facebook', 'Instagram', 'Zonaprop', 'Argenprop', 'Mercado Libre', 'Otros Portales', 'Reubicación', 'Cliente de Visita'];
   var GCONF_DEF = {
-    mart: 0.04, fran: 0.085, iibb: 0.04, cot: 1535,
+    mart: 0.04, fran: 0.085, iibb: 0.04, abao: 0.06, cot: 1535,
     pctVend: 0.03, pctComp: 0.04,
     estac: [5, 5, 7, 7, 8, 9, 9, 10, 9, 10, 10, 11],
     staff: ['VDL', 'EC', 'AB', 'Connie'],
@@ -3724,8 +3766,8 @@ button.g-tr:hover { background: var(--surface-2); }
   var gConf = JSON.parse(JSON.stringify(GCONF_DEF));
   var R_EST = [
     { id: 'pendiente', name: 'Pendiente', long: 'Esperando aceptación', cls: 'today' },
-    { id: 'aceptada', name: 'Aceptada', long: 'Aceptada, a firmar', cls: 'ok' },
-    { id: 'cerrada', name: 'Cerrada', long: 'Firmada', cls: 'soon' },
+    { id: 'aceptada', name: 'Aceptada', long: 'Aceptada, a firmar', cls: 'soon' },
+    { id: 'cerrada', name: 'Cerrada', long: 'Firmada: pasó a cierres', cls: 'ok' },
     { id: 'rechazada', name: 'Rechazada', long: 'Rechazada por el propietario', cls: 'late' },
     { id: 'caida', name: 'Caída', long: 'Se cayó', cls: 'late' }
   ];
@@ -3741,7 +3783,7 @@ button.g-tr:hover { background: var(--surface-2); }
   var PUNTAS_ALQ = { ambas: 'Ambas puntas', vendedor: 'Punta locadora', comprador: 'Punta locataria' };
   var COMP = { no: 'Sin compartir', red: 'Compartida dentro de la red', fuera: 'Compartida fuera de la red', directo: 'Otra parte sin inmobiliaria' };
   var COMP_SHORT = { no: 'Propia', red: 'Dentro de la red', fuera: 'Fuera de la red', directo: 'Parte directa' };
-  var gF = { res: 'activas', resQ: '', resA: '', resSort: 'reciente', cieY: new Date().getFullYear(), cieM: 0, cieQ: '', cieA: '', aseY: new Date().getFullYear(), aseF: 'activos', aseSort: 'ritmo', aseMode: 'tarjetas' };
+  var gF = { res: 'vigentes', resQ: '', resA: '', resSort: 'reciente', cieY: new Date().getFullYear(), cieM: 0, cieQ: '', cieA: '', aseY: new Date().getFullYear(), aseF: 'activos', aseSort: 'ritmo', aseMode: 'tarjetas' };
   try { var gfs = JSON.parse(lsGet('embudo-g-filtros') || 'null'); if (gfs) ['res', 'resSort', 'aseF', 'aseSort', 'aseMode'].forEach(function (k) { if (gfs[k]) gF[k] = gfs[k]; }); } catch (e) {}
   function gKeepF() { lsSet('embudo-g-filtros', JSON.stringify({ res: gF.res, resSort: gF.resSort, aseF: gF.aseF, aseSort: gF.aseSort, aseMode: gF.aseMode })); }
   var gOpen = null, gDirty = false;
@@ -3831,14 +3873,15 @@ button.g-tr:hover { background: var(--surface-2); }
 
   /* ----- asesores ----- */
   var HUES = [210, 330, 150, 20, 270, 190, 45, 0, 100, 240, 300, 170];
-  function aseAll() { return G.asesores.slice().sort(function (a, b) { return String(a.apodo || a.nombre).localeCompare(String(b.apodo || b.nombre), 'es'); }); }
+  function aseFull(a) { return a ? (a.nombre || a.apodo || 'Sin nombre') : 'Sin asesor'; }
+  function aseAll() { return G.asesores.slice().sort(function (a, b) { return aseFull(a).localeCompare(aseFull(b), 'es'); }); }
   function aseActive() { return aseAll().filter(function (a) { return a.activo !== false; }); }
-  function aseName(id) { var a = gGet('asesores', id); return a ? (a.apodo || a.nombre || 'Sin nombre') : 'Sin asesor'; }
+  function aseName(id) { return aseFull(gGet('asesores', id)); }
   function aseHue(id) { var h = 0, s = String(id || ''); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return HUES[h % HUES.length]; }
   function aseAv(id, big) {
-    var a = gGet('asesores', id), n = a ? (a.apodo || a.nombre || '?') : '?';
+    var a = gGet('asesores', id), n = a ? aseFull(a) : '?';
     var ini = n.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ ]/g, '').trim().split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase() || '?';
-    return el('span', { class: 'gav' + (big ? ' big' : ''), style: '--h:' + aseHue(id), title: a ? (a.nombre || n) : 'Sin asesor', 'aria-hidden': 'true', text: ini });
+    return el('span', { class: 'gav' + (big ? ' big' : ''), style: '--h:' + aseHue(id), title: n, 'aria-hidden': 'true', text: ini });
   }
   function aseNames(ids) { return (ids || []).map(aseName).join(' y '); }
   function antig(desde) {
@@ -3859,7 +3902,7 @@ button.g-tr:hover { background: var(--surface-2); }
         return el('span', { class: 'gpick-chip' }, aseAv(id), aseName(id), el('button', { type: 'button', 'aria-label': 'Quitar a ' + aseName(id), text: '×', onclick: function () { sel = sel.filter(function (x) { return x !== id; }); draw(); onchange(sel.slice()); } }));
       });
       var s = el('select', { 'aria-label': 'Agregar asesor' }, el('option', { value: '', text: sel.length ? '+ Otro asesor' : 'Elegir asesor' }),
-        aseActive().filter(function (a) { return sel.indexOf(a.id) < 0; }).map(function (a) { return el('option', { value: a.id, text: (a.apodo || a.nombre) + (a.apodo && a.nombre && a.nombre !== a.apodo ? ' · ' + a.nombre : '') }); }));
+        aseActive().filter(function (a) { return sel.indexOf(a.id) < 0; }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); }));
       s.addEventListener('change', function () { if (s.value) { sel.push(s.value); draw(); onchange(sel.slice()); var n = wrap.querySelector('select'); if (n) n.focus(); } });
       wrap.replaceChildren.apply(wrap, chips.concat([s]));
     }
@@ -3874,6 +3917,43 @@ button.g-tr:hover { background: var(--surface-2); }
     var dim = new Date(y, m + 1, 0).getDate();
     acc += (+e[m] || 0) * (d.getDate() / dim);
     return acc / tot;
+  }
+  function splitAt(a, fecha) {
+    if (!a) return null;
+    var d = String(fecha || todayStr()).slice(0, 10), v = a.split != null ? +a.split : null;
+    (a.splits || []).slice().sort(function (x, y) { return String(x.desde) < String(y.desde) ? -1 : 1; }).forEach(function (x) { if (x.desde && String(x.desde) <= d && x.split != null) v = +x.split; });
+    return v;
+  }
+  function nextSplit(a) {
+    var d = todayStr(), n = null;
+    (a.splits || []).forEach(function (x) { if (x.desde && String(x.desde) > d && (!n || String(x.desde) < String(n.desde))) n = x; });
+    return n;
+  }
+  function nthSunday(y, m, n) { var d = new Date(y, m, 1); var add = (7 - d.getDay()) % 7; return new Date(y, m, 1 + add + 7 * (n - 1)); }
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function nextOcc(md, from) { var y = from.getFullYear(), p = String(md).slice(5, 10).split('-'); if (p.length < 2) return null; var d = new Date(y, +p[0] - 1, +p[1]); if (d < from) d = new Date(y + 1, +p[0] - 1, +p[1]); return d; }
+  function saludos(days) {
+    days = days == null ? 21 : days;
+    var t0 = parseDay(todayStr()), lim = new Date(t0); lim.setDate(lim.getDate() + days);
+    var out = [];
+    aseActive().forEach(function (a) {
+      if (a.nacimiento) { var d = nextOcc(a.nacimiento, t0); if (d && d <= lim) { var ed = /^\d{4}/.test(a.nacimiento) && +a.nacimiento.slice(0, 4) > 1900 ? d.getFullYear() - +a.nacimiento.slice(0, 4) : null; out.push({ tipo: 'cumple', a: a, fecha: iso(d), texto: 'Cumpleaños' + (ed ? ' (' + ed + ')' : ''), msg: '¡Feliz cumpleaños, ' + aseFull(a).split(' ')[0] + '! Que tengas un gran día. Un abrazo de todo el equipo de ' + (gConf.razon || 'la oficina') + '.' }); } }
+      if (a.ingreso) { var d2 = nextOcc(a.ingreso, t0); var yrs = d2 ? d2.getFullYear() - +String(a.ingreso).slice(0, 4) : 0; if (d2 && d2 <= lim && yrs >= 1) out.push({ tipo: 'aniv', a: a, fecha: iso(d2), texto: yrs + (yrs === 1 ? ' año' : ' años') + ' en la oficina', msg: '¡Feliz aniversario, ' + aseFull(a).split(' ')[0] + '! Hoy cumplís ' + yrs + (yrs === 1 ? ' año' : ' años') + ' con nosotros. ¡Gracias por ser parte!' }); }
+    });
+    var y = t0.getFullYear();
+    [['madre', 9, 'Día de la Madre'], ['padre', 5, 'Día del Padre']].forEach(function (x) {
+      var d = nthSunday(y, x[1], 3); if (d < t0) d = nthSunday(y + 1, x[1], 3);
+      if (d > lim) return;
+      aseActive().filter(function (a) { return a.hijos === x[0]; }).forEach(function (a) { out.push({ tipo: x[0], a: a, fecha: iso(d), texto: x[2], msg: '¡Feliz ' + x[2] + ', ' + aseFull(a).split(' ')[0] + '! Que lo disfrutes mucho.' }); });
+    });
+    return out.sort(function (p, q) { return p.fecha < q.fecha ? -1 : p.fecha > q.fecha ? 1 : aseFull(p.a).localeCompare(aseFull(q.a), 'es'); });
+  }
+  function waLink(tel, msg) {
+    var d = String(tel || '').replace(/\D/g, '');
+    if (!d) return null;
+    if (d.indexOf('54') !== 0) { d = d.replace(/^0/, ''); if (d.length === 10 && d.indexOf('15') !== 0) d = '549' + d; else d = '54' + d; }
+    else if (d.indexOf('549') !== 0 && d.length === 12) d = '549' + d.slice(2);
+    return 'https://wa.me/' + d + '?text=' + encodeURIComponent(msg || '');
   }
   function monthShare(m) { var e = gConf.estac || GCONF_DEF.estac, tot = e.reduce(function (s, x) { return s + (+x || 0); }, 0) || 100; return (+e[m] || 0) / tot; }
 
@@ -3892,16 +3972,19 @@ button.g-tr:hover { background: var(--surface-2); }
     var ag = 0;
     cParts(c).forEach(function (x) { ag += bruto * (x.parte != null ? +x.parte : 1 / cParts(c).length) * (+x.split || 0); });
     var mart = bruto * (+gConf.mart || 0), fran = bruto * (+gConf.fran || 0);
-    var factMon = c.facturado ? (c.facturadoMonto != null ? +c.facturadoMonto : bruto) : 0;
+    var factMon = c.facturado ? (c.facturadoMonto != null && c.facturadoMonto !== '' ? +c.facturadoMonto : bruto) : 0;
     var imp = factMon * (+gConf.iibb || 0);
-    var neto = bruto - ag - mart - fran - imp;
+    var juris = c.juris || jurisDe(c.localidad);
+    var abao = juris === 'PBA' ? factMon * (gConf.abao != null ? +gConf.abao : 0.06) : 0;
+    var neto = bruto - ag - mart - fran - imp - abao / 2;
     function u(v) { return mon === '$' ? v / cot : v; }
-    return { bruto: bruto, agentes: ag, mart: mart, fran: fran, imp: imp, neto: neto, factMon: factMon, brutoUSD: u(bruto), netoUSD: u(neto), facturadoUSD: u(factMon) };
+    return { bruto: bruto, agentes: ag, mart: mart, fran: fran, imp: imp, abao: abao, juris: juris, aLiquidar: ag - abao / 2, neto: neto, factMon: factMon, brutoUSD: u(bruto), netoUSD: u(neto), facturadoUSD: u(factMon) };
   }
   function applyCalc(c) {
     if (c.calc === 'excel') return c;
     var k = calcCierre(c);
     c.bruto = Math.round(k.bruto * 100) / 100; c.agenteMonto = Math.round(k.agentes * 100) / 100; c.martillero = Math.round(k.mart * 100) / 100; c.franquicia = Math.round(k.fran * 100) / 100;
+    c.abao = Math.round(k.abao * 100) / 100; c.aLiquidar = Math.round(k.aLiquidar * 100) / 100; c.juris = k.juris;
     c.neto = Math.round(k.neto * 100) / 100; c.brutoUSD = Math.round(k.brutoUSD * 100) / 100; c.netoUSD = Math.round(k.netoUSD * 100) / 100; c.facturadoUSD = Math.round(k.facturadoUSD * 100) / 100;
     return c;
   }
@@ -3944,11 +4027,26 @@ button.g-tr:hover { background: var(--surface-2); }
   function custPill(k) { var c = CUST[k] || CUST.sin; return tag(c.cls, c.name, c.ico); }
   function rComEst(r) {
     if (r.comEst != null && r.comEst !== '') return +r.comEst;
-    if (r.operacion !== 'venta' || !+r.precio) return null;
-    var pct = r.punta === 'ambas' ? (+gConf.pctVend + +gConf.pctComp) : r.punta === 'vendedor' ? +gConf.pctVend : +gConf.pctComp;
+    if (!+r.precio) return null;
+    if (r.operacion !== 'venta' && (r.pctCom == null || r.pctCom === '')) return null;
+    var pct = r.pctCom != null && r.pctCom !== '' ? +r.pctCom : r.punta === 'ambas' ? (+gConf.pctVend + +gConf.pctComp) : r.punta === 'vendedor' ? +gConf.pctVend : +gConf.pctComp;
     return toUSD(+r.precio * pct, r.precioMon || 'U$S');
   }
   function rActive(r) { return r.estado === 'pendiente' || r.estado === 'aceptada'; }
+  function rRecentClosed(r) { if (r.estado !== 'cerrada') return false; var d = r.cerradaEl || (r.cierreId && gGet('cierres', r.cierreId) && gGet('cierres', r.cierreId).fecha) || r.fechaFirma || r.fecha; return !d || dayDiff(String(d).slice(0, 10)) >= -90; }
+  var JURIS_CABA = /\b(caba|capital|c\.a\.b\.a|palermo|belgrano|n[uú]ñez|saavedra|recoleta|caballito|villa urquiza|colegiales|almagro|flores|devoto|villa crespo|chacarita|coghlan|villa pueyrred[oó]n|barracas|san telmo|retiro|balvanera|boedo|puerto madero|villa del parque|agronom[ií]a|parque chas|villa ortuzar|liniers|mataderos)\b/i;
+  function jurisDe(loc) { return JURIS_CABA.test(String(loc || '')) ? 'CABA' : 'PBA'; }
+  var DOCS = [
+    ['informes', 'Informes', ['Pedidos', 'A pedir', 'Presentados', 'Consultar']],
+    ['parcelario', 'Estado parcelario', ['Pedido', 'A pedir', 'Presentado', 'Consultar', 'N/A']],
+    ['sucesion', 'Sucesión', ['N/A', 'Falta orden de inscripción', 'Falta declaratoria', 'Listo para tracto', 'Desarchivando']],
+    ['docEscribania', 'Doc. a escribanía', ['A entregar', 'En proceso', 'Entregada', 'Consultar']],
+    ['proforma', 'Proforma', ['Pedir', 'Pedida', 'Entregada']],
+    ['adRefComp', 'Ad ref. comprador', ['N/A', 'Crédito', 'Venta de inmueble']],
+    ['adRefVend', 'Ad ref. vendedor', ['N/A', 'Reubicación', 'Inquilino', 'Trámite']]
+  ];
+  var DOC_OK = { 'Presentados': 1, 'Presentado': 1, 'N/A': 1, 'Listo para tracto': 1, 'Entregada': 1 };
+  function docsPend(r) { var d = r.docs || {}, n = 0, any = false; DOCS.forEach(function (x) { if (d[x[0]]) { any = true; if (!DOC_OK[d[x[0]]]) n++; } }); return any ? n : null; }
   function rAlerts() {
     var out = { asesor: [], vence: [], devolver: [], firma: [], comprobante: [] };
     G.reservas.forEach(function (r) {
@@ -3999,6 +4097,7 @@ button.g-tr:hover { background: var(--surface-2); }
   function gCountBadges() {
     var al = rAlerts(), n = al.asesor.length + al.vence.length + al.devolver.length;
     var b = $('#resN'); if (b) { b.hidden = !n; b.textContent = n; b.title = n ? n + ' reservas para resolver' : ''; }
+    var sh = saludos(1).length, b2 = $('#aseN'); if (b2) { b2.hidden = !sh; b2.textContent = sh; b2.title = sh ? sh + ' saludos para hoy o mañana' : ''; }
   }
   function gRenderView() {
     var box = $('#gview');
@@ -4041,7 +4140,8 @@ button.g-tr:hover { background: var(--surface-2); }
 
   /* ===== RESERVAS ===== */
   var RES_F = [
-    ['activas', 'Activas', function (r) { return rActive(r); }],
+    ['vigentes', 'En curso y cerradas', function (r) { return rActive(r) || rRecentClosed(r); }],
+    ['activas', 'En curso', function (r) { return rActive(r); }],
     ['pendiente', 'Esperando aceptación', function (r) { return r.estado === 'pendiente'; }],
     ['aceptada', 'Aceptadas', function (r) { return r.estado === 'aceptada'; }],
     ['custodia', 'Con dinero en custodia', function (r) { var k = rCust(r); return k === 'oficina' || k === 'banco' || k === 'asesor'; }],
@@ -4058,6 +4158,8 @@ button.g-tr:hover { background: var(--surface-2); }
     list.sort(function (a, b) {
       if (key === 'firma') return String(a.fechaFirma || a.vence || '9999') < String(b.fechaFirma || b.vence || '9999') ? -1 : 1;
       if (key === 'monto') return (rComEst(b) || 0) - (rComEst(a) || 0);
+      var ca = a.estado === 'cerrada' ? 1 : 0, cb = b.estado === 'cerrada' ? 1 : 0;
+      if (ca !== cb) return ca - cb;
       return rSortKey(a) < rSortKey(b) ? 1 : -1;
     });
     return list;
@@ -4098,7 +4200,7 @@ button.g-tr:hover { background: var(--surface-2); }
     }));
     var tools = el('div', { class: 'onb-tools' }, chips, el('div', { class: 'onb-opts' },
       searchBox(gF.resQ, 'Buscar dirección, oferente, asesor…', function (v) { gF.resQ = v; keepFocusRender(function () { renderRes(box); }); }),
-      selectEl('Filtrar por asesor', [['', 'Todos los asesores']].concat(aseAll().map(function (a) { return [a.id, a.apodo || a.nombre]; })), gF.resA, function (v) { gF.resA = v; renderRes(box); }),
+      selectEl('Filtrar por asesor', [['', 'Todos los asesores']].concat(aseAll().map(function (a) { return [a.id, aseFull(a)]; })), gF.resA, function (v) { gF.resA = v; renderRes(box); }),
       selectEl('Ordenar', [['reciente', 'Más recientes primero'], ['firma', 'Fecha más próxima'], ['monto', 'Mayor comisión estimada']], gF.resSort, function (v) { gF.resSort = v; gKeepF(); renderRes(box); })));
     var list = resList();
     var tbl = el('div', { class: 'g-table', role: 'table', 'aria-label': 'Reservas' },
@@ -4111,7 +4213,11 @@ button.g-tr:hover { background: var(--surface-2); }
     var next = null;
     if (r.estado === 'pendiente' && r.vence) { var d = relDue(r.vence); next = el('span', { class: 'due' + (d.d < 0 ? ' late' : d.d <= 1 ? ' soon' : '') }, 'Acepta ' + (d.d < 0 ? 'venció ' : '') + d.text); }
     else if (r.estado === 'aceptada' && r.fechaFirma) { var d2 = relDue(r.fechaFirma); next = el('span', { class: 'due' + (d2.d < 0 ? ' late' : d2.d <= 3 ? ' soon' : '') }, 'Firma ' + d2.text); }
-    return el('button', { type: 'button', role: 'row', class: 'g-tr', 'data-focus': 'res:' + r.id, onclick: function () { openRes(r.id); } },
+    else if (r.estado === 'cerrada') { var cc = r.cierreId && gGet('cierres', r.cierreId); next = el('span', { class: 'sm ok-t', text: cc ? 'Cierre ' + dmy(cc.fecha) + ' · ' + usdK(cBruto(cc)) : 'Cerrada' }); }
+    var dp = rActive(r) ? docsPend(r) : null;
+    if (dp && next) next = el('span', {}, next, el('span', { class: 'sm', text: dp + ' docs pendientes' }));
+    else if (dp) next = el('span', { class: 'sm', text: dp + ' docs pendientes' });
+    return el('button', { type: 'button', role: 'row', class: 'g-tr' + (r.estado === 'cerrada' ? ' g-closed' : r.estado === 'rechazada' || r.estado === 'caida' ? ' g-down' : ''), 'data-focus': 'res:' + r.id, onclick: function () { openRes(r.id); } },
       el('span', { role: 'cell', class: 'g-prop' }, el('b', { text: r.propiedad || 'Sin dirección' }), el('span', { class: 'sm', text: [OPS[r.operacion] || '', r.localidad].filter(Boolean).join(' · ') })),
       el('span', { role: 'cell', class: 'g-ase' }, (r.asesorIds || []).slice(0, 2).map(function (id) { return aseAv(id); }), el('span', { text: aseNames(r.asesorIds) || 'Sin asesor' })),
       el('span', { role: 'cell', class: 'g-date', text: r.fecha ? dmy(r.fecha) : '–' }),
@@ -4181,7 +4287,7 @@ button.g-tr:hover { background: var(--surface-2); }
     var list = per.filter(function (c) { return cMatches(c, q) && (!gF.cieA || cShare(c, gF.cieA)); }).sort(function (a, b) { return String(a.fecha) < String(b.fecha) ? 1 : -1; });
     var tools = el('div', { class: 'onb-tools' }, el('h3', { class: 'g-h3', text: 'Operaciones · ' + perName + ' (' + list.length + ')' }), el('div', { class: 'onb-opts' },
       searchBox(gF.cieQ, 'Buscar dirección, asesor, origen…', function (v) { gF.cieQ = v; keepFocusRender(function () { renderCie(box); }); }),
-      selectEl('Filtrar por asesor', [['', 'Todos los asesores']].concat(aseAll().map(function (a) { return [a.id, a.apodo || a.nombre]; })), gF.cieA, function (v) { gF.cieA = v; renderCie(box); })));
+      selectEl('Filtrar por asesor', [['', 'Todos los asesores']].concat(aseAll().map(function (a) { return [a.id, aseFull(a)]; })), gF.cieA, function (v) { gF.cieA = v; renderCie(box); })));
     var tbl = el('div', { class: 'g-table cie', role: 'table', 'aria-label': 'Operaciones' },
       el('div', { class: 'g-tr g-th', role: 'row' }, ['Fecha', 'Propiedad', 'Asesor', 'Operación', 'Valor', 'Bruto · Neto', 'Estado'].map(function (h) { return el('span', { role: 'columnheader', text: h }); })),
       list.length ? list.slice(0, gF.cieAll ? list.length : 40).map(cieRow) : el('p', { class: 'hint pad', text: 'No hay operaciones en este período.' }),
@@ -4215,7 +4321,7 @@ button.g-tr:hover { background: var(--surface-2); }
       el('span', { role: 'cell' }, el('span', { text: op }), c.compartida && c.compartida !== 'no' ? el('span', { class: 'sm', text: COMP_SHORT[c.compartida] + (c.otraParte ? ' · ' + c.otraParte : '') }) : null),
       el('span', { role: 'cell', class: 'g-money', text: money(c.valor, c.moneda) }),
       el('span', { role: 'cell', class: 'g-money' }, el('b', { text: usd(cBruto(c)) }), el('span', { class: 'sm', text: 'Neto ' + usd(cNeto(c)) })),
-      el('span', { role: 'cell', class: 'g-flags' }, c.facturado ? tag('ok', 'Facturado') : tag('muted', 'Sin facturar'), c.liquidado ? null : tag('today', 'Falta liquidar')));
+      el('span', { role: 'cell', class: 'g-flags' }, c.sinFirma ? tag('late', 'Sin fecha de firma') : null, c.facturado ? tag('ok', 'Facturado') : tag('muted', 'Sin facturar'), c.liquidado ? null : tag('today', 'Falta liquidar')));
   }
 
   /* ===== ASESORES ===== */
@@ -4236,24 +4342,21 @@ button.g-tr:hover { background: var(--surface-2); }
       kpi('Objetivo de la oficina ' + y, usdK(tObj), 'Suma de los objetivos de los asesores activos'),
       kpi('Realizado', usdK(ofiReal), el('span', { class: 'kpi-s' }, bar(tObj ? Math.min(100, Math.round(ofiReal * 100 / tObj)) : 0, Math.round(ef * 100), 'Avance de la oficina'), el('span', { text: (tObj ? pctTxt(ofiReal / tObj, 0) : '–') + ' del objetivo · debería ir en ' + pctTxt(ef, 0) }))),
       kpi('Proyectado', usdK(ofiReal + (y === now ? act.reduce(function (s, a) { return s + stats[a.id].pipeA; }, 0) : 0)), 'Realizado + comisión estimada de reservas aceptadas'));
-    var F = [['activos', 'Activos'], ['atras', 'Atrasados'], ['todos', 'Todos'], ['bajas', 'Dados de baja']];
-    var list = all.filter(function (a) {
-      if (gF.aseF === 'activos') return a.activo !== false;
-      if (gF.aseF === 'bajas') return a.activo === false;
-      if (gF.aseF === 'atras') return a.activo !== false && (stats[a.id].status === 'bad' || stats[a.id].status === 'warn');
-      return true;
-    });
+    var teamNames = {}; act.forEach(function (a) { if (a.team) teamNames[a.team] = 1; });
+    var F = [['activos', 'Activos'], ['atras', 'Atrasados']].concat(Object.keys(teamNames).sort().map(function (t) { return ['team:' + t, t]; })).concat([['todos', 'Todos'], ['bajas', 'Dados de baja']]);
+    function inF(a, f) { if (f.indexOf('team:') === 0) return a.activo !== false && a.team === f.slice(5); return f === 'activos' ? a.activo !== false : f === 'bajas' ? a.activo === false : f === 'atras' ? a.activo !== false && (stats[a.id].status === 'bad' || stats[a.id].status === 'warn') : true; }
+    var list = all.filter(function (a) { return inF(a, gF.aseF); });
     var RANK = { bad: 0, warn: 1, ok: 2, none: 3, done: 4 };
     list.sort(function (a, b) {
       var sa = stats[a.id], sb = stats[b.id];
       if (gF.aseSort === 'fact') return sb.real - sa.real;
-      if (gF.aseSort === 'nombre') return String(a.apodo || a.nombre).localeCompare(String(b.apodo || b.nombre), 'es');
+      if (gF.aseSort === 'nombre') return aseFull(a).localeCompare(aseFull(b), 'es');
       if (gF.aseSort === 'antig') return String(a.ingreso || '9') < String(b.ingreso || '9') ? -1 : 1;
       return (RANK[sa.status] - RANK[sb.status]) || ((sa.pct || 0) - (sb.pct || 0));
     });
     var tools = el('div', { class: 'onb-tools' },
       el('div', { class: 'onb-chips', role: 'group', 'aria-label': 'Filtrar asesores' }, F.map(function (f) {
-        var n = all.filter(function (a) { return f[0] === 'activos' ? a.activo !== false : f[0] === 'bajas' ? a.activo === false : f[0] === 'atras' ? a.activo !== false && (stats[a.id].status === 'bad' || stats[a.id].status === 'warn') : true; }).length;
+        var n = all.filter(function (a) { return inF(a, f[0]); }).length;
         return el('button', { type: 'button', class: 'chip' + (gF.aseF === f[0] ? ' on' : ''), 'aria-pressed': String(gF.aseF === f[0]), onclick: function () { gF.aseF = f[0]; gKeepF(); renderAse(box); } }, f[1], el('span', { class: 'n', text: n }));
       })),
       el('div', { class: 'onb-opts' },
@@ -4266,23 +4369,42 @@ button.g-tr:hover { background: var(--surface-2); }
         el('tbody', {}, list.map(function (a) {
           var s = stats[a.id];
           return el('tr', {},
-            el('th', { scope: 'row' }, el('button', { type: 'button', class: 'mx-agent', onclick: function () { openAse(a.id); } }, aseAv(a.id), el('span', { text: a.apodo || a.nombre }))),
-            el('td', { text: antig(a.ingreso) || '–' }), el('td', { text: a.split ? pctTxt(+a.split, 0) : '–' }),
+            el('th', { scope: 'row' }, el('button', { type: 'button', class: 'mx-agent', onclick: function () { openAse(a.id); } }, aseAv(a.id), el('span', { text: aseFull(a) }))),
+            el('td', { text: antig(a.ingreso) || '–' }), el('td', { text: splitAt(a) != null ? pctTxt(splitAt(a), 0) : '–' }),
             el('td', { text: s.obj ? usd(s.obj) : '–' }), el('td', { text: usd(s.real) }),
-            el('td', {}, s.obj ? el('span', { class: 'mini-prog' }, bar(Math.min(100, Math.round(s.real * 100 / s.obj)), Math.round(s.ef * 100), 'Avance de ' + (a.apodo || a.nombre)), el('span', { text: pctTxt(s.pct, 0) })) : '–'),
+            el('td', {}, s.obj ? el('span', { class: 'mini-prog' }, bar(Math.min(100, Math.round(s.real * 100 / s.obj)), Math.round(s.ef * 100), 'Avance de ' + aseFull(a)), el('span', { text: pctTxt(s.pct, 0) })) : '–'),
             el('td', { text: usd(s.proy) }), el('td', { text: String(s.ops) }), el('td', { text: s.ticket != null ? usd(s.ticket) : '–' }), el('td', {}, asePill(s)));
         }))));
     } else {
       body = el('div', { class: 'onb-grid' }, list.map(function (a) { return aseCard(a, stats[a.id], y); }));
     }
-    box.replaceChildren(head, kp, tools, list.length ? body : el('p', { class: 'hint', text: 'No hay asesores con este filtro.' }));
+    var teamBox = null;
+    if (gF.aseF.indexOf('team:') === 0) {
+      var tm = list, tO = 0, tR = 0, tP = 0; tm.forEach(function (a) { var s = stats[a.id]; tO += s.obj; tR += s.real; tP += s.proy; });
+      teamBox = el('div', { class: 'kpis' }, kpi(gF.aseF.slice(5) + ' · ' + tm.length + ' integrantes', usdK(tR), 'Facturado ' + y + (tO ? ' · ' + pctTxt(tR / tO, 0) + ' de ' + usdK(tO) : '')), kpi('Proyectado del team', usdK(tP), 'Con reservas aceptadas'));
+    }
+    box.replaceChildren.apply(box, [head, saludosBox(), kp, tools, teamBox, list.length ? body : el('p', { class: 'hint', text: 'No hay asesores con este filtro.' })].filter(Boolean));
+  }
+  var SAL_ICO = { cumple: '🎂', aniv: '🎉', madre: '💐', padre: '👔' };
+  function saludosBox() {
+    var list = saludos(21);
+    if (!list.length) return null;
+    return el('section', { class: 'agenda g-sal', 'aria-label': 'Saludos próximos' }, el('h3', { class: 'g-h3', text: 'Saludos de los próximos días' }),
+      el('div', { class: 'g-sal-list' }, list.map(function (x) {
+        var d = relDue(x.fecha), wa = waLink(x.a.tel, x.msg);
+        return el('div', { class: 'g-sal-item' + (d.d === 0 ? ' hoy' : '') },
+          el('span', { class: 'g-sal-ico', 'aria-hidden': 'true', text: SAL_ICO[x.tipo] }),
+          el('span', { class: 'g-sal-t' }, el('button', { type: 'button', class: 'linkish', text: aseFull(x.a), onclick: function () { openAse(x.a.id); } }), el('span', { class: 'sm', text: x.texto + ' · ' + (d.d === 0 ? 'hoy' : d.d === 1 ? 'mañana' : dmy(x.fecha).slice(0, 5) + ' (' + d.text + ')') })),
+          wa ? el('a', { class: 'btn sm-btn', href: wa, target: '_blank', rel: 'noopener', text: 'WhatsApp' }) : el('button', { type: 'button', class: 'btn sm-btn ghost', text: 'Copiar saludo', onclick: function () { copyText(x.msg); } }));
+      })));
   }
   function aseCard(a, s, y) {
-    var sub = [antig(a.ingreso), a.split ? 'Split ' + pctTxt(+a.split, 0) : null].filter(Boolean).join(' · ');
+    var sp = splitAt(a), ns = nextSplit(a);
+    var sub = [antig(a.ingreso), sp != null ? 'Split ' + pctTxt(sp, 0) + (ns ? ' (' + pctTxt(+ns.split, 0) + ' desde ' + dmy(ns.desde) + ')' : '') : null].filter(Boolean).join(' · ');
     var pctN = s.obj ? Math.min(100, Math.round(s.real * 100 / s.obj)) : 0;
     return el('article', { class: 'card ob-card' + (a.activo === false ? ' off' : '') },
       el('button', { type: 'button', class: 'card-main', 'data-focus': 'ase:' + a.id, onclick: function () { openAse(a.id); } },
-        el('span', { class: 'ob-top' }, el('span', { class: 'g-who' }, aseAv(a.id, true), el('span', {}, el('span', { class: 'card-name', text: a.apodo || a.nombre || 'Sin nombre' }), el('span', { class: 'sm', text: a.nombre && a.apodo && a.nombre !== a.apodo ? a.nombre : '' }))), asePill(s)),
+        el('span', { class: 'ob-top' }, el('span', { class: 'g-who' }, aseAv(a.id, true), el('span', {}, el('span', { class: 'card-name', text: aseFull(a) }), a.team ? el('span', { class: 'sm team-t', text: a.team }) : null)), asePill(s)),
         el('span', { class: 'sm', text: sub || 'Completar fecha de ingreso y split' }),
         s.obj ? bar(pctN, Math.round(s.ef * 100), 'Avance hacia el objetivo') : null,
         el('span', { class: 'ob-nums', text: usd(s.real) + (s.obj ? ' de ' + usd(s.obj) + ' · ' + pctTxt(s.pct, 0) + (s.status !== 'done' && s.ef > 0 && s.ef < 1 ? ' · debería ir en ' + pctTxt(s.ef, 0) : '') : ' facturado en ' + y) }),
@@ -4297,7 +4419,7 @@ button.g-tr:hover { background: var(--surface-2); }
   function gPanelOpen(o) {
     if (!lastFocus) lastFocus = document.activeElement;
     closeMenu(true);
-    gOpen = o; gDirty = false;
+    gOpen = o; gDirty = false; $('#gp').classList.remove('wide');
     gFill();
     showPanel('gp');
     var t = $('#gpTitle'); if (t) t.focus();
@@ -4329,14 +4451,15 @@ button.g-tr:hover { background: var(--surface-2); }
     opt = opt || {};
     return el('section', { class: 'g-sec' + (opt.cls ? ' ' + opt.cls : '') }, title ? el('h3', { class: 'g-sec-h' }, title, opt.right || null) : null, nodes);
   }
-  function fld(label, input, hint, cls) { return el('label', { class: 'field' + (cls ? ' ' + cls : '') }, el('span', { text: label }), input, hint ? el('span', { class: 'sm', text: hint }) : null); }
+  function fld(label, input, hint, cls) { return el('label', { class: 'field' + (cls ? ' ' + cls : '') }, el('span', { text: label }), input, hint ? (typeof hint === 'string' ? el('span', { class: 'sm', text: hint }) : hint) : null); }
   /* setter: registro existente → se guarda; nuevo → queda en el borrador */
   function gSetter(n, after) {
     return function (fields) {
       if (gOpen && gOpen.id) {
         var rec = gGet(n, gOpen.id);
+        if (n === 'cierres' && 'fecha' in fields && rec && rec.sinFirma) { fields.sinFirma = false; fields.mes = monthOf(fields.fecha); fields.anio = yearOf(fields.fecha); }
         if (n === 'cierres' && 'puntas' in fields) fields.compartida = fields.puntas === 'ambas' ? 'no' : (rec && rec.compartida && rec.compartida !== 'no' ? rec.compartida : 'fuera');
-        if (n === 'cierres' && rec) { var tmp = Object.assign(clone(rec), fields); if (tmp.calc !== 'excel') { applyCalc(tmp); ['bruto', 'agenteMonto', 'martillero', 'franquicia', 'neto', 'brutoUSD', 'netoUSD', 'facturadoUSD'].forEach(function (k) { fields[k] = tmp[k]; }); } }
+        if (n === 'cierres' && rec) { var tmp = Object.assign(clone(rec), fields); if (tmp.calc !== 'excel') { applyCalc(tmp); ['bruto', 'agenteMonto', 'martillero', 'franquicia', 'neto', 'brutoUSD', 'netoUSD', 'facturadoUSD', 'abao', 'aLiquidar', 'juris'].forEach(function (k) { fields[k] = tmp[k]; }); } }
         gUpd(n, gOpen.id, fields);
       } else if (gOpen) { if (n === 'cierres' && 'puntas' in fields) fields.compartida = fields.puntas === 'ambas' ? 'no' : (gOpen.draft.compartida && gOpen.draft.compartida !== 'no' ? gOpen.draft.compartida : 'fuera'); Object.assign(gOpen.draft, fields); }
       if (after) after(fields);
@@ -4387,7 +4510,7 @@ button.g-tr:hover { background: var(--surface-2); }
     var r = gRec(), isNew = !r, d = isNew ? gOpen.draft : r;
     var set = gSetter('reservas', function (f) {
       if (isNew) { if ('operacion' in f || 'punta' in f || 'precio' in f || 'precioMon' in f) gFill(); return; }
-      if ('operacion' in f || 'punta' in f || 'precio' in f || 'precioMon' in f || 'comEst' in f || 'propiedad' in f) gFill();
+      if ('operacion' in f || 'punta' in f || 'precio' in f || 'precioMon' in f || 'comEst' in f || 'propiedad' in f || 'pctCom' in f || 'juris' in f) gFill();
     });
     gHeadSet(isNew ? 'Nueva reserva' : (d.propiedad || 'Reserva sin dirección'), isNew ? [] : [rPill(d), custPill(rCust(d)), d.revisar ? el('button', { type: 'button', class: 'tag muted g-rev', title: 'Importada del Excel: revisá estado y datos', onclick: function () { gUpd('reservas', r.id, { revisar: false }); toast('Marcada como revisada.'); }, text: 'Importada · marcar revisada' }) : null]);
     var est = isNew ? null : sect('Estado', [
@@ -4406,8 +4529,12 @@ button.g-tr:hover { background: var(--surface-2); }
         fld('Operación', inSel(d.operacion || 'venta', Object.keys(OPS).map(function (k) { return [k, OPS[k]]; }), set, 'operacion')),
         fld('Qué punta tenemos', inSel(d.punta || 'comprador', Object.keys(PUNTAS).map(function (k) { return [k, (d.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ)[k]]; }), set, 'punta'))),
       el('div', { class: 'grid' },
+        fld('Jurisdicción', inSel(d.juris || jurisDe(d.localidad), [['PBA', 'Provincia (PBA)'], ['CABA', 'CABA']], set, 'juris')),
+        d.operacion === 'venta' ? fld('Forma de pago', inSel(d.pago || '', [['', 'Sin definir'], ['Escritura', 'Escritura'], ['Crédito', 'Crédito'], ['Boleto', 'Boleto']], set, 'pago')) : null,
+        fld('% comisión total', inNum(d.pctCom, set, 'pctCom', { placeholder: pctTxt(pctDef, 1).replace('%', '') }, 100), 'Suma de nuestras puntas')),
+      el('div', { class: 'grid' },
         fld(d.operacion === 'venta' ? 'Precio ofrecido' : 'Valor del contrato o alquiler', el('span', { class: 'g-money-in' }, inSel(d.precioMon || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'precioMon', { 'aria-label': 'Moneda del precio' }), inNum(d.precio, set, 'precio', { 'aria-label': 'Precio' }))),
-        fld('Comisión estimada (U$S)', inNum(d.comEst, set, 'comEst', { placeholder: ce != null ? fmtN(ce) : '' }), d.comEst != null && d.comEst !== '' ? 'Cargada a mano. Borrala para calcularla sola.' : (d.operacion === 'venta' ? (ce != null ? 'Calculada: ' + pctTxt(pctDef, 1) + ' del precio = ' + usd(ce) : 'Cargá el precio y se calcula sola (' + pctTxt(pctDef, 1) + ')') : 'En alquileres, cargala a mano. Suma al proyectado del asesor.'))),
+        fld('Comisión estimada (U$S)', inNum(d.comEst, set, 'comEst', { placeholder: ce != null ? fmtN(ce) : '' }), d.comEst != null && d.comEst !== '' ? 'Cargada a mano. Borrala para calcularla sola.' : (d.operacion === 'venta' || d.pctCom ? (ce != null ? 'Calculada: ' + pctTxt(d.pctCom != null && d.pctCom !== '' ? +d.pctCom : pctDef, 2) + ' del precio = ' + usd(ce) : 'Cargá el precio y se calcula sola') : 'En alquileres, cargala a mano o poné el %. Suma al proyectado del asesor.'))),
       el('div', { class: 'field' }, el('span', { text: 'Asesor que intervino' }), aseSelect(d.asesorIds, function (ids) { set({ asesorIds: ids }); }, { label: 'Asesores de la reserva' }), !aseAll().length ? el('span', { class: 'sm', text: 'Primero cargá la nómina en Asesores.' }) : null)]);
     var of = d.oferente || {}, pr = d.propietario || {};
     function setObj(key, obj) { return function (f) { var o = {}; o[key] = Object.assign({}, obj, f); set(o); }; }
@@ -4437,8 +4564,12 @@ button.g-tr:hover { background: var(--surface-2); }
         el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', onclick: function () { pagoForm(r, null); } }, icon('plus', 16), rPagos(d).length ? 'Agregar refuerzo' : 'Cargar pago'))],
         { right: el('span', { class: 'sm', text: 'Total ' + totTxt(rTotals(d)) }) });
     }
-    var notas = sect('Notas', [fld('Notas internas', inArea(d.notas, set, 'notas', { rows: d.notas && d.notas.length > 120 ? 5 : 3, placeholder: 'Condiciones, contraoferta, documentación pendiente…' })), isNew ? null : histList(d.historial)]);
-    gBody([est, opSec, dinero, partes, notas]);
+    var notas = sect('Notas', [d.notasLiq ? el('p', { class: 'sm', text: d.notasLiq }) : null, fld('Notas internas', inArea(d.notas, set, 'notas', { rows: d.notas && d.notas.length > 120 ? 5 : 3, placeholder: 'Condiciones, contraoferta, documentación pendiente…' })), isNew ? null : histList(d.historial)]);
+    var dd = d.docs || {};
+    var docsSec = isNew || d.operacion !== 'venta' ? null : sect('Documentación', [el('div', { class: 'grid' }, DOCS.map(function (x) {
+      return fld(x[1], inSel(dd[x[0]] || '', [['', '—']].concat(x[2].map(function (o) { return [o, o]; })), function (f) { var o = Object.assign({}, (gRec() || {}).docs || {}); o[x[0]] = f.v; set({ docs: o }); }, 'v'));
+    }))], { right: docsPend(d) != null ? el('span', { class: 'sm', text: docsPend(d) ? docsPend(d) + ' pendientes' : 'Todo listo' }) : null });
+    gBody([est, opSec, dinero, docsSec, partes, notas]);
     if (isNew) {
       gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }),
         el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }),
@@ -4446,7 +4577,7 @@ button.g-tr:hover { background: var(--surface-2); }
     } else {
       var acts = [];
       if (d.cierreId && gGet('cierres', d.cierreId)) acts.push(el('button', { type: 'button', class: 'btn', text: 'Ver el cierre', onclick: function () { openCie(d.cierreId); } }));
-      else if (d.estado === 'aceptada' || d.estado === 'cerrada') acts.push(el('button', { type: 'button', class: 'btn primary', text: 'Registrar el cierre', onclick: function () { cierreDesdeReserva(r); } }));
+      else if (d.estado !== 'rechazada' && d.estado !== 'caida') acts.push(el('button', { type: 'button', class: 'btn primary', text: 'Pasar a cierre', onclick: function () { cierreDesdeReserva(r); } }));
       acts.unshift(el('span', { class: 'foot-note', text: d.actualizado ? 'Guardado ' + ago(d.actualizado) + (d.editorNombre ? ' por ' + d.editorNombre : '') : '' }));
       acts.splice(1, 0, moreBtn([
         { label: 'Copiar resumen', fn: function () { copyText(resResumen(r)); } },
@@ -4677,7 +4808,7 @@ button.g-tr:hover { background: var(--surface-2); }
     rows.push(['Medio de pago', cap(p.medio || 'efectivo')]);
     var prev = rPagos(r).slice(0, i).filter(function (x) { return +x.monto; });
     if (prev.length) rows.push(['Pagos anteriores', prev.map(function (x) { return money(x.monto, x.moneda); }).join(' + ')]);
-    rows.push(['Asesor interviniente', (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); return a ? (a.nombre || a.apodo) : ''; }).filter(Boolean).join(' y ') || '-']);
+    rows.push(['Asesor interviniente', (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); return a ? aseFull(a) : ''; }).filter(Boolean).join(' y ') || '-']);
     if (p.recibio) rows.push(['Recibido por', p.recibio]);
     rows.forEach(function (rw) { doc.setFont('helvetica', 'bold'); doc.text(rw[0] + ':', M, y); doc.setFont('helvetica', 'normal'); doc.text(String(rw[1]), M + 50, y); y += 7; });
     y += 4;
@@ -4740,14 +4871,16 @@ button.g-tr:hover { background: var(--surface-2); }
   }
   function cierreDesdeReserva(r) {
     if (!r) return;
-    var d = { fecha: r.fechaFirma && dayDiff(r.fechaFirma) <= 0 ? r.fechaFirma : todayStr(), operacion: r.operacion || 'venta', puntas: r.punta || 'ambas', compartida: r.punta === 'ambas' ? 'no' : 'fuera', direccion: r.propiedad || '', localidad: r.localidad || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +gConf.cot, pctVend: +gConf.pctVend, pctComp: +gConf.pctComp, reservaId: r.id, facturado: false, liquidado: false,
-      asesores: (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); return { id: id, parte: 1 / (r.asesorIds.length || 1), split: a && a.split != null ? +a.split : 0.5 }; }) };
+    var pv = +gConf.pctVend, pc = +gConf.pctComp, pt = r.pctCom != null && r.pctCom !== '' ? +r.pctCom : null;
+    if (pt != null) { if (r.punta === 'vendedor') pv = pt; else if (r.punta === 'comprador') pc = pt; else { var tt = pv + pc || 1; pv = pt * pv / tt; pc = pt - pv; } }
+    var d = { fecha: r.fechaFirma && dayDiff(r.fechaFirma) <= 0 ? r.fechaFirma : todayStr(), operacion: r.operacion || 'venta', puntas: r.punta || 'ambas', compartida: r.punta === 'ambas' ? 'no' : 'fuera', direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +gConf.cot, pctVend: pv, pctComp: pc, reservaId: r.id, fechaReserva: r.fecha || '', facturado: false, liquidado: false,
+      asesores: (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); var sp = splitAt(a, r.fechaFirma || todayStr()); return { id: id, parte: 1 / (r.asesorIds.length || 1), split: sp != null ? sp : 0.5 }; }) };
     openCie(null, d);
   }
   function fillCie() {
     var c = gRec(), isNew = !c, d = isNew ? gOpen.draft : c;
     var set = gSetter('cierres', function (f) {
-      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc'].some(function (k) { return k in f; });
+      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad'].some(function (k) { return k in f; });
       if (structural) gFill(); else updCalcBox();
     });
     var opLbl = d.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ;
@@ -4755,12 +4888,14 @@ button.g-tr:hover { background: var(--surface-2); }
     var opSec = sect('Operación', [
       el('div', { class: 'grid' },
         fld('Fecha de firma', inDate(d.fecha, set, 'fecha')),
+        fld('Fecha de reserva', inDate(d.fechaReserva, set, 'fechaReserva'), 'Para el tiempo de operación'),
         fld('Operación', inSel(d.operacion || 'venta', Object.keys(OPS).map(function (k) { return [k, OPS[k]]; }), set, 'operacion')),
         fld('Puntas de la oficina', inSel(d.puntas || 'ambas', Object.keys(opLbl).map(function (k) { return [k, opLbl[k]]; }), set, 'puntas'))),
       fld('Dirección', inText(d.direccion, set, 'direccion', { id: 'gCieDir', placeholder: 'Calle y número' })),
       el('div', { class: 'grid' },
         fld('Localidad', inText(d.localidad, set, 'localidad')),
-        fld('Cómo llegó el cliente', inSel(d.origen || '', [['', 'Sin especificar']].concat(ORIGENES.concat(d.origen && ORIGENES.indexOf(d.origen) < 0 ? [d.origen] : []).map(function (o) { return [o, o]; })), set, 'origen'))),
+        fld('Jurisdicción', inSel(d.juris || jurisDe(d.localidad), [['PBA', 'Provincia (PBA)'], ['CABA', 'CABA']], set, 'juris'), (d.juris || jurisDe(d.localidad)) === 'PBA' ? 'Paga ABAO sobre lo facturado por la oficina' : 'No paga ABAO'),
+        fld('Cómo llegó el cliente', inSel(d.origen || '', [['', 'Sin especificar']].concat(ORIG_CLI.concat(d.origen && ORIG_CLI.indexOf(d.origen) < 0 ? [d.origen] : []).map(function (o) { return [o, o]; })), set, 'origen'))),
       d.puntas === 'ambas' ? null : el('div', { class: 'grid' },
         fld('La otra punta', inSel(d.compartida === 'no' ? 'fuera' : (d.compartida || 'fuera'), [['red', 'Otra oficina de la red'], ['fuera', 'Inmobiliaria fuera de la red'], ['directo', 'Sin inmobiliaria (parte directa)']], set, 'compartida')),
         d.compartida === 'directo' ? null : fld('Inmobiliaria de la otra punta', inText(d.otraParte, set, 'otraParte', { placeholder: 'Nombre de la oficina' })))]);
@@ -4773,8 +4908,8 @@ button.g-tr:hover { background: var(--surface-2); }
         fld('Split %', inNum(x.split, function (f) { var np = parts.map(clone); np[k].split = f.v; setParts(np); }, 'v', { 'aria-label': 'Split de ' + aseName(x.id) }, 100), null, 'sm-f'),
         el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Quitar a ' + aseName(x.id), text: '×', onclick: function () { var np = parts.filter(function (_, j) { return j !== k; }); np.forEach(function (y) { y.parte = 1 / (np.length || 1); }); setParts(np); } }));
     });
-    var addSel = el('select', { 'aria-label': 'Agregar asesor' }, el('option', { value: '', text: parts.length ? '+ Agregar otro asesor' : 'Elegir asesor' }), aseActive().filter(function (a) { return !parts.some(function (x) { return x.id === a.id; }); }).map(function (a) { return el('option', { value: a.id, text: a.apodo || a.nombre }); }));
-    addSel.addEventListener('change', function () { if (!addSel.value) return; var a = gGet('asesores', addSel.value); var np = parts.concat([{ id: addSel.value, split: a && a.split != null ? +a.split : 0.5 }]); np.forEach(function (y) { y.parte = 1 / np.length; }); setParts(np); });
+    var addSel = el('select', { 'aria-label': 'Agregar asesor' }, el('option', { value: '', text: parts.length ? '+ Agregar otro asesor' : 'Elegir asesor' }), aseActive().filter(function (a) { return !parts.some(function (x) { return x.id === a.id; }); }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); }));
+    addSel.addEventListener('change', function () { if (!addSel.value) return; var a = gGet('asesores', addSel.value); var sp = splitAt(a, d.fecha); var np = parts.concat([{ id: addSel.value, split: sp != null ? sp : 0.5 }]); np.forEach(function (y) { y.parte = 1 / np.length; }); setParts(np); });
     var aseSec = sect('Asesores', [aseRows.length ? el('div', { class: 'g-arows' }, aseRows) : null, addSel, el('p', { class: 'sm', text: 'Participación: qué parte de la comisión le corresponde a cada uno (suma 100%). Split: el porcentaje que cobra el asesor.' })]);
     var valSec = sect('Valores', [
       el('div', { class: 'grid' },
@@ -4787,13 +4922,14 @@ button.g-tr:hover { background: var(--surface-2); }
     var factSec = sect('Facturación y liquidación', [
       el('label', { class: 'check' }, (function () { var cb = el('input', { type: 'checkbox' }); cb.checked = !!d.facturado; cb.addEventListener('change', function () { set({ facturado: cb.checked }); }); return cb; })(), 'Facturado'),
       d.facturado ? el('div', { class: 'grid' },
-        fld('Monto facturado (' + (d.moneda || 'U$S') + ')', inNum(d.facturadoMonto != null ? d.facturadoMonto : (d.calc === 'excel' ? null : ''), set, 'facturadoMonto', { placeholder: 'Toda la comisión' })),
+        fld('Monto facturado por la oficina (' + (d.moneda || 'U$S') + ')', inNum(d.facturadoMonto != null ? d.facturadoMonto : (d.calc === 'excel' ? null : ''), set, 'facturadoMonto', { placeholder: 'Toda la comisión' })),
         fld('Nº de factura', inText(d.factura, set, 'factura'))) : null,
       el('label', { class: 'check' }, (function () { var cb = el('input', { type: 'checkbox' }); cb.checked = !!d.liquidado; cb.addEventListener('change', function () { set({ liquidado: cb.checked, liquidadoEl: cb.checked ? todayStr() : '' }); }); return cb; })(), 'Liquidado al asesor' + (d.liquidado && d.liquidadoEl ? ' (' + dmy(d.liquidadoEl) + ')' : ''))]);
     var res = d.reservaId ? gGet('reservas', d.reservaId) : null;
     var notas = sect('Notas', [inArea(d.notas, set, 'notas', { 'aria-label': 'Notas del cierre', placeholder: 'Escribanía, condiciones, pendientes…' }),
       res ? el('button', { type: 'button', class: 'btn ghost', text: 'Ver la reserva de esta operación', onclick: function () { openRes(res.id); } }) : null,
-      d.fuente ? el('p', { class: 'sm', text: 'Origen: ' + d.fuente }) : null]);
+      d.fuente ? el('p', { class: 'sm', text: 'Origen: ' + d.fuente }) : null,
+      d.sinFirma ? el('p', { class: 'warn', text: 'En la planilla de Liquidación figura sin fecha de firma. Confirmá la fecha arriba.' }) : null]);
     gBody([opSec, aseSec, valSec, factSec, notas]);
     updCalcBox();
     if (isNew) {
@@ -4812,12 +4948,15 @@ button.g-tr:hover { background: var(--surface-2); }
     var rows, note;
     if (d.calc === 'excel') {
       rows = [['Comisión bruta', d.bruto], ['Asesores', -(+d.agenteMonto || 0)], ['Martillero', -(+d.martillero || 0)], ['Franquicia', -(+d.franquicia || 0)]];
+      if (+d.abao) rows.push(['ABAO (mitad de la oficina)', -(+d.abao / 2)]);
       note = el('p', { class: 'sm' }, 'Valores tomados de la planilla de liquidación. ', el('button', { type: 'button', class: 'linkish', text: 'Recalcular con las fórmulas', onclick: async function () { var ok = await confirmBox('¿Recalcular este cierre?', 'Se reemplazan los montos de la planilla por el cálculo de la plataforma (valor × porcentaje, split, martillero ' + pctTxt(+gConf.mart) + ', franquicia ' + pctTxt(+gConf.fran) + ' e IIBB sobre lo facturado).', 'Recalcular', false); if (ok) gSetter('cierres', function () { gFill(); })({ calc: 'auto' }); } }));
     } else {
       var k = calcCierre(d);
       rows = [['Comisión bruta', k.bruto], ['Asesores', -k.agentes], ['Martillero (' + pctTxt(+gConf.mart) + ')', -k.mart], ['Franquicia (' + pctTxt(+gConf.fran) + ')', -k.fran]];
       if (k.imp) rows.push(['IIBB s/ facturado (' + pctTxt(+gConf.iibb) + ')', -k.imp]);
-      note = el('p', { class: 'sm', text: 'Los porcentajes de martillero, franquicia e IIBB se cambian en ⋯ → Ajustes de gestión.' });
+      if (k.abao) rows.push(['ABAO ' + pctTxt(gConf.abao != null ? +gConf.abao : 0.06) + ' (mitad de la oficina)', -k.abao / 2]);
+      note = el('div', {}, k.abao ? el('p', { class: 'sm', text: 'ABAO total ' + money(k.abao, d.moneda || 'U$S') + ': la mitad la paga la oficina y la otra mitad se descuenta al asesor. A liquidar al asesor: ' + money(k.aLiquidar, d.moneda || 'U$S') + '.' }) : (k.juris === 'PBA' && !d.facturado ? el('p', { class: 'sm', text: 'Es de Provincia: si la oficina factura, se descuenta ABAO.' }) : null),
+        el('p', { class: 'sm', text: 'Martillero, franquicia, IIBB y ABAO se cambian en ⋯ → Ajustes de gestión.' }));
     }
     var neto = d.calc === 'excel' ? +d.neto : calcCierre(d).neto, bruto = d.calc === 'excel' ? +d.bruto : calcCierre(d).bruto;
     var usdLine = mon === '$' ? ' · ' + usd(d.calc === 'excel' ? cNeto(d) : toUSD(neto, '$', d.cot)) : '';
@@ -4835,7 +4974,7 @@ button.g-tr:hover { background: var(--surface-2); }
     if (o.puntas === 'ambas') o.compartida = 'no';
     var id = gNewId('cierres');
     gSet('cierres', id, o);
-    if (o.reservaId) { var r = gGet('reservas', o.reservaId); if (r) gUpd('reservas', r.id, { cierreId: id, estado: 'cerrada', historial: gLog(r, 'Se registró el cierre') }); }
+    if (o.reservaId) { var r = gGet('reservas', o.reservaId); if (r) gUpd('reservas', r.id, { cierreId: id, estado: 'cerrada', cerradaEl: o.fecha, historial: gLog(r, 'Pasó a cierre (firma ' + dmy(o.fecha) + ')') }); }
     gOpen = { t: 'cie', id: id, draft: {} };
     gF.cieY = o.anio; gF.cieM = 0;
     gFill(); render();
@@ -4848,9 +4987,10 @@ button.g-tr:hover { background: var(--surface-2); }
   }
   function fillAse() {
     var a = gRec(), isNew = !a, d = isNew ? gOpen.draft : a, y = gF.aseY;
+    $('#gp').classList.toggle('wide', !isNew && gOpen.tab === 'ops');
     var s = isNew ? null : aseStats(a, y);
-    gHeadSet(isNew ? 'Nuevo asesor' : (d.apodo || d.nombre || 'Asesor'), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.nombre !== d.apodo ? d.nombre : '', antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
-      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Operaciones'], ['datos', 'Datos']]);
+    gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
+      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], ['datos', 'Datos']]);
     if (isNew || gOpen.tab === 'datos') aseDatos(a, d, isNew);
     else if (gOpen.tab === 'ops') aseOps(a, s, y);
     else aseResumen(a, s, y);
@@ -4893,33 +5033,84 @@ button.g-tr:hover { background: var(--surface-2); }
     gBody([el('div', { class: 'g-pane' }, kp, chart, resSec, histSec)]);
   }
   function aseOps(a, s, y) {
-    var list = s.list.slice().sort(function (x, z) { return String(x.fecha) < String(z.fecha) ? 1 : -1; });
-    var res = G.reservas.filter(function (r) { return (r.asesorIds || []).indexOf(a.id) >= 0; }).sort(function (x, z) { return rSortKey(x) < rSortKey(z) ? 1 : -1; }).slice(0, 30);
-    gBody([el('div', { class: 'g-pane' },
-      el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Cierres ' + y + ' (' + list.length + ')' }),
-        list.length ? el('div', { class: 'g-links' }, list.map(function (c) { var sh = cShare(c, a.id); return el('button', { type: 'button', class: 'g-link', onclick: function () { openCie(c.id); } }, el('b', { text: c.direccion || 'Sin dirección' }), el('span', { class: 'sm', text: dmy(c.fecha) + ' · ' + (OPS[c.operacion] || '') + ' · ' + usd(cBruto(c) * sh) + (sh < 1 ? ' (' + pctTxt(sh, 0) + ' de la operación)' : '') })); })) : el('p', { class: 'hint', text: 'Sin cierres en ' + y + '.' })),
-      el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Reservas (últimas ' + res.length + ')' }),
-        res.length ? el('div', { class: 'g-links' }, res.map(function (r) { return el('button', { type: 'button', class: 'g-link', onclick: function () { openRes(r.id); } }, el('b', { text: r.propiedad || 'Sin dirección' }), el('span', {}, rPill(r), el('span', { class: 'sm', text: ' ' + (r.fecha ? dmy(r.fecha) : '') + ' · ' + totTxt(rTotals(r)) }))); })) : el('p', { class: 'hint', text: 'Sin reservas cargadas.' })))]);
+    var rows = [];
+    G.reservas.forEach(function (r) {
+      if ((r.asesorIds || []).indexOf(a.id) < 0) return;
+      if (r.cierreId && gGet('cierres', r.cierreId)) return;
+      if (r.estado === 'cerrada') return;
+      var yy = yearOf(r.fecha); if (yy && yy < y - 1) return;
+      var sh = 1 / ((r.asesorIds || []).length || 1), b = (rComEst(r) || 0) * sh;
+      rows.push({ k: 'r', o: r, est: rActive(r) ? 'En proceso' : 'Caída', cls: rActive(r) ? 'soon' : 'late', dir: r.propiedad, juris: r.juris || jurisDe(r.localidad), puntas: r.punta, pct: r.pctCom, valor: r.precio, mon: r.precioMon || 'U$S', bruto: b, ase: b * (splitAt(a, r.fechaFirma) || 0), pago: r.pago || '', fr: r.fecha, ff: r.fechaFirma, docs: rActive(r) ? docsPend(r) : null });
+    });
+    s.list.forEach(function (c) {
+      var sh = cShare(c, a.id), b = cBruto(c) * sh, me = cParts(c).filter(function (x) { return x.id === a.id; })[0];
+      var res = c.reservaId ? gGet('reservas', c.reservaId) : null, fr = c.fechaReserva || (res && res.fecha) || '';
+      var pt = (c.puntas !== 'comprador' ? (+c.pctVend || 0) : 0) + (c.puntas !== 'vendedor' ? (+c.pctComp || 0) : 0);
+      rows.push({ k: 'c', o: c, est: c.operacion === 'venta' ? 'Cerrada' : 'Cerrada alq.', cls: 'ok', dir: c.direccion, juris: c.juris || jurisDe(c.localidad), puntas: c.puntas, pct: pt || null, valor: c.valor, mon: c.moneda, bruto: b, ase: b * (me && me.split != null ? +me.split : 0) - (+c.abao ? (c.moneda === '$' ? +c.abao / (+c.cot || 1) : +c.abao) / 2 * sh : 0), pago: c.pago || (res && res.pago) || '', fr: fr, ff: c.fecha, dias: fr && c.fecha ? Math.round((parseDay(String(c.fecha).slice(0, 10)) - parseDay(String(fr).slice(0, 10))) / 864e5) : null });
+    });
+    var ORD = { 'En proceso': 0, 'Cerrada': 1, 'Cerrada alq.': 1, 'Caída': 2 };
+    rows.sort(function (p, q) { return (ORD[p.est] - ORD[q.est]) || (String(p.ff || p.fr || '') < String(q.ff || q.fr || '') ? 1 : -1); });
+    var enProc = rows.filter(function (x) { return x.est === 'En proceso'; }), aCob = enProc.reduce(function (t, x) { return t + x.bruto; }, 0);
+    var dias = rows.filter(function (x) { return x.dias != null && x.dias >= 0; }), dProm = dias.length ? Math.round(dias.reduce(function (t, x) { return t + x.dias; }, 0) / dias.length) : null;
+    var kp = el('div', { class: 'kpis two' },
+      kpi('Objetivo ' + y, s.obj ? usdK(s.obj) : '–', s.obj ? 'Debería ir en ' + usdK(s.esper) : 'Cargalo en Datos'),
+      kpi('Facturado + a facturar', usdK(s.real + aCob), usdK(s.real) + ' cobrado · ' + usdK(aCob) + ' en proceso' + (s.obj ? ' · ' + pctTxt((s.real + aCob) / s.obj, 0) + ' del objetivo' : '')),
+      kpi('Tiempo promedio de operación', dProm != null ? dProm + ' días' : '–', dias.length ? 'De la reserva a la firma (' + dias.length + ' operaciones)' : 'Se calcula con la fecha de reserva y de firma'),
+      kpi('Ticket promedio de venta', s.ticket != null ? usdK(s.ticket) : '–', s.ventas + ' ventas en ' + y));
+    var acc = 0, accO = 0;
+    var mt = el('div', { class: 'mx-wrap' }, el('table', { class: 'g-mini g-plan-m' },
+      el('thead', {}, el('tr', {}, ['Mes', 'Objetivo', 'Obj. acum.', 'Cobrado', 'Cobrado acum.', '%'].map(function (h) { return el('th', { text: h }); }))),
+      el('tbody', {}, MESES.map(function (mn, i) {
+        var o = s.obj * monthShare(i); accO += o; acc += s.byM[i];
+        var now = new Date(), fut = y > now.getFullYear() || (y === now.getFullYear() && i > now.getMonth());
+        return el('tr', { class: fut ? 'fut' : '' }, el('td', { text: cap(mn) }), el('td', { text: s.obj ? fmtN(o) : '–' }), el('td', { text: s.obj ? fmtN(accO) : '–' }), el('td', { text: s.byM[i] ? fmtN(s.byM[i]) : '–' }), el('td', { text: fmtN(acc) }), el('td', { class: s.obj && !fut ? (acc >= accO ? 'ok-t' : 'late-t') : '', text: s.obj ? pctTxt(acc / s.obj, 0) : '–' }));
+      }))));
+    var PT = { ambas: 'C y V', vendedor: 'V', comprador: 'C' };
+    var tbl = el('div', { class: 'mx-wrap' }, el('table', { class: 'g-rank g-plan' },
+      el('thead', {}, el('tr', {}, ['Estado', 'Domicilio', 'Juris', 'Puntas', '%', 'Cierre', 'Bruto', 'Asesor', 'Pago', 'Reserva', 'Firma', 'Días'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+      el('tbody', {}, rows.length ? rows.map(function (x) {
+        return el('tr', { class: 'g-plan-' + x.cls },
+          el('td', {}, tag(x.cls, x.est), x.docs ? el('span', { class: 'sm', text: ' ' + x.docs + ' docs' }) : null),
+          el('th', { scope: 'row' }, el('button', { type: 'button', class: 'linkish', text: x.dir || 'Sin dirección', onclick: function () { if (x.k === 'r') openRes(x.o.id); else openCie(x.o.id); } })),
+          el('td', { text: x.juris || '' }), el('td', { text: PT[x.puntas] || '' }), el('td', { text: x.pct ? pctTxt(+x.pct, 2) : '' }),
+          el('td', { text: x.valor ? money(x.valor, x.mon) : '' }), el('td', { text: x.bruto ? usd(x.bruto) : '' }), el('td', { text: x.ase ? usd(x.ase) : '' }),
+          el('td', { text: x.pago }), el('td', { text: x.fr ? dmy(x.fr) : '' }), el('td', { text: x.ff ? dmy(x.ff) : '' }), el('td', { text: x.dias != null ? String(x.dias) : '' }));
+      }) : el('tr', {}, el('td', { colspan: 12, text: 'Sin operaciones en ' + y + '.' })))));
+    gBody([el('div', { class: 'g-pane' }, kp,
+      el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Operaciones ' + y + ' (' + rows.length + ')' }), tbl,
+        el('p', { class: 'sm', text: 'En proceso: reservas activas con su comisión estimada. Bruto y Asesor muestran su parte; Asesor descuenta la mitad del ABAO.' })),
+      el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Objetivo mes a mes' }), mt))]);
   }
   function aseDatos(a, d, isNew) {
-    var set = gSetter('asesores', function (f) { if ('activo' in f || 'apodo' in f || 'nombre' in f) { gFill(); render(); } });
+    var set = gSetter('asesores', function (f) { if ('activo' in f || 'nombre' in f || 'nacimiento' in f || 'hijos' in f || 'team' in f || 'splits' in f || 'split' in f || 'ingreso' in f) { gFill(); render(); } });
+    var teams = {}; G.asesores.forEach(function (x) { if (x.team) teams[x.team] = 1; }); teams['Team Vértice'] = 1;
+    var tdl = el('datalist', { id: 'gTeams' }, Object.keys(teams).map(function (t) { return el('option', { value: t }); }));
+    var splits = (d.splits || []).map(clone).sort(function (p, q) { return String(p.desde) < String(q.desde) ? -1 : 1; });
+    function setSplits(ns) { set({ splits: ns }); }
     var y = new Date().getFullYear(), obj = d.objetivos || {};
     function setObj(yy) { return function (f) { var o = Object.assign({}, gRec() ? (gRec().objetivos || {}) : (gOpen.draft.objetivos || {})); if (f.v == null) delete o[yy]; else o[yy] = f.v; set({ objetivos: o }); }; }
     gBody([el('div', { class: 'g-pane' },
       sect('Datos personales', [
         el('div', { class: 'grid' },
-          fld('Nombre y apellido', inText(d.nombre, set, 'nombre', { id: 'gAseNom', autocomplete: 'off' })),
-          fld('Apodo', inText(d.apodo, set, 'apodo', { placeholder: 'Como figura en las planillas' }), 'Se usa en listas y tarjetas.')),
+          fld('Nombre y apellido', inText(d.nombre, set, 'nombre', { id: 'gAseNom', autocomplete: 'off' }), d.nombre && d.nombre.trim().indexOf(' ') < 0 ? 'Falta el apellido.' : null),
+          fld('Team', el('span', { class: 'g-dl' }, inText(d.team, set, 'team', { list: 'gTeams', placeholder: 'Sin team' }), tdl))),
+        el('div', { class: 'grid' },
+          fld('Cumpleaños', inDate(d.nacimiento, set, 'nacimiento'), d.nacimiento ? gcalYearly(d, 'cumple') : 'Para avisarte cuando cumple'),
+          fld('¿Es madre o padre?', inSel(d.hijos || '', [['', 'No'], ['madre', 'Sí, madre'], ['padre', 'Sí, padre']], set, 'hijos'), d.hijos === 'madre' ? 'Te avisamos el Día de la Madre' : d.hijos === 'padre' ? 'Te avisamos el Día del Padre' : null)),
         el('div', { class: 'grid' },
           fld('Mail', inText(d.mail, set, 'mail', { type: 'email' }), 'Va en copia del comprobante de reserva.'),
           fld('Teléfono', inText(d.tel, set, 'tel', { type: 'tel' })),
           fld('CUIT', inText(d.cuit, set, 'cuit'))),
-        fld('Otros nombres con los que figura', inText((d.alias || []).join(', '), function (f) { set({ alias: f.v.split(',').map(function (x) { return x.trim(); }).filter(Boolean) }); }, 'v', { placeholder: 'Separados por coma' }))]),
+        fld('Cómo figura en las planillas', inText([d.apodo].concat(d.alias || []).filter(Boolean).join(', '), function (f) { var l = f.v.split(',').map(function (x) { return x.trim(); }).filter(Boolean); set({ apodo: l[0] || '', alias: l.slice(1) }); }, 'v', { placeholder: 'Separados por coma' }), 'Solo para reconocerlo al importar planillas. No se muestra.')]),
       sect('Condiciones', [
         el('div', { class: 'grid' },
-          fld('Fecha de ingreso', inDate(d.ingreso, set, 'ingreso'), d.ingreso ? 'Antigüedad: ' + antig(d.ingreso) : null),
-          fld('Split %', inNum(d.split, set, 'split', null, 100), 'Lo que cobra el asesor de cada comisión.'),
+          fld('Ingreso a la oficina', inDate(d.ingreso, set, 'ingreso'), d.ingreso ? 'Antigüedad: ' + antig(d.ingreso) + '. Te avisamos en cada aniversario.' : null),
+          fld('Split %', inNum(d.split, set, 'split', null, 100), splits.length ? 'Hasta el primer cambio programado.' : 'Lo que cobra el asesor de cada comisión.'),
           fld('Fee mensual (U$S)', inNum(d.fee, set, 'fee'))),
+        el('div', { class: 'g-splits' }, el('span', { class: 'sm', text: 'Cambios de split programados' }),
+          splits.map(function (x, k) { return el('div', { class: 'g-split-row' }, fld('Desde', inDate(x.desde, function (f) { var ns = splits.map(clone); ns[k].desde = f.v; setSplits(ns); }, 'v')), fld('Split %', inNum(x.split, function (f) { var ns = splits.map(clone); ns[k].split = f.v; setSplits(ns); }, 'v', null, 100)), el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Quitar cambio de split', text: '×', onclick: function () { setSplits(splits.filter(function (_, j) { return j !== k; })); } })); }),
+          el('button', { type: 'button', class: 'btn sm-btn', onclick: function () { var nx = new Date().getFullYear() + 1; setSplits(splits.concat([{ desde: nx + '-01-01', split: splitAt(d) }])); } }, icon('plus', 14), 'Programar cambio de split'),
+          el('p', { class: 'sm', text: 'Los cierres nuevos toman el split vigente en la fecha de firma.' })),
         el('div', { class: 'grid' }, [y - 1, y, y + 1].map(function (yy) { return fld('Objetivo ' + yy + ' (U$S)', inNum(obj[yy], setObj(String(yy)), 'v')); })),
         el('p', { class: 'sm', text: 'El objetivo es de facturación bruta (comisión total de sus operaciones). Mes a mes se reparte con la estacionalidad de ⋯ → Ajustes de gestión.' })]),
       isNew ? sect('Notas', [fld('Notas', inArea(d.notas, set, 'notas'))]) : sect('Estado en la oficina', [
@@ -4933,12 +5124,12 @@ button.g-tr:hover { background: var(--surface-2); }
       isNew ? null : el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn danger', text: 'Eliminar de la nómina', onclick: function () {
         var used = G.cierres.some(function (c) { return cShare(c, a.id); }) || G.reservas.some(function (r) { return (r.asesorIds || []).indexOf(a.id) >= 0; });
         if (used) { toast('Tiene cierres o reservas cargados: mejor dalo de baja (destildá "Activo") para no perder sus estadísticas.', { kind: 'error' }); return; }
-        delRec('asesores', a, (a.apodo || a.nombre) + ' de la nómina');
+        delRec('asesores', a, aseFull(a) + ' de la nómina');
       } })))]);
   }
   async function aseBaja(a) {
     if (!a) return;
-    var nombre = a.apodo || a.nombre || 'el asesor';
+    var nombre = aseFull(a) || 'el asesor';
     var fecha = el('input', { type: 'date', value: todayStr() });
     var mot = el('select', {}, ['Renuncia', 'Se fue a otra inmobiliaria', 'Desvinculación', 'Pausa / licencia', 'Otro'].map(function (x) { return el('option', { value: x, text: x }); }));
     var det = el('input', { type: 'text', placeholder: 'Detalle (opcional)' });
@@ -4960,24 +5151,32 @@ button.g-tr:hover { background: var(--surface-2); }
   function aseReincorporar(a) {
     var cur = gGet('asesores', a.id) || a;
     gUpd('asesores', a.id, { activo: true, baja: '', motivoBaja: '', historial: gLog(cur, 'Reincorporado') });
-    gFill(); render(); toast((a.apodo || a.nombre) + ' volvió a estar activo.');
+    gFill(); render(); toast(aseFull(a) + ' volvió a estar activo.');
+  }
+  function gcalYearly(a, kind) {
+    var d = String(kind === 'cumple' ? a.nacimiento : a.ingreso).slice(0, 10);
+    var y = new Date().getFullYear(), md = d.slice(5).replace('-', '');
+    var st = y + md, nx = new Date(y, +d.slice(5, 7) - 1, +d.slice(8, 10) + 1);
+    var en = nx.getFullYear() + String(nx.getMonth() + 1).padStart(2, '0') + String(nx.getDate()).padStart(2, '0');
+    var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent((kind === 'cumple' ? 'Cumpleaños de ' : 'Aniversario en la oficina: ') + aseFull(a)) + '&dates=' + st + '/' + en + '&recur=' + encodeURIComponent('RRULE:FREQ=YEARLY');
+    return el('a', { href: url, target: '_blank', rel: 'noopener', class: 'sm linkish', text: 'Agregar a Google Calendar (todos los años)' });
   }
   function saveNewAse() {
     var d = gOpen.draft, msg = $('#gMsg');
     if (!str(d.nombre) && !str(d.apodo)) { msg.hidden = false; msg.textContent = 'Falta el nombre.'; $('#gAseNom').focus(); return; }
-    var o = clone(d); if (!o.apodo) o.apodo = String(o.nombre).split(' ')[0]; if (!o.nombre) o.nombre = o.apodo;
+    var o = clone(d); if (!o.nombre) o.nombre = o.apodo;
     o.creado = new Date().toISOString();
     var id = gNewId('asesores');
     gSet('asesores', id, o);
     gOpen = { t: 'ase', id: id, tab: 'resumen', draft: {} };
-    gFill(); render(); toast((o.apodo || o.nombre) + ' agregado a la nómina.');
+    gFill(); render(); toast(o.nombre + ' agregado a la nómina.');
   }
 
   /* ===== ajustes ===== */
   function showGConf() {
     var c = gConf;
     function pin(v) { return el('input', { type: 'text', inputmode: 'decimal', value: String(Math.round(+v * 10000) / 100).replace('.', ',') }); }
-    var mart = pin(c.mart), fran = pin(c.fran), iibb = pin(c.iibb), pv = pin(c.pctVend), pc = pin(c.pctComp);
+    var mart = pin(c.mart), fran = pin(c.fran), iibb = pin(c.iibb), abao = pin(c.abao != null ? c.abao : 0.06), pv = pin(c.pctVend), pc = pin(c.pctComp);
     var cot = el('input', { type: 'text', inputmode: 'decimal', value: String(c.cot || '') });
     var est = (c.estac || GCONF_DEF.estac).map(function (v, i) { return el('input', { type: 'text', inputmode: 'decimal', value: String(v), 'aria-label': cap(MESES[i]) + ' %' }); });
     var staff = el('input', { type: 'text', value: (c.staff || []).join(', ') }), cuentas = el('input', { type: 'text', value: (c.cuentas || []).join(', ') });
@@ -4986,7 +5185,7 @@ button.g-tr:hover { background: var(--surface-2); }
     var pie = el('textarea', { rows: 2 }); pie.value = c.pie || '';
     var body = el('div', { class: 'field g-conf' },
       el('span', { class: 'label', text: 'Liquidación de cierres' }),
-      el('div', { class: 'grid' }, fld('Martillero %', mart), fld('Franquicia %', fran), fld('IIBB sobre lo facturado %', iibb), fld('Dólar de referencia ($)', cot)),
+      el('div', { class: 'grid' }, fld('Martillero %', mart), fld('Franquicia %', fran), fld('IIBB sobre lo facturado %', iibb), fld('ABAO (PBA) % s/ facturado', abao), fld('Dólar de referencia ($)', cot)),
       el('span', { class: 'label', text: 'Comisión estimada de reservas (ventas)' }),
       el('div', { class: 'grid' }, fld('Punta vendedora %', pv), fld('Punta compradora %', pc)),
       el('span', { class: 'label', text: 'Estacionalidad de los objetivos (% del año en cada mes)' }),
@@ -5000,7 +5199,7 @@ button.g-tr:hover { background: var(--surface-2); }
       el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () {
         function p(i, d) { var v = numIn(i.value); return v == null ? d : v / 100; }
         var e = est.map(function (i, k) { var v = numIn(i.value); return v == null ? GCONF_DEF.estac[k] : v; });
-        gSaveConf({ mart: p(mart, c.mart), fran: p(fran, c.fran), iibb: p(iibb, c.iibb), pctVend: p(pv, c.pctVend), pctComp: p(pc, c.pctComp), cot: numIn(cot.value) || c.cot, estac: e,
+        gSaveConf({ mart: p(mart, c.mart), fran: p(fran, c.fran), iibb: p(iibb, c.iibb), abao: p(abao, c.abao != null ? c.abao : 0.06), pctVend: p(pv, c.pctVend), pctComp: p(pc, c.pctComp), cot: numIn(cot.value) || c.cot, estac: e,
           staff: staff.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean), cuentas: cuentas.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean),
           razon: razon.value.trim(), domicilio: dom.value.trim(), legal: legal.value.trim(), pie: pie.value.trim() });
         closeModal(true); toast('Ajustes guardados para todo el equipo.'); render();
@@ -5015,13 +5214,35 @@ button.g-tr:hover { background: var(--surface-2); }
   function addAseFromCand(c) {
     var ex = aseFromCand(c); if (ex) { setView('ase'); openAse(ex.id); return; }
     var id = gNewId('asesores');
-    gSet('asesores', id, { nombre: c.nombre || '', apodo: String(c.nombre || '').split(' ')[0], mail: c.email || '', tel: c.telefono || '', ingreso: validDate(c.obInicio) || validDate(String(c.incorporadoEl || '').slice(0, 10)) || todayStr(), split: 0.5, fee: 80, activo: true, objetivos: {}, candidatoId: c.id, creado: new Date().toISOString() });
+    gSet('asesores', id, { nombre: c.nombre || '', mail: c.email || '', tel: c.telefono || '', ingreso: validDate(c.obInicio) || validDate(String(c.incorporadoEl || '').slice(0, 10)) || todayStr(), split: 0.5, fee: 80, activo: true, objetivos: {}, candidatoId: c.id, creado: new Date().toISOString() });
     toast((c.nombre || 'El agente') + ' se agregó a la nómina. Completá split y objetivo.', { action: { label: 'Abrir', fn: function () { setView('ase'); lastFocus = null; openAse(id); } } });
   }
 
   /* ===== respaldo: datos de gestión ===== */
   async function importGestion(data) {
     var sets = [['asesores', data.asesores], ['cierres', data.cierres], ['reservas', data.reservas]].filter(function (x) { return Array.isArray(x[1]) && x[1].length; });
+    var upd = data.actualizar && typeof data.actualizar === 'object' ? data.actualizar : null;
+    if (!sets.length && upd) {
+      var items = []; Object.keys(upd).forEach(function (n) { if (G[n] && Array.isArray(upd[n])) upd[n].forEach(function (x) { if (x && x.id) items.push([n, x]); }); });
+      var dels = []; if (data.borrar && typeof data.borrar === 'object') Object.keys(data.borrar).forEach(function (n) { if (G[n] && Array.isArray(data.borrar[n])) data.borrar[n].forEach(function (id) { if (gGet(n, id)) dels.push([n, id]); }); });
+      if (!items.length && !dels.length) return null;
+      var nNew = items.filter(function (x) { return !gGet(x[0], x[1].id); }).length;
+      var okU = await confirmBox('Actualizar datos', 'Se actualizan ' + (items.length - nNew) + ' registros' + (nNew ? ', se agregan ' + nNew + ' nuevos' : '') + (dels.length ? ' y se quitan ' + dels.length + ' que estaban duplicados' : '') + '. Solo cambian los campos que trae el archivo; el resto se mantiene.', 'Actualizar', false);
+      if (!okU) return { done: 0, failed: 0, cancelled: true };
+      var dn = 0, fl = 0;
+      for (var q = 0; q < dels.length; q++) { try { if (gDb) await gCols[dels[q][0]].doc(dels[q][1]).delete(); G[dels[q][0]] = G[dels[q][0]].filter(function (x) { return x.id !== dels[q][1]; }); dn++; } catch (e) { fl++; } }
+      for (var u = 0; u < items.length; u++) {
+        var n2 = items[u][0], f2 = clone(items[u][1]), id2 = f2.id; delete f2.id;
+        try {
+          if (gGet(n2, id2)) { if (gDb) await gCols[n2].doc(id2).update(JSON.parse(JSON.stringify(f2))); Object.assign(gGet(n2, id2), f2); }
+          else { if (gDb) await gCols[n2].doc(id2).set(JSON.parse(JSON.stringify(f2))); f2.id = id2; G[n2].push(f2); }
+          dn++;
+        } catch (e) { fl++; }
+      }
+      ['asesores', 'reservas', 'cierres'].forEach(function (n) { gSaveLocal(n); });
+      gRefresh(); render();
+      return { done: dn, failed: fl };
+    }
     if (!sets.length) return null;
     var total = sets.reduce(function (s, x) { return s + x[1].length; }, 0);
     var desc = sets.map(function (x) { return x[1].length + ' ' + x[0]; }).join(', ');
@@ -5069,6 +5290,74 @@ button.g-tr:hover { background: var(--surface-2); }
       lines.push([dmy(r.fecha), r.propiedad, r.localidad, OPS[r.operacion] || '', aseNames(r.asesorIds), rEst(r).name, r.oferente && r.oferente.nombre || '', r.precio ? money(r.precio, r.precioMon) : '', totTxt(rTotals(r)), CUST[rCust(r)].name, dmy(r.vence), dmy(r.fechaFirma)].map(csvCell).join(';'));
     });
     await saveFile('reservas-' + todayStr() + '.csv', '﻿' + lines.join('\r\n'));
+  }
+
+  /* ===== Tablero: estadísticas del embudo ===== */
+  var TS_KEY = 'embudo-tstats';
+  function stColor(id) { return 'var(--c-' + (id === 'coordinar-ingreso' ? 'ingreso' : id) + ')'; }
+  function renderTStats() {
+    var box = $('#tstats'); if (!box) return;
+    var open = lsGet(TS_KEY) !== '0';
+    var now = new Date(), y = now.getFullYear(), mes = todayStr().slice(0, 7);
+    var activos = cands.filter(function (c) { return !CLOSED[c.estado]; });
+    var ivMes = 0, ivProx = 0, wk = new Date(Date.now() + 7 * 864e5);
+    cands.forEach(function (c) { ivsOf(c).forEach(function (iv) { var d = parseDT(iv.fecha); if (!d) return; if (String(iv.fecha).slice(0, 7) === mes && d <= now) ivMes++; if (d >= now && d <= wk) ivProx++; }); });
+    var incY = cands.filter(function (c) { return c.estado === 'se-suma' && yearOf(c.incorporadoEl || c.actualizado) === y; }).length;
+    var ents = cands.filter(wasInterviewed), incE = ents.filter(function (c) { return c.estado === 'se-suma'; }).length;
+    var head = el('button', { type: 'button', class: 'ts-toggle', 'aria-expanded': String(open), onclick: function () { lsSet(TS_KEY, open ? '0' : '1'); renderTStats(); } },
+      el('span', { class: 'g-h3', text: 'Estadísticas del embudo' }), el('span', { class: 'sm', text: open ? 'Ocultar' : activos.length + ' en proceso · ' + ivProx + ' entrevistas en 7 días · ' + incY + ' incorporados en ' + y + ' · Ver' }));
+    if (!open) { box.replaceChildren(head); return; }
+    var kp = el('div', { class: 'kpis' },
+      kpi('En proceso', String(activos.length), 'Candidatos activos en el embudo'),
+      kpi('Entrevistas', String(ivMes), 'Realizadas este mes · ' + ivProx + ' en los próximos 7 días'),
+      kpi('Incorporados ' + y, String(incY), cands.filter(function (c) { return c.estado === 'se-suma' && !c.obFin; }).length + ' en onboarding'),
+      kpi('Conversión', ents.length ? pctTxt(incE / ents.length, 0) : '–', 'De los entrevistados, cuántos se sumaron (' + incE + ' de ' + ents.length + ')'));
+    // embudo por etapa
+    var mx = 1; STAGES.forEach(function (s) { mx = Math.max(mx, cands.filter(function (c) { return c.estado === s.id; }).length); });
+    var funnel = el('section', { class: 'g-card' }, el('h3', { class: 'g-h3', text: 'Por etapa' }),
+      el('div', { class: 'hbars' }, STAGES.map(function (s) {
+        var n = cands.filter(function (c) { return c.estado === s.id; }).length;
+        return el('button', { type: 'button', class: 'hbar', onclick: function () { filter = s.id; render(); var b = $('#board'); if (b) b.scrollIntoView({ block: 'start' }); }, title: 'Ver ' + s.name },
+          el('span', { class: 'hbar-l', text: s.name }), el('span', { class: 'hbar-t' }, el('i', { style: 'width:' + Math.max(n ? 3 : 0, Math.round(n * 100 / mx)) + '%;background:' + stColor(s.id) })), el('b', { text: String(n) }));
+      })));
+    // últimos 6 meses
+    var ms = [];
+    for (var i = 5; i >= 0; i--) { var d = new Date(y, now.getMonth() - i, 1); ms.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')); }
+    var data = ms.map(function (m) {
+      var car = cands.filter(function (c) { return String(c.creado || '').slice(0, 7) === m; }).length;
+      var ent = 0; cands.forEach(function (c) { if (ivsOf(c).some(function (iv) { return String(iv.fecha).slice(0, 7) === m && parseDT(iv.fecha) <= now; })) ent++; else if (String(c.entrevistadoEl || '').slice(0, 7) === m) ent++; });
+      var inc = cands.filter(function (c) { return c.estado === 'se-suma' && String(c.incorporadoEl || '').slice(0, 7) === m; }).length;
+      return { m: m, car: car, ent: ent, inc: inc };
+    });
+    var mx2 = 1; data.forEach(function (x) { mx2 = Math.max(mx2, x.car, x.ent, x.inc); });
+    var months = el('section', { class: 'g-card' },
+      el('div', { class: 'g-card-h' }, el('h3', { class: 'g-h3', text: 'Últimos 6 meses' }),
+        el('span', { class: 'leg' }, el('span', {}, el('i', { style: 'background:var(--c-coordinar)' }), 'Cargados'), el('span', {}, el('i', { style: 'background:var(--c-realizada)' }), 'Entrevistados'), el('span', {}, el('i', { style: 'background:var(--c-se-suma)' }), 'Incorporados'))),
+      el('div', { class: 'bchart small ts6' }, data.map(function (x) {
+        var mm = +x.m.slice(5, 7) - 1;
+        return el('div', { class: 'bc', role: 'img', 'aria-label': cap(MESES[mm]) + ': ' + x.car + ' cargados, ' + x.ent + ' entrevistados, ' + x.inc + ' incorporados', title: cap(MESES[mm]) + ' · ' + x.car + ' cargados · ' + x.ent + ' entrevistados · ' + x.inc + ' incorporados' },
+          el('span', { class: 'bc-v', text: x.car + ' · ' + x.ent + ' · ' + x.inc }),
+          el('span', { class: 'bc-bars' }, el('i', { style: 'height:' + Math.round(x.car * 100 / mx2) + '%;background:var(--c-coordinar)' }), el('i', { style: 'height:' + Math.round(x.ent * 100 / mx2) + '%;background:var(--c-realizada)' }), el('i', { style: 'height:' + Math.round(x.inc * 100 / mx2) + '%;background:var(--c-se-suma)' })),
+          el('span', { class: 'bc-m', text: MES3[mm] }));
+      })));
+    // efectividad por origen
+    var orig = {};
+    cands.forEach(function (c) { var k = c.origen || 'Sin especificar'; var o = orig[k] || (orig[k] = { n: 0, e: 0, i: 0 }); o.n++; if (wasInterviewed(c)) o.e++; if (c.estado === 'se-suma') o.i++; });
+    var ok = Object.keys(orig).sort(function (a, b) { return orig[b].i - orig[a].i || orig[b].n - orig[a].n; });
+    var origen = el('section', { class: 'g-card' }, el('h3', { class: 'g-h3', text: 'Efectividad por origen' }),
+      el('table', { class: 'g-mini' }, el('thead', {}, el('tr', {}, el('th', { text: '' }), el('th', { text: 'Cargados' }), el('th', { text: 'Entrev.' }), el('th', { text: 'Ingresos' }), el('th', { text: 'Efectividad' }))),
+        el('tbody', {}, ok.map(function (k) { var o = orig[k]; var ef = o.n ? o.i / o.n : 0; return el('tr', {}, el('td', {}, k, el('span', { class: 'minibar', style: 'width:' + Math.round(ef * 100) + '%;background:var(--c-se-suma);opacity:1' })), el('td', { text: String(o.n) }), el('td', { text: String(o.e) }), el('td', { text: String(o.i) }), el('td', { text: o.n ? pctTxt(ef, 0) : '–' })); }))),
+      el('p', { class: 'sm', text: 'Efectividad: incorporados sobre cargados.' }));
+    // responsables + motivos
+    var resp = {}; activos.forEach(function (c) { var k = c.responsable || 'Sin asignar'; resp[k] = (resp[k] || 0) + 1; });
+    var mot = {}; cands.filter(function (c) { return c.estado === 'descartado'; }).forEach(function (c) { var k = c.motivo || 'Sin especificar'; mot[k] = (mot[k] || 0) + 1; });
+    var mk = Object.keys(mot).sort(function (a, b) { return mot[b] - mot[a]; }).slice(0, 5), mxm = mk.length ? mot[mk[0]] : 1;
+    var rk = Object.keys(resp).sort(function (a, b) { return resp[b] - resp[a]; }), mxr = rk.length ? resp[rk[0]] : 1;
+    var who = el('section', { class: 'g-card' }, el('h3', { class: 'g-h3', text: 'Quién los sigue' }),
+      el('div', { class: 'hbars' }, rk.map(function (k) { return el('div', { class: 'hbar' }, el('span', { class: 'hbar-l', text: k }), el('span', { class: 'hbar-t' }, el('i', { style: 'width:' + Math.round(resp[k] * 100 / mxr) + '%;background:' + (EQUIPO.indexOf(k) >= 0 ? pColor(k) : 'var(--line)') })), el('b', { text: String(resp[k]) })); })),
+      mk.length ? el('h3', { class: 'g-h3', style: 'margin-top:6px', text: 'Por qué no avanzan' }) : null,
+      mk.length ? el('div', { class: 'hbars' }, mk.map(function (k) { return el('div', { class: 'hbar' }, el('span', { class: 'hbar-l', text: k }), el('span', { class: 'hbar-t' }, el('i', { style: 'width:' + Math.round(mot[k] * 100 / mxm) + '%;background:var(--c-descartado)' })), el('b', { text: String(mot[k]) })); })) : null);
+    box.replaceChildren(head, kp, el('div', { class: 'ts-grid' }, funnel, months, origen, who));
   }
 
   /* ---------- arranque ---------- */
