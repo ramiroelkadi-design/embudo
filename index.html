@@ -3,24 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Embudo de Asesores</title>
+<title>Juntos Gestión</title>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0B3A8F">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<meta name="theme-color" content="#012169">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: tablero con una columna por etapa (escritorio) o pestañas por etapa (celular). La ficha y el chat se abren como panel lateral que no tapa el tablero cuando hay lugar, o a pantalla completa en el celular. */
 :root {
-  --bg: #EEF1F6;
+  --bg: #F3F5F9;
   --surface: #FFFFFF;
   --surface-2: #F5F7FB;
   --ink: #142036;
   --ink-2: #3F4C66;
-  --line: #D4DCE8;
-  --accent: #0B3A8F;
+  --line: #D9DFEA;
+  --accent: #012169;
   --accent-ink: #FFFFFF;
-  --accent-soft: #E3EBFA;
+  --accent-soft: #E6ECFA;
   --late: #A8221A;
   --late-bg: #FBE9E7;
   --today: #7A4F00;
@@ -39,8 +39,9 @@
   --p-eri: #D61F9B;
   --p-vero: #7C3AED;
   --p-rami: #0E9F6E;
-  --f-display: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --f-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-display: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --brand: #012169; --brand-2: #1F69FF; --brand-ink: #FFFFFF; --side-w: 236px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -801,6 +802,83 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
   .tools #more { margin-left: auto; }
   .hoy-grid { grid-template-columns: 1fr; }
 }
+/* ===== Juntos Gestión: marca y menú lateral ===== */
+body { padding-left: calc(var(--side-w) + 24px); }
+body.side-mini { --side-w: 68px; }
+.app { max-width: 1600px; }
+h1, h2, h3, .g-title h2, .g-h3, .kpi-v, .card-name { font-family: var(--f-display); letter-spacing: -0.01em; }
+.side { position: fixed; z-index: 60; inset: 0 auto 0 0; width: var(--side-w); background: var(--brand); color: var(--brand-ink); display: flex; flex-direction: column; gap: 6px; padding: max(16px, env(safe-area-inset-top, 0px)) 12px max(14px, env(safe-area-inset-bottom, 0px)); overflow-y: auto; transition: width .18s ease, transform .2s ease; }
+.side-brand { display: flex; align-items: center; gap: 10px; padding: 4px 6px 12px; border-bottom: 1px solid rgba(255,255,255,.14); margin-bottom: 6px; }
+.side-logo { flex: 0 0 auto; width: 38px; height: 38px; display: inline-flex; }
+.side-logo svg { display: block; }
+.side-name { display: flex; flex-direction: column; font: 600 17px/1.15 var(--f-display); min-width: 0; white-space: nowrap; }
+.side-name b { font-weight: 800; }
+.side-name small { font: 500 11.5px/1.3 var(--f-body); opacity: .72; overflow: hidden; text-overflow: ellipsis; }
+.side-search { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 10px; border: 1px solid rgba(255,255,255,.18); border-radius: 9px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.85); font-size: 14px; text-align: left; }
+.side-search:hover { background: rgba(255,255,255,.14); }
+.side-search kbd { margin-left: auto; font: 600 11px/1 var(--f-body); padding: 3px 5px; border-radius: 5px; background: rgba(255,255,255,.14); }
+.views.side-nav { display: flex !important; flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; overflow: visible; max-width: none; }
+.side-nav .vgl { display: block !important; padding: 14px 10px 4px; font: 700 10.5px/1 var(--f-body); letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+.side-nav .vbtn { display: flex; align-items: center; gap: 11px; width: 100%; min-height: 42px; padding: 8px 10px; border: 0; border-radius: 9px; background: none; color: rgba(255,255,255,.86); font: 500 14.5px/1.2 var(--f-body); text-align: left; position: relative; }
+.side-nav .vbtn:hover { background: rgba(255,255,255,.09); color: #fff; }
+.side-nav .vbtn[aria-pressed="true"] { background: #fff; color: var(--brand); font-weight: 700; box-shadow: none; }
+.side-nav .vbtn[aria-pressed="true"]::before { content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 4px; border-radius: 0 4px 4px 0; background: var(--brand-2); }
+.side-nav .vbtn .ico { opacity: .95; }
+.side-nav .vl { flex: 1; white-space: nowrap; }
+.views.side-nav { align-items: stretch !important; width: 100% !important; justify-content: flex-start !important; }
+.side-nav .vbtn .ico { flex: 0 0 auto; }
+.side-nav .vbtn { width: 100% !important; flex: 0 0 auto !important; align-self: stretch !important; }
+.side-nav .vgl { margin: 0 !important; align-self: stretch !important; }
+.side-nav .bn { margin-left: auto; background: var(--brand-2) !important; color: #fff !important; }
+.side-nav .vbtn[aria-pressed="true"] .bn { background: var(--brand) !important; }
+.side-nav .bn.alert { background: #FF6B5E !important; color: #fff !important; }
+.side-foot { margin-top: auto; display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.14); font-size: 12.5px; color: rgba(255,255,255,.7); }
+.side-mini-btn { border: 0; background: rgba(255,255,255,.08); color: #fff; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; }
+.side-user { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.side-mini .side-name, body.side-mini .side-search .sl, body.side-mini .side-search kbd, body.side-mini .side-nav .vl, body.side-mini .side-nav .vgl, body.side-mini .side-user { display: none !important; }
+body.side-mini .side-search { justify-content: center; padding: 9px 0; }
+body.side-mini .side-nav .vbtn { justify-content: center; padding: 8px 0; }
+body.side-mini .side-nav .bn { position: absolute; top: 2px; right: 2px; min-width: 16px; height: 16px; font-size: 10px; padding: 0 4px; }
+body.side-mini .side-mini-btn .ico { transform: scaleX(-1); }
+.side-nav .ico svg, .side-search .ico svg, .side-mini-btn .ico svg { stroke-width: 1.75; }
+.side-nav .vbtn[aria-pressed="true"] .ico svg { stroke-width: 2.1; }
+body.side-mini .side-foot { justify-content: center; }
+.top { align-items: center; }
+.brand h1 { display: flex; align-items: center; gap: 10px; font: 800 26px/1.1 var(--f-display); color: var(--ink); }
+.v-g .brand #stats { display: none; }
+.v-g .top { justify-content: flex-end; }
+.v-g .brand h1 #pageTitle { display: none; }
+.btn.primary { background: var(--accent); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.15); }
+.kpi { border-radius: 12px; box-shadow: 0 1px 0 rgba(1,33,105,.04); }
+.g-card, .g-table, .tstats { box-shadow: 0 1px 2px rgba(1,33,105,.05); }
+.g-th { background: #F0F3F9; }
+.login-brand { display: flex; align-items: center; gap: 12px; }
+.login-brand span:last-child { display: flex; flex-direction: column; font: 600 22px/1.15 var(--f-display); }
+.login-brand small { font: 500 12.5px/1.3 var(--f-body); color: var(--ink-2); }
+div.login { background: linear-gradient(160deg, var(--brand) 0 42%, var(--bg) 42% 100%); }
+.login-brand .side-logo { width: 44px; height: 44px; }
+.login-brand span:last-child { display: block !important; }
+.login-brand small { display: block; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --brand: #0A1A45; --brand-2: #4D8BFF; } :root:not([data-theme="light"]) .side-nav .vbtn[aria-pressed="true"] { background: #E8EEFF; color: #0A1A45; } :root:not([data-theme="light"]) .g-th { background: var(--surface-2); } }
+:root[data-theme="dark"] { --brand: #0A1A45; --brand-2: #4D8BFF; }
+:root[data-theme="dark"] .side-nav .vbtn[aria-pressed="true"] { background: #E8EEFF; color: #0A1A45; }
+@media (min-width: 900px) and (max-width: 1180px) { body:not(.side-mini) { --side-w: 212px; } }
+@media (max-width: 899px) {
+  body, body.side-mini { padding-left: max(14px, env(safe-area-inset-left, 0px)); --side-w: 270px; }
+  .side { transform: translateX(-102%); box-shadow: none; }
+  body.side-open .side { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.35); }
+  body.side-mini .side-name, body.side-mini .side-search .sl, body.side-mini .side-search kbd, body.side-mini .side-nav .vl, body.side-mini .side-nav .vgl, body.side-mini .side-user { display: revert !important; }
+  .side-mini-btn { display: none; }
+  .side-scrim { position: fixed; inset: 0; z-index: 59; background: rgba(1,10,30,.45); }
+  .brand h1 { font-size: 20px; gap: 6px; }
+  .brand h1 #menuBtn { margin-left: -8px; }
+  .v-g .brand h1 #pageTitle { display: inline; }
+  .v-g .top { justify-content: space-between; }
+  .v-g .brand { display: block; }
+  .brand { flex: 1 1 auto; }
+  .tools { flex: 0 0 auto; }
+}
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -813,7 +891,7 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
 <body>
 
 <div id="login" class="login"><div class="login-card">
-  <h1>Embudo de Asesores</h1>
+  <h1 class="login-brand"><span class="side-logo" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%"><rect width="64" height="64" rx="14" fill="#1F69FF"/><path d="M14 50V28L32 14l18 14v22z" fill="#fff"/><path d="M26 50V37a6 6 0 0 1 12 0v13z" fill="#012169"/></svg></span><span>Juntos <b>Gestión</b><small>Coldwell Banker Juntos · Olivos</small></span></h1>
   <p id="loginMsg">Cargando…</p>
   <button id="loginBtn" class="btn primary" type="button" hidden>Entrar con Google</button>
 </div></div>
@@ -1019,10 +1097,28 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
 })();
 
 </script>
+
+<aside id="side" class="side" aria-label="Menú">
+  <div class="side-brand"><span class="side-logo" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%"><rect width="64" height="64" rx="14" fill="#1F69FF"/><path d="M14 50V28L32 14l18 14v22z" fill="#fff"/><path d="M26 50V37a6 6 0 0 1 12 0v13z" fill="#012169"/></svg></span><span class="side-name"><span><b>Juntos</b> Gestión</span><small>Coldwell Banker · Olivos</small></span></div>
+  <button id="sideSearch" class="side-search" type="button"><span data-icon="search" data-size="16"></span><span class="sl">Buscar</span><kbd>Ctrl K</kbd></button>
+  <nav id="views" class="views side-nav" aria-label="Secciones">
+    <button type="button" class="vbtn" data-v="hoy" aria-pressed="false"><span data-icon="home" data-size="20"></span><span class="vl">Inicio</span><span id="hoyN" class="bn" hidden></span></button>
+    <span class="vgl" aria-hidden="true">Reclutamiento</span>
+    <button type="button" class="vbtn" data-v="tablero" aria-pressed="true"><span data-icon="board" data-size="20"></span><span class="vl">Tablero</span></button>
+    <button type="button" class="vbtn" data-v="cal" aria-pressed="false"><span data-icon="calendar" data-size="20"></span><span class="vl">Calendario</span></button>
+    <button type="button" class="vbtn" data-v="onb" aria-pressed="false"><span data-icon="grad" data-size="20"></span><span class="vl">Onboarding</span><span id="onbN" class="bn" hidden></span></button>
+    <span class="vgl vgl-g" aria-hidden="true">Gestión</span>
+    <button type="button" class="vbtn" data-v="res" aria-pressed="false"><span data-icon="receipt" data-size="20"></span><span class="vl">Reservas</span><span id="resN" class="bn alert" hidden></span></button>
+    <button type="button" class="vbtn" data-v="cie" aria-pressed="false"><span data-icon="key" data-size="20"></span><span class="vl">Cierres</span></button>
+    <button type="button" class="vbtn" data-v="ase" aria-pressed="false"><span data-icon="users" data-size="20"></span><span class="vl">Asesores</span><span id="aseN" class="bn" hidden></span></button>
+  </nav>
+  <div class="side-foot"><button id="sideMini" class="side-mini-btn" type="button" aria-label="Achicar el menú" title="Achicar el menú"><span data-icon="sidechev" data-size="16"></span></button><span id="sideUser" class="side-user"></span></div>
+</aside>
+<div id="sideScrim" class="side-scrim" hidden></div>
 <div class="app" id="app">
   <header class="top" id="top">
     <div class="brand">
-      <h1><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0B3A8F"/><path d="M12 13H52L37 32V44L27 39V32Z" fill="#fff"/><circle cx="20" cy="53" r="4" fill="#FF6FD0"/><circle cx="32" cy="53" r="4" fill="#B79CFF"/><circle cx="44" cy="53" r="4" fill="#5FD6A3"/></svg><span>Embudo de Asesores</span></h1>
+      <h1><button id="menuBtn" class="btn ghost icon mob-only" type="button" aria-label="Abrir el menú de secciones" aria-controls="side" aria-expanded="false"><span data-icon="menu"></span></button><span id="pageTitle">Inicio</span></h1>
       <p id="stats" class="sub">Coldwell Banker Juntos · Olivos</p>
     </div>
     <div class="tools">
@@ -1036,17 +1132,6 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
       <button id="more" class="btn icon" type="button" aria-label="Más opciones" aria-haspopup="menu"><span data-icon="dots"></span></button>
     </div>
   </header>
-  <nav id="views" class="views" aria-label="Vista">
-    <button type="button" class="vbtn" data-v="hoy" aria-pressed="false">Inicio<span id="hoyN" class="bn" hidden></span></button>
-    <span class="vsep" aria-hidden="true"></span><span class="vgl" aria-hidden="true">Reclutamiento</span>
-    <button type="button" class="vbtn" data-v="tablero" aria-pressed="true">Tablero</button>
-    <button type="button" class="vbtn" data-v="cal" aria-pressed="false">Calendario</button>
-    <button type="button" class="vbtn" data-v="onb" aria-pressed="false">Onboarding<span id="onbN" class="bn" hidden></span></button>
-    <span class="vsep vgl-g" aria-hidden="true"></span><span class="vgl vgl-g" aria-hidden="true">Gestión</span>
-    <button type="button" class="vbtn" data-v="res" aria-pressed="false">Reservas<span id="resN" class="bn alert" hidden></span></button>
-    <button type="button" class="vbtn" data-v="cie" aria-pressed="false">Cierres</button>
-    <button type="button" class="vbtn" data-v="ase" aria-pressed="false">Asesores<span id="aseN" class="bn" hidden></span></button>
-  </nav>
   <p id="syncnote" class="note" hidden></p>
   <section id="tstats" class="tstats" aria-label="Estadísticas del embudo" hidden></section>
   <section id="agenda" class="agenda" aria-label="Agenda" hidden></section>
@@ -1226,6 +1311,15 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
   var MIC_KEY = 'embudo-mic-blocked';
   var ICONS = {
     search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+    home: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    board: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/>',
+    calendar: '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/>',
+    grad: '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+    receipt: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
+    key: '<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    menu: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
+    sidechev: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     dots: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
     chev: '<path d="M6 9l6 6 6-6"/>',
@@ -2027,6 +2121,9 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
     var oldBoard = document.querySelector('.board');
     var sl = oldBoard ? oldBoard.scrollLeft : 0;
     $('#stats').textContent = statsText();
+    var PT = { hoy: 'Inicio', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores' };
+    $('#pageTitle').textContent = PT[view] || 'Inicio'; document.title = (PT[view] ? PT[view] + ' · ' : '') + 'Juntos Gestión';
+    var su = $('#sideUser'); if (su) su.textContent = me.name ? me.name : '';
     document.body.classList.toggle('v-cal', view === 'cal');
     document.body.classList.toggle('v-onb', view === 'onb');
     $('#cal').hidden = view !== 'cal';
@@ -3291,7 +3388,7 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
     toast('Preparando el respaldo…');
     var all = await collectAll();
     var data = Object.assign({ version: 2, exportado: new Date().toISOString(), candidatos: all.map(function (r) { var o = clone(r.c); delete o.notas; o.notas = r.notes; return o; }) }, exportGestion());
-    await saveFile('respaldo-embudo-' + todayStr() + '.json', JSON.stringify(data, null, 1));
+    await saveFile('respaldo-juntos-' + todayStr() + '.json', JSON.stringify(data, null, 1));
     try { if (canGestion()) gSaveConf({ ultimoRespaldo: todayStr(), ultimoRespaldoPor: meName() }); } catch (e) {}
   }
   var KEEP = ['nombre', 'inmobiliaria', 'telefono', 'email', 'linkedin', 'origen', 'proximoContacto', 'entrevista', 'entrevistas', 'motivo', 'estado', 'creado', 'actualizado', 'ultimaNota', 'ultimoContacto', 'textoNotas', 'asignado', 'responsable', 'editor', 'entrevistadoEl', 'incorporadoEl', 'obInicio', 'obSeg', 'obFin', 'obRes', 'obMotivo', 'obx'];
@@ -3657,7 +3754,7 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
     }).join('\n');
     var last = chat[chat.length - 2].text;
     return [
-      'Sos el asistente del CRM de reclutamiento de asesores de Coldwell Banker Juntos (oficina de Olivos, Buenos Aires). El usuario es quien recluta. Te escribe, o dicta por voz (puede haber errores de transcripción en nombres), novedades sobre candidatos a asesores. Tu trabajo es cargar y actualizar las fichas con las herramientas.',
+      'Sos el asistente de Juntos Gestión, la plataforma de gestión de la oficina Coldwell Banker Juntos (Olivos, Buenos Aires): reclutamiento de asesores, onboarding, reservas, cierres y cuentas corrientes. El usuario es parte de la dirección de la oficina. Te escribe, o dicta por voz (puede haber errores de transcripción en nombres), novedades sobre candidatos a asesores. Tu trabajo es cargar y actualizar las fichas con las herramientas.',
       '',
       'Reglas:',
       '- Mirá la lista de candidatos antes de actuar. Si la persona ya está, actualizala; no la dupliques. Si hay dos candidatos que pueden ser la persona, o falta algo imprescindible, preguntá en vez de adivinar.',
@@ -3833,6 +3930,15 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
   $('#onbClose').addEventListener('click', function () { closePanels(); });
   $('#gpClose').addEventListener('click', function () { closePanels(); });
   $('#gsBtn').addEventListener('click', openFinder);
+  $('#sideSearch').addEventListener('click', function () { sideClose(); openFinder(); });
+  function sideOpen() { document.body.classList.add('side-open'); $('#sideScrim').hidden = false; $('#menuBtn').setAttribute('aria-expanded', 'true'); var b = document.querySelector('#side .vbtn[aria-pressed="true"]') || document.querySelector('#side .vbtn'); if (b) b.focus(); }
+  function sideClose() { if (!document.body.classList.contains('side-open')) return; document.body.classList.remove('side-open'); $('#sideScrim').hidden = true; $('#menuBtn').setAttribute('aria-expanded', 'false'); }
+  $('#menuBtn').addEventListener('click', function () { if (document.body.classList.contains('side-open')) sideClose(); else sideOpen(); });
+  $('#sideScrim').addEventListener('click', sideClose);
+  document.querySelectorAll('#side .vbtn').forEach(function (b) { b.addEventListener('click', sideClose); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') sideClose(); });
+  try { if (lsGet('juntos-side-mini') === '1') document.body.classList.add('side-mini'); } catch (e) {}
+  $('#sideMini').addEventListener('click', function () { var on = !document.body.classList.contains('side-mini'); document.body.classList.toggle('side-mini', on); lsSet('juntos-side-mini', on ? '1' : '0'); $('#sideMini').setAttribute('aria-label', on ? 'Agrandar el menú' : 'Achicar el menú'); });
   $('#gpBack').addEventListener('click', function () { closePanels(); });
   $('#onbBack').addEventListener('click', function () { closePanels(); });
   $('#onbPrev').addEventListener('click', function () { onbNav(-1); });
