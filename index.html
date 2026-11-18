@@ -4983,7 +4983,7 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
 
   /* ===== ASESOR: panel ===== */
   function openAse(id) {
-    gPanelOpen({ t: 'ase', id: id, tab: id ? 'resumen' : 'datos', draft: { activo: true, split: 0.5, fee: 80, ingreso: todayStr(), objetivos: {} } });
+    gPanelOpen({ t: 'ase', id: id, tab: id ? 'resumen' : 'datos', draft: { activo: true, split: 0.5, ingreso: todayStr(), objetivos: {} } });
   }
   function fillAse() {
     var a = gRec(), isNew = !a, d = isNew ? gOpen.draft : a, y = gF.aseY;
@@ -5105,8 +5105,7 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
       sect('Condiciones', [
         el('div', { class: 'grid' },
           fld('Ingreso a la oficina', inDate(d.ingreso, set, 'ingreso'), d.ingreso ? 'Antigüedad: ' + antig(d.ingreso) + '. Te avisamos en cada aniversario.' : null),
-          fld('Split %', inNum(d.split, set, 'split', null, 100), splits.length ? 'Hasta el primer cambio programado.' : 'Lo que cobra el asesor de cada comisión.'),
-          fld('Fee mensual (U$S)', inNum(d.fee, set, 'fee'))),
+          fld('Split %', inNum(d.split, set, 'split', null, 100), splits.length ? 'Hasta el primer cambio programado.' : 'Lo que cobra el asesor de cada comisión.')),
         el('div', { class: 'g-splits' }, el('span', { class: 'sm', text: 'Cambios de split programados' }),
           splits.map(function (x, k) { return el('div', { class: 'g-split-row' }, fld('Desde', inDate(x.desde, function (f) { var ns = splits.map(clone); ns[k].desde = f.v; setSplits(ns); }, 'v')), fld('Split %', inNum(x.split, function (f) { var ns = splits.map(clone); ns[k].split = f.v; setSplits(ns); }, 'v', null, 100)), el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Quitar cambio de split', text: '×', onclick: function () { setSplits(splits.filter(function (_, j) { return j !== k; })); } })); }),
           el('button', { type: 'button', class: 'btn sm-btn', onclick: function () { var nx = new Date().getFullYear() + 1; setSplits(splits.concat([{ desde: nx + '-01-01', split: splitAt(d) }])); } }, icon('plus', 14), 'Programar cambio de split'),
@@ -5214,7 +5213,7 @@ button.hbar:hover .hbar-l { text-decoration: underline; }
   function addAseFromCand(c) {
     var ex = aseFromCand(c); if (ex) { setView('ase'); openAse(ex.id); return; }
     var id = gNewId('asesores');
-    gSet('asesores', id, { nombre: c.nombre || '', mail: c.email || '', tel: c.telefono || '', ingreso: validDate(c.obInicio) || validDate(String(c.incorporadoEl || '').slice(0, 10)) || todayStr(), split: 0.5, fee: 80, activo: true, objetivos: {}, candidatoId: c.id, creado: new Date().toISOString() });
+    gSet('asesores', id, { nombre: c.nombre || '', mail: c.email || '', tel: c.telefono || '', ingreso: validDate(c.obInicio) || validDate(String(c.incorporadoEl || '').slice(0, 10)) || todayStr(), split: 0.5, activo: true, objetivos: {}, candidatoId: c.id, creado: new Date().toISOString() });
     toast((c.nombre || 'El agente') + ' se agregó a la nómina. Completá split y objetivo.', { action: { label: 'Abrir', fn: function () { setView('ase'); lastFocus = null; openAse(id); } } });
   }
 
