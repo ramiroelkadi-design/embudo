@@ -1005,6 +1005,16 @@ body.side-mini .side-foot { flex-direction: column; }
 :root[data-theme="dark"] .gav { background: hsl(var(--h) 35% 26%); color: hsl(var(--h) 80% 86%); }
 :root[data-theme="dark"] .g-th { background: var(--surface-2); }
 :root[data-theme="dark"] .login-brand .side-logo, :root[data-theme="dark"] .side-logo { background: none; }
+/* ingreso con Microsoft o link */
+.login-alt { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.login-ms { display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
+.login-or { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-2); }
+.login-or::before, .login-or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.login-mail { display: flex; gap: 8px; }
+.login-mail input { flex: 1; min-width: 0; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+#loginBtn { width: 100%; }
+.g-cap-rt { margin-left: 8px; font-weight: 500; }
+.g-caplink select { flex: 1 1 260px; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1020,6 +1030,11 @@ body.side-mini .side-foot { flex-direction: column; }
   <h1 class="login-brand"><span class="side-logo" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%"><rect width="64" height="64" rx="14" fill="#1F69FF"/><path d="M14 50V28L32 14l18 14v22z" fill="#fff"/><path d="M26 50V37a6 6 0 0 1 12 0v13z" fill="#012169"/></svg></span><span>Juntos <b>Gestión</b><small>Coldwell Banker Juntos · Olivos</small></span></h1>
   <p id="loginMsg">Cargando…</p>
   <button id="loginBtn" class="btn primary" type="button" hidden>Entrar con Google</button>
+  <div id="loginAlt" class="login-alt" hidden>
+    <button id="loginMs" class="btn login-ms" type="button"><svg viewBox="0 0 21 21" width="16" height="16" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg>Entrar con Microsoft</button>
+    <div class="login-or"><span>o recibí un link en tu mail</span></div>
+    <form id="loginMailF" class="login-mail"><input id="loginMailIn" type="email" autocomplete="email" placeholder="nombre@coldwellbanker.com.ar" aria-label="Tu mail" required><button class="btn" type="submit">Enviame el link</button></form>
+  </div>
 </div></div>
 <script src="firebase-config.js"></script>
 <script>
@@ -1039,8 +1054,9 @@ body.side-mini .side-foot { flex-direction: column; }
   function setLogin(state, msg) {
     overlay.hidden = state === 'hidden';
     btnEl.hidden = state !== 'signin';
+    document.getElementById('loginAlt').hidden = state !== 'signin';
     msgEl.className = state === 'error' ? 'err' : '';
-    if (state === 'signin') msgEl.textContent = msg || 'Entrá con tu cuenta de Google. Tiene que ser un mail habilitado por el equipo.';
+    if (state === 'signin') msgEl.textContent = msg || 'Entrá con tu cuenta de Google o de Microsoft, o pedí un link a tu mail. Tiene que ser un mail habilitado por la oficina.';
     else if (state === 'error') msgEl.textContent = msg || 'Hubo un problema.';
     else if (state === 'loading') msgEl.textContent = 'Cargando…';
   }
@@ -1065,6 +1081,20 @@ body.side-mini .side-foot { flex-direction: column; }
       var app = fb.initializeApp(cfg);
       auth = fb.getAuth(app);
       dbi = fb.initializeFirestore(app, { ignoreUndefinedProperties: true });
+      try {
+        if (fb.isSignInWithEmailLink && fb.isSignInWithEmailLink(auth, location.href)) {
+          var lm = ''; try { lm = localStorage.getItem('juntos-login-mail') || ''; } catch (e) {}
+          var finish = function (mail) {
+            fb.signInWithEmailLink(auth, mail, location.href).then(function () { try { localStorage.removeItem('juntos-login-mail'); } catch (e) {} history.replaceState(null, '', location.pathname); }, function (e) {
+              var c = (e && e.code) || '';
+              setLogin('signin', c === 'auth/invalid-action-code' || c === 'auth/expired-action-code' ? 'Ese link ya se usó o venció. Pedí uno nuevo.' : c === 'auth/invalid-email' ? 'El mail no coincide con el del link. Escribí el mismo mail al que te llegó.' : 'No se pudo entrar con el link (' + (c || 'error') + ').');
+              history.replaceState(null, '', location.pathname);
+            });
+          };
+          if (lm) finish(lm);
+          else { window.__linkFinish = finish; setTimeout(function () { setLogin('signin', 'Para terminar de entrar, escribí el mail al que te llegó el link y tocá el botón.'); }, 0); }
+        }
+      } catch (e) {}
       return new Promise(function (resolve) {
         var done = false;
         fb.onAuthStateChanged(auth, function (u) {
@@ -1104,6 +1134,36 @@ body.side-mini .side-foot { flex-direction: column; }
         : 'No se pudo entrar (' + (c || 'error') + ').';
       if (t) { msgEl.textContent = t; msgEl.className = 'err'; }
     }).then(function () { btnEl.disabled = false; });
+  });
+
+  function loginErr(e, prov) {
+    var c = (e && e.code) || '';
+    var t = c === 'auth/popup-blocked' ? 'El navegador bloqueó la ventana. Permitila y probá de nuevo.'
+      : c === 'auth/operation-not-allowed' ? (prov === 'link' ? 'El ingreso con link por mail todavía no está activado en Firebase.' : 'El ingreso con ' + prov + ' todavía no está activado en Firebase.')
+      : c === 'auth/account-exists-with-different-credential' ? 'Ese mail ya entró antes con otro método (Google, Microsoft o link). Entrá de esa forma.'
+      : c === 'auth/unauthorized-domain' || c === 'auth/unauthorized-continue-uri' ? 'Este sitio todavía no está autorizado en Firebase (Authentication → Configuración → Dominios autorizados).'
+      : c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' ? ''
+      : c === 'auth/invalid-email' ? 'Revisá el mail: no parece válido.'
+      : /consent|admin/i.test((e && e.message) || '') ? 'Tu cuenta de Microsoft necesita que el administrador de la empresa apruebe esta aplicación. Mientras tanto, usá el link por mail.'
+      : 'No se pudo entrar (' + (c || 'error') + ').';
+    if (t) { msgEl.textContent = t; msgEl.className = 'err'; }
+  }
+  document.getElementById('loginMs').addEventListener('click', function () {
+    if (!fb || !auth || !fb.OAuthProvider) return;
+    var pr = new fb.OAuthProvider('microsoft.com'); pr.setCustomParameters({ prompt: 'select_account' });
+    var b = this; b.disabled = true;
+    fb.signInWithPopup(auth, pr).catch(function (e) { loginErr(e, 'Microsoft'); }).then(function () { b.disabled = false; });
+  });
+  document.getElementById('loginMailF').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var mail = String(document.getElementById('loginMailIn').value || '').trim();
+    if (!fb || !auth || !mail) return;
+    if (window.__linkFinish) { window.__linkFinish(mail); return; }
+    var b = this.querySelector('button'); b.disabled = true;
+    fb.sendSignInLinkToEmail(auth, mail, { url: location.origin + location.pathname, handleCodeInApp: true }).then(function () {
+      try { localStorage.setItem('juntos-login-mail', mail); } catch (e) {}
+      msgEl.className = ''; msgEl.textContent = 'Listo: te mandamos un link a ' + mail + '. Abrilo desde este mismo dispositivo (revisá también el correo no deseado).';
+    }, function (e) { loginErr(e, 'link'); }).then(function () { b.disabled = false; });
   });
 
   /* ----- base de datos: misma interfaz que dentro de Claude ----- */
@@ -4897,8 +4957,8 @@ body.side-mini .side-foot { flex-direction: column; }
   function fillRes() {
     var r = gRec(), isNew = !r, d = isNew ? gOpen.draft : r;
     var set = gSetter('reservas', function (f) {
-      if (isNew) { if (['operacion', 'precio', 'precioMon', 'lados', 'cot', 'localidad', 'comEst'].some(function (k) { return k in f; })) gFill(); return; }
-      if (['operacion', 'precio', 'precioMon', 'comEst', 'propiedad', 'juris', 'lados', 'cot', 'localidad', 'fechaFirma'].some(function (k) { return k in f; })) gFill();
+      if (isNew) { if (['operacion', 'precio', 'precioMon', 'lados', 'cot', 'localidad', 'comEst', 'tokko'].some(function (k) { return k in f; })) gFill(); return; }
+      if (['operacion', 'precio', 'precioMon', 'comEst', 'propiedad', 'juris', 'lados', 'cot', 'localidad', 'fechaFirma', 'tokko'].some(function (k) { return k in f; })) gFill();
     });
     var L = rLados(d);
     function setL(nl) { set({ lados: nl, asesorIds: rAseIds(nl), punta: puntaDe(nl) }); }
@@ -4928,6 +4988,7 @@ body.side-mini .side-foot { flex-direction: column; }
         fld(venta ? 'Precio ofrecido' : 'Valor del contrato', el('span', { class: 'g-money-in' }, inSel(d.precioMon || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'precioMon', { 'aria-label': 'Moneda del precio' }), inNum(d.precio, set, 'precio', { 'aria-label': 'Precio' })), venta ? null : 'Total del contrato: la comisión se calcula como % de este valor.'),
         d.precioMon === '$' ? fld('Cotización del dólar', inNum(d.cot, set, 'cot', { placeholder: gConf.cot ? fmtN(+gConf.cot) : '' }), 'Para pasar la comisión a dólares. Vacío: usa la de Ajustes.') : null),
       el('div', { class: 'g-lados' }, ladoCard(d, L, 'v', setL), ladoCard(d, L, 'c', setL)),
+      capLinkField(d, L, set),
       comBox(d),
       fld('Comisión total a mano (U$S, opcional)', inNum(d.comEst, set, 'comEst', { placeholder: 'Solo si difiere del cálculo' }), d.comEst != null && d.comEst !== '' ? 'Cargada a mano: se reparte entre los asesores según sus puntas. Borrala para volver al cálculo.' : null)]);
     var dinero;
@@ -4952,12 +5013,8 @@ body.side-mini .side-foot { flex-direction: column; }
     gBody([est, opSec, dinero, notas]);
     var pin = $('#gResProp');
     if (pin) capPickForRes(pin, function (p) {
-      var v = capVenta(p) || p.ops[0] || {}, aid = capAse(p), nl = JSON.parse(JSON.stringify(rLados(d))); delete nl.legacy;
-      var it = listFind('localidades', p.loc);
-      var f = { propiedad: p.dir || p.titulo, tokkoId: p.id };
-      if (p.loc) { f.localidad = it ? it.n : p.loc; f.juris = (it && it.juris) || jurisDe(p.loc); }
-      if (v.precio && !+d.precio) { f.precio = v.precio; f.precioMon = v.mon; }
-      if (v.op && /alquiler/i.test(v.op)) f.operacion = 'alquiler';
+      var aid = capAse(p), nl = JSON.parse(JSON.stringify(rLados(d))); delete nl.legacy;
+      var f = capFill(d, p, aid);
       if (aid) { nl.v = { nos: true, ase: aid, pct: nl.v.nos && nl.v.pct != null ? nl.v.pct : +gConf.pctVend, inmob: '' }; f.lados = nl; f.asesorIds = rAseIds(nl); f.punta = puntaDe(nl); }
       set(f); toast('Datos tomados de la captación de Tokko' + (aid ? ': la punta vendedora queda para ' + aseName(aid) + '.' : '.'));
     });
@@ -5346,7 +5403,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var k = rCom(r), L = k.L, ff = r.fechaFirma && dayDiff(r.fechaFirma) <= 0 ? r.fechaFirma : todayStr();
     var otra = !L.v.nos ? L.v : !L.c.nos ? L.c : null;
     var d = { fecha: ff, operacion: r.operacion || 'venta', puntas: otra && !k.red && L.v.nos && (+L.c.pct || 0) > 0 ? 'ambas' : puntaDe(L), compartida: !otra ? 'no' : k.red ? 'red' : 'fuera', otraParte: otra ? otra.inmob || '' : '', redCB: !!k.red, pctOtra: otra && !k.red && L.v.nos ? (+L.c.pctOtra || null) : null,
-      direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +r.cot || +gConf.cot, pctVend: +L.v.pct || 0, pctComp: +L.c.pct || 0, reservaId: r.id, fechaReserva: r.fecha || '', facturado: false, liquidado: false,
+      direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +r.cot || +gConf.cot, pctVend: +L.v.pct || 0, pctComp: +L.c.pct || 0, reservaId: r.id, tokko: r.tokko || null, fechaReserva: r.fecha || '', facturado: false, liquidado: false,
       asesores: k.parts.length ? k.parts.map(function (p) { var a = gGet('asesores', p.id), sp = splitAt(a, ff); return { id: p.id, parte: Math.round(p.parte * 10000) / 10000, split: sp != null ? sp : 0.5 }; }) : (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id), sp = splitAt(a, ff); return { id: id, parte: 1 / r.asesorIds.length, split: sp != null ? sp : 0.5 }; }) };
     if (k.manual && k.total != null) d.brutoManual = d.moneda === '$' ? Math.round(k.total * (d.cot || 1)) : Math.round(k.total);
     openCie(null, d);
@@ -5468,10 +5525,11 @@ body.side-mini .side-foot { flex-direction: column; }
     $('#gp').classList.toggle('wide', !isNew && (gOpen.tab === 'ops' || gOpen.tab === 'cc'));
     var s = isNew ? null : aseStats(a, y);
     gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
-      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], aseOnbData(a) ? ['onb', 'Onboarding'] : null, ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
+      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], aseOnbData(a) ? ['onb', 'Onboarding'] : null, aseCapAvail(a) ? ['cap', 'Captaciones'] : null, ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
     if (window.ASE_MODE && gOpen.tab === 'datos') gOpen.tab = 'resumen';
     if (isNew || gOpen.tab === 'datos') aseDatos(a, d, isNew);
     else if (gOpen.tab === 'onb') aseOnb(a);
+    else if (gOpen.tab === 'cap') aseCapTab(a);
     else if (gOpen.tab === 'ops') aseOps(a, s, y);
     else if (gOpen.tab === 'cc') aseCuenta(a);
     else aseResumen(a, s, y);
@@ -6653,7 +6711,7 @@ body.side-mini .side-foot { flex-direction: column; }
     G.reservas.forEach(function (r) {
       if ((r.asesorIds || []).indexOf(a.id) < 0) return;
       var me = rCom(r).parts.filter(function (p) { return p.id === a.id; })[0];
-      rs.push({ id: r.id, propiedad: r.propiedad || '', localidad: r.localidad || '', operacion: r.operacion || 'venta', estado: r.estado || 'pendiente', fecha: r.fecha || '', fechaFirma: r.fechaFirma || '', precio: r.precio || null, precioMon: r.precioMon || 'U$S', cot: r.cot || null, comEst: me ? Math.round(me.usd * 100) / 100 : null, asesorIds: [a.id], punta: r.punta || '', cierreId: r.cierreId || '', pagos: rPagos(r).map(function (p) { return { tipo: p.tipo || '', monto: p.monto, moneda: p.moneda, estado: p.estado, fecha: p.fecha || '' }; }) });
+      rs.push({ id: r.id, propiedad: r.propiedad || '', localidad: r.localidad || '', operacion: r.operacion || 'venta', estado: r.estado || 'pendiente', fecha: r.fecha || '', fechaFirma: r.fechaFirma || '', precio: r.precio || null, precioMon: r.precioMon || 'U$S', cot: r.cot || null, comEst: me ? Math.round(me.usd * 100) / 100 : null, asesorIds: [a.id], punta: r.punta || '', cierreId: r.cierreId || '', tokko: r.tokko ? { id: r.tokko.id, ref: r.tokko.ref || '', dir: r.tokko.dir || '', ase: r.tokko.ase || '' } : null, pagos: rPagos(r).map(function (p) { return { tipo: p.tipo || '', monto: p.monto, moneda: p.moneda, estado: p.estado, fecha: p.fecha || '' }; }) });
     });
     ms = G.movimientos.filter(function (m) { return m.asesorId === a.id; }).map(clone);
     var ax = {}; ['nombre', 'apodo', 'team', 'ingreso', 'split', 'splits', 'objetivos', 'historico', 'mail', 'activo', 'iva', 'nacimiento'].forEach(function (k) { if (a[k] != null) ax[k] = JSON.parse(JSON.stringify(a[k])); });
@@ -6942,7 +7000,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var aid = capAse(p), age = capAge(p), ro = !!window.ASE_MODE;
     return el('div', { class: 'g-cap' },
       p.foto ? el('img', { class: 'g-cap-img', src: p.foto, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : el('span', { class: 'g-cap-img ph' }, icon('home', 20)),
-      el('div', { class: 'g-cap-main' }, el('b', { text: p.dir || p.titulo || 'Sin dirección' }), el('span', { class: 'sm', text: [p.tipo, p.loc, p.amb ? p.amb + ' amb.' : '', p.sup ? p.sup + ' m²' : '', p.ref].filter(Boolean).join(' · ') })),
+      el('div', { class: 'g-cap-main' }, el('b', {}, p.dir || p.titulo || 'Sin dirección', (function () { var rr = capRes(p); return rr ? el('span', { class: 'g-cap-rt' }, rPill(rr)) : null; })()), el('span', { class: 'sm', text: [p.tipo, p.loc, p.amb ? p.amb + ' amb.' : '', p.sup ? p.sup + ' m²' : '', p.ref].filter(Boolean).join(' · ') })),
       el('div', { class: 'g-cap-p' }, el('span', { text: capPrecioTxt(p) || '–' })),
       ro ? null : el('div', { class: 'g-cap-a' }, aid ? el('span', { class: 'row-wrap' }, aseAv(aid), el('span', { text: aseName(aid) })) : el('button', { type: 'button', class: 'chip', title: 'Elegir el asesor', onclick: function () { if (p.prod) capMapForm(p.prod); } }, p.prod || 'Sin captador')),
       el('div', { class: 'g-cap-d' }, el('span', { class: 'sm', text: p.alta ? 'Alta ' + dmy(p.alta) : '' }), age != null ? el('span', { class: 'sm' + (age > 180 ? ' warn' : ''), text: age < 1 ? 'hoy' : age + ' días' }) : null),
@@ -6958,7 +7016,9 @@ body.side-mini .side-foot { flex-direction: column; }
       el('p', { class: 'sm', text: ny + ' tomadas en ' + y + (vv ? ' · ' + usdK(vv) + ' en venta' : '') + ' · según Tokko Broker' }),
       ps.length ? el('div', { class: 'g-cap-list mini' }, ps.slice().sort(function (a, b) { return String(b.alta) < String(a.alta) ? -1 : 1; }).map(capRow)) : el('p', { class: 'hint', text: 'No tiene captaciones publicadas en Tokko.' }));
   }
-  aseResumen = (function (o) { return function (a, s, y) { o(a, s, y); var sec = aseCapSec(a); if (sec) { var pane = $('#gpBody .g-pane'); if (pane) pane.append(sec); } }; })(aseResumen);
+  aseResumen = (function (o) { return function (a, s, y) { o(a, s, y); if (!aseCapAvail(a)) return; var ps = aseCapList(a), pane = $('#gpBody .g-pane'); if (!pane) return;
+    var yy = String(new Date().getFullYear()), ny = ps.filter(function (p) { return String(p.alta).slice(0, 4) === yy; }).length;
+    pane.append(el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Captaciones' }), el('button', { type: 'button', class: 'g-link', onclick: function () { gOpen.tab = 'cap'; gFill(); } }, el('b', { text: ps.length + ' activas en Tokko · ' + ny + ' tomadas en ' + yy }), el('span', { class: 'sm', text: 'Ver estadísticas de captaciones →' })))); }; })(aseResumen);
   buildPortal = (function (o) { return function (a) { var p = o(a); p.cap = capDe(a.id).map(function (x) { var c = Object.assign({}, x); delete c.pmail; return c; }); return p; }; })(buildPortal);
   /* reserva: elegir la propiedad de las captaciones */
   function capPickForRes(inp, onPick) {
@@ -6966,6 +7026,63 @@ body.side-mini .side-foot { flex-direction: column; }
     var dl = el('datalist', { id: 'gCapDL' }, CAP.props.map(function (p) { return el('option', { value: p.dir || p.titulo, text: [p.loc, capPrecioTxt(p), p.prod].filter(Boolean).join(' · ') }); }));
     inp.setAttribute('list', 'gCapDL'); inp.after(dl);
     var last = null; inp.addEventListener('change', function () { var v = inp.value; var p = CAP.props.filter(function (x) { return (x.dir || x.titulo) === v; })[0]; if (p && p !== last) { last = p; onPick(p); } });
+  }
+  /* ----- captaciones vinculadas a reservas ----- */
+  function capRes(p) { return G.reservas.filter(function (r) { return r.tokko && String(r.tokko.id) === String(p.id); }).sort(function (a, b) { return String(b.fecha) < String(a.fecha) ? -1 : 1; })[0] || null; }
+  function capLink(p, aid) { return { id: p.id, ref: p.ref || '', url: p.url || '', dir: p.dir || p.titulo || '', ase: aid || capAse(p) || '' }; }
+  function capFill(d, p, aid) {
+    var v = capVenta(p) || p.ops[0] || {}, it = listFind('localidades', p.loc);
+    var f = { propiedad: p.dir || p.titulo, tokko: capLink(p, aid) };
+    if (p.loc) { f.localidad = it ? it.n : p.loc; f.juris = (it && it.juris) || jurisDe(p.loc); }
+    if (v.precio && !+d.precio) { f.precio = v.precio; f.precioMon = v.mon; }
+    if (v.op && /alquiler/i.test(v.op)) f.operacion = 'alquiler';
+    return f;
+  }
+  function capLinkField(d, L, set) {
+    var aid = L.v.nos ? L.v.ase : '';
+    var mine = aid ? capDe(aid) : [];
+    var cur = d.tokko && d.tokko.id != null ? String(d.tokko.id) : '';
+    if (!aid && !cur) return null;
+    if (!mine.length && !cur) return CAP.props.length ? el('p', { class: 'sm', text: aid ? aseName(aid) + ' no tiene captaciones publicadas en Tokko.' : '' }) : null;
+    var s = el('select', { 'aria-label': 'Captación vinculada' }, [el('option', { value: '', text: 'Sin vincular a una captación' })].concat(mine.map(function (p) { var rr = capRes(p); return el('option', { value: String(p.id), text: (p.dir || p.titulo) + (p.loc ? ' · ' + p.loc : '') + (capPrecioTxt(p) ? ' · ' + capPrecioTxt(p) : '') + (rr && (!d.id || rr.id !== d.id) ? ' (ya tiene reserva)' : '') }); })));
+    if (cur && !mine.some(function (p) { return String(p.id) === cur; })) s.append(el('option', { value: cur, text: (d.tokko.dir || 'Captación ' + (d.tokko.ref || cur)) + ' (ya no figura en Tokko)' }));
+    s.value = cur;
+    s.addEventListener('change', function () {
+      if (!s.value) { set({ tokko: null }); return; }
+      var p = CAP.props.filter(function (x) { return String(x.id) === s.value; })[0]; if (!p) return;
+      set(capFill(d, p, aid)); toast('Reserva vinculada a la captación ' + (p.ref || p.dir) + '.');
+    });
+    return fld('Captación de ' + aseName(aid || (d.tokko && d.tokko.ase) || ''), el('span', { class: 'row-wrap g-caplink' }, s, d.tokko && d.tokko.url ? el('a', { class: 'btn ghost sm-btn', href: d.tokko.url, target: '_blank', rel: 'noopener', text: 'Ver ficha' }) : null), 'Al elegirla se completan la dirección, la localidad y el precio, y queda vinculada para las estadísticas de captaciones.');
+  }
+  /* ----- pestaña Captaciones del asesor ----- */
+  function aseCapList(a) { return window.ASE_MODE && window.ASE_MODE.portal ? (window.ASE_MODE.portal.cap || []) : capDe(a.id); }
+  function aseCapAvail(a) { return !!(CAP.props.length || (window.ASE_MODE && window.ASE_MODE.portal && window.ASE_MODE.portal.cap && window.ASE_MODE.portal.cap.length)); }
+  function aseCapTab(a) {
+    var ps = aseCapList(a).slice().sort(function (x, y) { return String(y.alta) < String(x.alta) ? -1 : 1; });
+    var now = new Date(), y = String(now.getFullYear());
+    var ventas = ps.filter(capVenta), valor = ventas.reduce(function (s, p) { var v = capVenta(p); return s + toUSD(v.precio || 0, v.mon); }, 0);
+    var ny = ps.filter(function (p) { return String(p.alta).slice(0, 4) === y; }).length;
+    var ages = ps.map(capAge).filter(function (x) { return x != null; }), avgAge = ages.length ? Math.round(ages.reduce(function (s, x) { return s + x; }, 0) / ages.length) : null;
+    var resv = G.reservas.filter(function (r) { return r.tokko && (r.tokko.ase === a.id || (!r.tokko.ase && (r.asesorIds || []).indexOf(a.id) >= 0)); });
+    var resY = resv.filter(function (r) { return String(r.fecha).slice(0, 4) === y; });
+    var cerr = resv.filter(function (r) { return r.estado === 'cerrada'; }).length;
+    var byM = []; for (var i = 0; i < 12; i++) byM.push(0);
+    ps.forEach(function (p) { if (String(p.alta).slice(0, 4) === y) byM[+String(p.alta).slice(5, 7) - 1]++; });
+    resv.forEach(function (r) { if (String(r.fecha).slice(0, 4) === y && r.tokko && r.tokko.alta && String(r.tokko.alta).slice(0, 4) === y) byM[+String(r.tokko.alta).slice(5, 7) - 1] += 0; });
+    var mx = Math.max.apply(null, byM.concat([1])), curM = now.getMonth();
+    var kp = el('div', { class: 'kpis two' },
+      kpi('Captaciones activas', String(ps.length), ventas.length + ' en venta · ' + (ps.length - ventas.length) + ' en alquiler u otras'),
+      kpi('Valor en venta', usdK(valor), ventas.length ? 'Promedio ' + usdK(valor / ventas.length) : ''),
+      kpi('Tomadas en ' + y, String(ny), 'Que siguen publicadas'),
+      kpi('Tiempo publicadas', avgAge != null ? avgAge + ' días' : '–', 'Promedio de las activas'),
+      kpi('Reservadas en ' + y, String(resY.length), resv.length ? cerr + ' ya cerradas (desde que se vinculan)' : 'Vinculá la captación al cargar la reserva'));
+    var chart = el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Altas por mes · ' + y }),
+      el('div', { class: 'bchart small' }, byM.map(function (v, k) { return el('div', { class: 'bc' + (k > curM ? ' fut' : ''), role: 'img', 'aria-label': cap(MESES[k]) + ': ' + v }, el('span', { class: 'bc-v', text: v ? String(v) : '' }), el('span', { class: 'bc-bars' }, el('i', { class: 'bb', style: 'height:' + Math.round(v * 100 / mx) + '%' })), el('span', { class: 'bc-m', text: MES3[k] })); })));
+    var list = el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Publicadas en Tokko (' + ps.length + ')' }),
+      ps.length ? el('div', { class: 'g-cap-list mini' }, ps.map(capRow)) : el('p', { class: 'hint', text: 'No tiene captaciones publicadas en Tokko.' }));
+    var rl = resv.length ? el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Captaciones con reserva (' + resv.length + ')' }),
+      el('div', { class: 'g-links' }, resv.map(function (r) { var ro = !!window.ASE_MODE; return el(ro ? 'div' : 'button', { type: ro ? null : 'button', class: 'g-link', onclick: ro ? null : function () { openRes(r.id); } }, el('b', { text: r.propiedad || r.tokko.dir || 'Sin dirección' }), el('span', {}, rPill(r), el('span', { class: 'sm', text: ' ' + dmy(r.fecha) + (r.tokko.ref ? ' · ' + r.tokko.ref : '') }))); }))) : null;
+    gBody([el('div', { class: 'g-pane' }, kp, chart, rl, list, CAP.t && !window.ASE_MODE ? el('p', { class: 'sm', text: 'Datos de Tokko Broker, actualizados ' + ago(CAP.t) + '.' }) : null)]);
   }
 
   /* ---------- arranque ---------- */
