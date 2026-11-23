@@ -1027,6 +1027,10 @@ body.side-mini .side-foot { flex-direction: column; }
 .g-cap > select { max-width: 190px; font-size: 13px; }
 .bchart .bc-bars i.bb2 { background: #E5484D; opacity: .7; }
 .g-road-leg i.bj { background: #E5484D; opacity: .7; }
+.g-prop-info { align-self: end; margin: 0 0 10px; font-weight: 600; color: var(--accent); }
+.g-vend tr.clk { cursor: pointer; }
+.g-vend tr.clk:hover th, .g-vend tr.clk:hover td { background: var(--accent-soft); }
+.g-vend td.warn { color: #C2410C; font-weight: 600; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -4973,8 +4977,8 @@ body.side-mini .side-foot { flex-direction: column; }
   function fillRes() {
     var r = gRec(), isNew = !r, d = isNew ? gOpen.draft : r;
     var set = gSetter('reservas', function (f) {
-      if (isNew) { if (['operacion', 'precio', 'precioMon', 'lados', 'cot', 'localidad', 'comEst', 'tokko'].some(function (k) { return k in f; })) gFill(); return; }
-      if (['operacion', 'precio', 'precioMon', 'comEst', 'propiedad', 'juris', 'lados', 'cot', 'localidad', 'fechaFirma', 'tokko'].some(function (k) { return k in f; })) gFill();
+      if (isNew) { if (['operacion', 'precio', 'precioMon', 'lados', 'cot', 'localidad', 'comEst', 'tokko', 'prop'].some(function (k) { return k in f; })) gFill(); return; }
+      if (['operacion', 'precio', 'precioMon', 'comEst', 'propiedad', 'juris', 'lados', 'cot', 'localidad', 'fechaFirma', 'tokko', 'prop'].some(function (k) { return k in f; })) gFill();
     });
     var L = rLados(d);
     function setL(nl) { set({ lados: nl, asesorIds: rAseIds(nl), punta: puntaDe(nl) }); }
@@ -5026,7 +5030,7 @@ body.side-mini .side-foot { flex-direction: column; }
         { right: el('span', { class: 'sm', text: 'Total ' + totTxt(rTotals(d)) }) });
     }
     var notas = sect('Notas', [d.notasLiq ? el('p', { class: 'sm', text: d.notasLiq }) : null, fld('Notas internas', inArea(d.notas, set, 'notas', { rows: d.notas && d.notas.length > 120 ? 5 : 3, placeholder: 'Condiciones, contraoferta, pendientes…' })), isNew ? null : histList(d.historial)]);
-    gBody([est, opSec, dinero, notas]);
+    gBody([est, opSec, propSec(d, set, false), dinero, notas]);
     var pin = $('#gResProp');
     if (pin) capPickForRes(pin, function (p) {
       var aid = capAse(p), nl = JSON.parse(JSON.stringify(rLados(d))); delete nl.legacy;
@@ -5419,7 +5423,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var k = rCom(r), L = k.L, ff = r.fechaFirma && dayDiff(r.fechaFirma) <= 0 ? r.fechaFirma : todayStr();
     var otra = !L.v.nos ? L.v : !L.c.nos ? L.c : null;
     var d = { fecha: ff, operacion: r.operacion || 'venta', puntas: otra && !k.red && L.v.nos && (+L.c.pct || 0) > 0 ? 'ambas' : puntaDe(L), compartida: !otra ? 'no' : k.red ? 'red' : 'fuera', otraParte: otra ? otra.inmob || '' : '', redCB: !!k.red, pctOtra: otra && !k.red && L.v.nos ? (+L.c.pctOtra || null) : null,
-      direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +r.cot || +gConf.cot, pctVend: +L.v.pct || 0, pctComp: +L.c.pct || 0, reservaId: r.id, tokko: r.tokko || null, fechaReserva: r.fecha || '', facturado: false, liquidado: false,
+      direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +r.cot || +gConf.cot, pctVend: +L.v.pct || 0, pctComp: +L.c.pct || 0, reservaId: r.id, tokko: r.tokko || null, prop: (function () { var pr = propOf(r), cp = capOf(r.tokko); if (cp) { var x = capProp(cp); if (x.pub) { pr.pub = x.pub; pr.pubMon = x.pubMon; } } return pr; })(), fechaReserva: r.fecha || '', facturado: false, liquidado: false,
       asesores: k.parts.length ? k.parts.map(function (p) { var a = gGet('asesores', p.id), sp = splitAt(a, ff); return { id: p.id, parte: Math.round(p.parte * 10000) / 10000, split: sp != null ? sp : 0.5 }; }) : (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id), sp = splitAt(a, ff); return { id: id, parte: 1 / r.asesorIds.length, split: sp != null ? sp : 0.5 }; }) };
     if (k.manual && k.total != null) d.brutoManual = d.moneda === '$' ? Math.round(k.total * (d.cot || 1)) : Math.round(k.total);
     openCie(null, d);
@@ -5427,7 +5431,7 @@ body.side-mini .side-foot { flex-direction: column; }
   function fillCie() {
     var c = gRec(), isNew = !c, d = isNew ? gOpen.draft : c;
     var set = gSetter('cierres', function (f) {
-      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad', 'redCB', 'pctOtra'].some(function (k) { return k in f; });
+      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad', 'redCB', 'pctOtra', 'prop'].some(function (k) { return k in f; });
       if (structural) gFill(); else updCalcBox();
     });
     var opLbl = d.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ;
@@ -5481,7 +5485,7 @@ body.side-mini .side-foot { flex-direction: column; }
       d.fuente ? el('p', { class: 'sm', text: 'Origen: ' + d.fuente }) : null,
       d.sinFirma ? el('p', { class: 'warn', text: 'En la planilla de Liquidación figura sin fecha de firma. Confirmá la fecha arriba.' }) : null,
       isNew ? null : histList(d.historial)]);
-    gBody([opSec, aseSec, valSec, factSec, notas]);
+    gBody([opSec, valSec, propSec(d, set, true), aseSec, factSec, notas]);
     updCalcBox();
     if (isNew) {
       gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }),
@@ -5525,6 +5529,7 @@ body.side-mini .side-foot { flex-direction: column; }
     if (o.puntas === 'ambas' && !o.pctOtra) o.compartida = 'no';
     var id = gNewId('cierres');
     gSet('cierres', id, o);
+    try { capOnCierre(id, o); } catch (e) {}
     if (o.reservaId) { var r = gGet('reservas', o.reservaId); if (r) gUpd('reservas', r.id, { cierreId: id, estado: 'cerrada', cerradaEl: o.fecha, historial: gLog(r, 'Pasó a cierre (firma ' + dmy(o.fecha) + ')') }); }
     gOpen = { t: 'cie', id: id, draft: {} };
     gF.cieY = o.anio; gF.cieM = 0;
@@ -6981,7 +6986,7 @@ body.side-mini .side-foot { flex-direction: column; }
     return p.estado === 'baja' ? '' : 'activa';
   }
   function capExito(res) { return res === 'vendida' || res === 'alquilada'; }
-  function capCierre(p) { var r = capRes(p), c = r && r.cierreId ? gGet('cierres', r.cierreId) : null; return c && +c.valor ? toUSD(+c.valor, c.moneda || 'U$S', c.cot) : null; }
+  function capCierre(p) { if (p.cierre && p.cierre.usd) return p.cierre.usd; var r = capRes(p), c = r && r.cierreId ? gGet('cierres', r.cierreId) : null; return c && +c.valor ? toUSD(+c.valor, c.moneda || 'U$S', c.cot) : null; }
   function capPrecioUSD(p, first) { var ops = first && p.precios && p.precios.length ? p.precios[0].ops : p.ops; var v = (ops || []).filter(function (o) { return /venta/i.test(o.op); })[0]; return v && v.precio ? toUSD(v.precio, v.mon) : null; }
   function capM2(p) { return +p.supCub || +p.supTot || +p.sup || null; }
   function avg(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : null; }
@@ -7039,7 +7044,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var errB = CAP.err ? el('div', { class: 'banner-lite warn' }, el('span', { text: 'La última actualización falló: ' + tkErrTxt({ code: CAP.err }) })) : null;
     var now = new Date(), y = String(now.getFullYear()), mk = y + '-' + String(now.getMonth() + 1).padStart(2, '0');
     var tab = gF.capTab || 'act';
-    var tabs = el('div', { class: 'onb-chips', role: 'tablist' }, [['act', 'Publicadas', act.length], ['hist', 'Historial', bajas.length], ['m2', 'Valores por m²', null]].map(function (t) { return el('button', { type: 'button', role: 'tab', class: 'chip' + (tab === t[0] ? ' on' : ''), 'aria-selected': String(tab === t[0]), onclick: function () { gF.capTab = t[0]; gRenderView(); } }, t[1], t[2] != null ? el('span', { class: 'n', text: t[2] }) : null); }));
+    var tabs = el('div', { class: 'onb-chips', role: 'tablist' }, [['act', 'Publicadas', act.length], ['hist', 'Historial', bajas.length], ['vend', 'Vendidos', null], ['m2', 'Valores por m²', null]].map(function (t) { return el('button', { type: 'button', role: 'tab', class: 'chip' + (tab === t[0] ? ' on' : ''), 'aria-selected': String(tab === t[0]), onclick: function () { gF.capTab = t[0]; gRenderView(); } }, t[1], t[2] != null ? el('span', { class: 'n', text: t[2] }) : null); }));
     var ventas = act.filter(capVenta), valor = ventas.reduce(function (s, p) { var v = capVenta(p); return s + toUSD(v.precio || 0, v.mon); }, 0);
     var tomY = all.filter(function (p) { return String(p.alta || p.primeraVez).slice(0, 4) === y; }).length;
     var bajY = bajas.filter(function (p) { return String(p.baja).slice(0, 4) === y; });
@@ -7052,6 +7057,7 @@ body.side-mini .side-foot { flex-direction: column; }
       kpi('Bajas sin motivo', String(sinMot), sinMot ? 'Completalo en Historial para las estadísticas' : 'Todo al día'));
     var body;
     if (tab === 'm2') body = [m2Section(all)];
+    else if (tab === 'vend') body = vendidosView();
     else {
       var base = tab === 'hist' ? bajas : act;
       if (!gF.capOp) gF.capOp = 'todas';
@@ -7114,7 +7120,7 @@ body.side-mini .side-foot { flex-direction: column; }
   function capLink(p, aid) { return { id: p.tid, ref: p.ref || '', url: p.url || '', dir: p.dir || p.titulo || '', ase: aid || capAse(p) || '' }; }
   function capFill(d, p, aid) {
     var v = capVenta(p) || p.ops[0] || {}, it = listFind('localidades', p.loc);
-    var f = { propiedad: p.dir || p.titulo, tokko: capLink(p, aid) };
+    var f = { propiedad: p.dir || p.titulo, tokko: capLink(p, aid), prop: Object.assign(capProp(p), d.prop || {}) };
     if (p.loc) { f.localidad = it ? it.n : p.loc; f.juris = (it && it.juris) || jurisDe(p.loc); }
     if (v.precio && !+d.precio) { f.precio = v.precio; f.precioMon = v.mon; }
     if (v.op && /alquiler/i.test(v.op)) f.operacion = 'alquiler';
@@ -7240,6 +7246,132 @@ body.side-mini .side-foot { flex-direction: column; }
     }, 800);
   }
   render = (function (o) { return function () { var r = o.apply(this, arguments); try { aseSweep(); } catch (e) {} return r; }; })(render);
+
+  /* ===== Base de vendidos: captaciones propias + búsquedas ===== */
+  var PROP_TIPOS = ['Departamento', 'Casa', 'PH', 'Terreno', 'Local', 'Oficina', 'Cochera', 'Otro'];
+  function capOf(tokko) { return tokko && tokko.id != null ? gGet('captaciones', 'tk' + tokko.id) : null; }
+  function capProp(p) { var v = capVenta(p) || (p.ops || [])[0] || {}; return { tipo: p.tipo || '', amb: p.amb || null, m2c: p.supCub || null, m2t: p.supTot || p.sup || null, pub: v.precio || null, pubMon: v.mon || 'U$S' }; }
+  function propOf(d) {
+    var pr = Object.assign({}, d.prop || {}), cp = capOf(d.tokko);
+    if (cp) { var x = capProp(cp); Object.keys(x).forEach(function (k) { if (pr[k] == null || pr[k] === '') pr[k] = x[k]; }); }
+    return pr;
+  }
+  function propM2(pr) { return +pr.m2c || +pr.m2t || null; }
+  function propSec(d, set, isCie) {
+    var pr = propOf(d), cp = capOf(d.tokko);
+    function up(f) { var n = Object.assign({}, d.prop || {}, f); set({ prop: n }); }
+    var tipo = el('select', { 'aria-label': 'Tipo de propiedad' }, [el('option', { value: '', text: 'Elegí…' })].concat(PROP_TIPOS.map(function (t) { return el('option', { value: t, text: t }); })));
+    if (pr.tipo && PROP_TIPOS.indexOf(pr.tipo) < 0) tipo.append(el('option', { value: pr.tipo, text: pr.tipo }));
+    tipo.value = pr.tipo || ''; tipo.addEventListener('change', function () { up({ tipo: tipo.value }); });
+    function num(k, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: pr[k] != null ? String(pr[k]).replace('.', ',') : '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = numIn(i.value); up(o); }); return i; }
+    var mon = el('select', { 'aria-label': 'Moneda del precio publicado' }, [['U$S', 'U$S'], ['$', '$']].map(function (o) { return el('option', { value: o[0], text: o[1] }); })); mon.value = pr.pubMon || 'U$S'; mon.addEventListener('change', function () { up({ pubMon: mon.value }); });
+    var m2 = propM2(pr), pubU = pr.pub ? toUSD(+pr.pub, pr.pubMon || 'U$S', d.cot) : null;
+    var cierreU = isCie && +d.valor ? toUSD(+d.valor, d.moneda || 'U$S', d.cot) : null;
+    var info = [];
+    if (cierreU && pubU) info.push('Negociación: ' + (cierreU / pubU - 1 > 0 ? '+' : '') + pctTxt(cierreU / pubU - 1, 1) + ' sobre el último precio publicado');
+    if (m2 && (cierreU || pubU)) info.push((cierreU ? 'Cierre ' + usd(cierreU / m2) : 'Publicado ' + usd(pubU / m2)) + ' por m²');
+    var src = cp ? 'Captación propia ' + (cp.ref || '') + ': los datos vienen de Tokko (los podés corregir).' : (d.operacion || 'venta') === 'venta' ? 'Si la propiedad es de otra inmobiliaria (una búsqueda), completá estos datos: así la venta suma a la base de vendidos y a los valores por m².' : 'Datos de la propiedad para las estadísticas.';
+    return sect('Datos de la propiedad', [el('p', { class: 'sm', text: src }),
+      el('div', { class: 'grid' }, fld('Tipo', tipo), fld('Ambientes', num('amb')), fld('m² cubiertos', num('m2c')), fld('m² totales', num('m2t'))),
+      el('div', { class: 'grid' }, fld('Último precio publicado', el('span', { class: 'g-money-in' }, mon, num('pub', 'Precio de publicación'))), info.length ? el('p', { class: 'g-prop-info', text: info.join(' · ') }) : null)]);
+  }
+  /* al guardar un cierre de captación propia, queda en su historial */
+  function capOnCierre(cid, o) {
+    var cp = capOf(o.tokko); if (!cp) return;
+    var pr = propOf(o), pubU = pr.pub ? toUSD(+pr.pub, pr.pubMon || 'U$S', o.cot) : capPrecioUSD(cp), cu = +o.valor ? toUSD(+o.valor, o.moneda || 'U$S', o.cot) : null;
+    gUpd('captaciones', cp.id, { cierre: { id: cid, f: o.fecha, usd: cu, pubUSD: pubU, neg: cu && pubU ? cu / pubU - 1 : null }, resultado: o.operacion === 'venta' || !o.operacion ? 'vendida' : 'alquilada' });
+  }
+  function vendidosDB() {
+    var rows = [], used = {};
+    G.cierres.forEach(function (c) {
+      if ((c.operacion || 'venta') !== 'venta' || !+c.valor) return;
+      var cp = capOf(c.tokko); if (cp) used[cp.id] = 1;
+      var pr = propOf(c), m2 = propM2(pr), cu = toUSD(+c.valor, c.moneda || 'U$S', c.cot), pu = pr.pub ? toUSD(+pr.pub, pr.pubMon || 'U$S', c.cot) : (cp ? capPrecioUSD(cp) : null);
+      var dias = cp ? Math.max(0, Math.round((new Date(c.fecha) - new Date(validDate(String(cp.alta || '').slice(0, 10)) || cp.primeraVez)) / 864e5)) : null;
+      rows.push({ k: 'c' + c.id, cid: c.id, fuente: cp ? 'propia' : c.puntas === 'comprador' ? 'busqueda' : 'propia-st', fecha: c.fecha || '', dir: c.direccion || '', loc: c.localidad || (cp && cp.loc) || '', tipo: pr.tipo || '', amb: pr.amb || null, m2: m2, pub: pu, cierre: cu, neg: pu && cu ? cu / pu - 1 : null, dias: dias, ase: cParts(c).map(function (x) { return x.id; }) });
+    });
+    G.captaciones.forEach(function (p) {
+      if (used[p.id] || p.estado !== 'baja') return;
+      var r = capResultado(p); if (r !== 'vendida' && r !== 'otro') return;
+      if (!capVenta(p)) return;
+      rows.push({ k: 'p' + p.id, pid: p.id, fuente: r === 'otro' ? 'propia-otro' : 'propia-sc', fecha: p.baja || '', dir: p.dir || p.titulo || '', loc: p.loc || '', tipo: p.tipo || '', amb: p.amb || null, m2: capM2(p), pub: capPrecioUSD(p), cierre: p.cierre && p.cierre.usd || null, neg: p.cierre && p.cierre.neg != null ? p.cierre.neg : null, dias: capAge(p), ase: [capAse(p)].filter(Boolean) });
+    });
+    return rows.sort(function (a, b) { return String(b.fecha) < String(a.fecha) ? -1 : 1; });
+  }
+  var FUENTE = { propia: 'Captación propia', 'propia-st': 'Venta propia (sin Tokko)', busqueda: 'Búsqueda (captación de otra inmobiliaria)', 'propia-sc': 'Captación propia (sin cierre cargado)', 'propia-otro': 'Captación propia, la vendió otro' };
+  /* valores por m2 con la base de vendidos */
+  m2Stats = function (list, tipo) {
+    var g = {};
+    function grp(k) { k = k || 'Sin localidad'; var it = listFind('localidades', k), lab = it ? it.n : k, kk = norm(lab).replace(/^v\.? /, 'villa '); return g[kk] || (g[kk] = { loc: lab, act: [], vpub: [], cier: [], dias: [], neg: [], n: 0 }); }
+    list.forEach(function (p) {
+      if (p.estado === 'baja' || !capVenta(p) || (tipo && p.tipo !== tipo)) return;
+      var m2 = capM2(p), pu = capPrecioUSD(p); if (m2 >= 15 && pu) grp(p.loc).act.push(pu / m2);
+    });
+    vendidosDB().forEach(function (v) {
+      if (tipo && v.tipo !== tipo) return;
+      var o = grp(v.loc); o.n++;
+      if (v.m2 >= 15) { if (v.pub) o.vpub.push(v.pub / v.m2); if (v.cierre) o.cier.push(v.cierre / v.m2); }
+      if (v.neg != null) o.neg.push(v.neg);
+      if (v.dias != null) o.dias.push(v.dias);
+    });
+    return Object.keys(g).map(function (k) { return g[k]; }).filter(function (o) { return o.act.length || o.n; }).sort(function (a, b) { return (b.act.length + b.n) - (a.act.length + a.n); });
+  };
+  m2Section = function (list) {
+    var tipos = {}; list.forEach(function (p) { if (p.tipo) tipos[p.tipo] = 1; }); PROP_TIPOS.forEach(function (t) { tipos[t] = 1; });
+    var rows = m2Stats(list, gF.capT || '');
+    var tsel = selectEl('Tipo', [['', 'Todos los tipos']].concat(Object.keys(tipos).sort().map(function (t) { return [t, t]; })), gF.capT || '', function (v) { gF.capT = v; gRenderView(); });
+    function f(a) { var v = avg(a); return v == null ? '–' : usd(v); }
+    return el('section', { class: 'g-sec g-card' }, el('div', { class: 'g-card-h' }, el('h3', { class: 'g-sec-h', text: 'Valores de venta por m²' }), tsel),
+      el('p', { class: 'sm', text: 'Publicadas: captaciones activas en Tokko. Vendidas: base de vendidos (captaciones propias y búsquedas). El U$S/m² necesita los m²; la negociación compara el cierre con el último precio publicado.' }),
+      rows.length ? el('div', { class: 'mx-wrap' }, el('table', { class: 'g-rank' },
+        el('thead', {}, el('tr', {}, ['Localidad', 'Publicadas', 'U$S/m² publicado', 'Vendidas', 'U$S/m² (último publicado)', 'U$S/m² de cierre', 'Negociación', 'Días hasta vender'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+        el('tbody', {}, rows.map(function (r) { var ng = avg(r.neg); return el('tr', {}, el('th', { scope: 'row', text: r.loc }), el('td', { text: String(r.act.length) }), el('td', { text: f(r.act) }), el('td', { text: String(r.n) }), el('td', { text: f(r.vpub) }), el('td', { text: f(r.cier) }), el('td', { text: ng == null ? '–' : (ng > 0 ? '+' : '') + pctTxt(ng, 1) }), el('td', { text: r.dias.length ? Math.round(avg(r.dias)) + ' d' : '–' })); })))) : el('p', { class: 'hint', text: 'Todavía no hay datos suficientes.' }));
+  };
+  function vendidosView() {
+    var all = vendidosDB(), y = gF.vdY || '', locs = {}, q = norm(gF.vdQ || '');
+    all.forEach(function (v) { if (v.loc) locs[v.loc] = 1; });
+    var years = {}; all.forEach(function (v) { if (v.fecha) years[String(v.fecha).slice(0, 4)] = 1; });
+    var list = all.filter(function (v) {
+      if (y && String(v.fecha).slice(0, 4) !== y) return false;
+      if (gF.vdL && v.loc !== gF.vdL) return false;
+      if (gF.capT && v.tipo !== gF.capT) return false;
+      if (gF.vdF && v.fuente !== gF.vdF) return false;
+      if (gF.vdM2 && !v.m2) return false;
+      if (q && norm([v.dir, v.loc, v.tipo].join(' ')).indexOf(q) < 0) return false;
+      return true;
+    });
+    var sinM2 = all.filter(function (v) { return !v.m2; }).length;
+    var negs = list.map(function (v) { return v.neg; }).filter(function (x) { return x != null; });
+    var m2c = list.filter(function (v) { return v.m2 && v.cierre; }).map(function (v) { return v.cierre / v.m2; });
+    var kp = el('div', { class: 'kpis' }, kpi('Vendidos en la base', String(list.length), list.filter(function (v) { return v.fuente === 'busqueda'; }).length + ' por búsquedas'),
+      kpi('U$S/m² de cierre', m2c.length ? usd(avg(m2c)) : '–', m2c.length + ' con m² cargados'),
+      kpi('Negociación promedio', negs.length ? (avg(negs) > 0 ? '+' : '') + pctTxt(avg(negs), 1) : '–', negs.length + ' con precio publicado y de cierre'),
+      kpi('Sin m²', String(sinM2), sinM2 ? 'Completalos en cada cierre para sumarlos al m²' : 'Todo completo'));
+    var tools = el('div', { class: 'onb-tools' },
+      searchBox(gF.vdQ, 'Buscar dirección o localidad', function (v) { gF.vdQ = v; keepFocusRender(function () { gRenderView(); }); }),
+      selectEl('Año', [['', 'Todos los años']].concat(Object.keys(years).sort().reverse().map(function (k) { return [k, k]; })), y, function (v) { gF.vdY = v; gRenderView(); }),
+      selectEl('Localidad', [['', 'Todas las localidades']].concat(Object.keys(locs).sort().map(function (k) { return [k, k]; })), gF.vdL || '', function (v) { gF.vdL = v; gRenderView(); }),
+      selectEl('Tipo', [['', 'Todos los tipos']].concat(PROP_TIPOS.map(function (t) { return [t, t]; })), gF.capT || '', function (v) { gF.capT = v; gRenderView(); }),
+      selectEl('Origen', [['', 'Todos los orígenes']].concat(Object.keys(FUENTE).map(function (k) { return [k, FUENTE[k]]; })), gF.vdF || '', function (v) { gF.vdF = v; gRenderView(); }),
+      el('label', { class: 'check sm' }, (function () { var cb = el('input', { type: 'checkbox' }); cb.checked = !!gF.vdM2; cb.addEventListener('change', function () { gF.vdM2 = cb.checked; gRenderView(); }); return cb; })(), 'Solo con m²'),
+      el('button', { type: 'button', class: 'btn ghost', text: 'Exportar CSV', onclick: function () { vendidosCSV(list); } }));
+    var tbl = list.length ? el('div', { class: 'mx-wrap' }, el('table', { class: 'g-rank g-vend' },
+      el('thead', {}, el('tr', {}, ['Fecha', 'Dirección', 'Localidad', 'Tipo', 'm²', 'Publicado', 'Cierre', 'U$S/m²', 'Negoc.', 'Origen'].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+      el('tbody', {}, list.slice(0, gF.vdAll ? 5000 : 150).map(function (v) {
+        return el('tr', { class: v.cid ? 'clk' : '', onclick: v.cid ? function () { openCie(v.cid); } : null, title: v.cid ? 'Abrir el cierre' : '' },
+          el('td', { text: dmy(v.fecha) }), el('th', { scope: 'row', text: v.dir || '–' }), el('td', { text: v.loc || '–' }), el('td', { text: v.tipo || '–' }),
+          el('td', { class: v.m2 ? '' : 'warn', text: v.m2 ? String(v.m2) : 'falta' }), el('td', { text: v.pub ? usdK(v.pub) : '–' }), el('td', { text: v.cierre ? usdK(v.cierre) : '–' }),
+          el('td', { text: v.m2 && (v.cierre || v.pub) ? usd((v.cierre || v.pub) / v.m2) : '–' }), el('td', { text: v.neg != null ? (v.neg > 0 ? '+' : '') + pctTxt(v.neg, 1) : '–' }), el('td', { class: 'sm', text: FUENTE[v.fuente] || '' }));
+      })))) : el('p', { class: 'hint', text: 'No hay ventas con ese filtro.' });
+    return [kp, tools, tbl, list.length > 150 && !gF.vdAll ? el('button', { type: 'button', class: 'btn ghost', text: 'Ver las ' + list.length, onclick: function () { gF.vdAll = true; gRenderView(); } }) : null];
+  }
+  async function vendidosCSV(list) {
+    var head = ['Fecha', 'Dirección', 'Localidad', 'Tipo', 'Ambientes', 'm2', 'Publicado U$S', 'Cierre U$S', 'U$S/m2 cierre', 'Negociación %', 'Días publicada', 'Origen', 'Asesores'];
+    var lines = [head.map(csvCell).join(';')].concat(list.map(function (v) {
+      return [dmy(v.fecha), v.dir, v.loc, v.tipo, v.amb || '', v.m2 || '', v.pub ? Math.round(v.pub) : '', v.cierre ? Math.round(v.cierre) : '', v.m2 && v.cierre ? Math.round(v.cierre / v.m2) : '', v.neg != null ? (v.neg * 100).toFixed(1).replace('.', ',') : '', v.dias != null ? v.dias : '', FUENTE[v.fuente] || '', (v.ase || []).map(aseName).join(' / ')].map(function (x) { return csvCell(String(x)); }).join(';');
+    }));
+    await saveFile('vendidos-' + todayStr() + '.csv', new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  }
 
   /* ---------- arranque ---------- */
   var gStarted = false;
