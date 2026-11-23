@@ -1085,6 +1085,9 @@ img.ph, .tas-img.ph { background: var(--surface-2); }
 .tas-iaase { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 4px; }
 body.ase-mode.ase-tas #gp #gpPageBack { display: inline-flex !important; }
 body.ase-mode.ase-tas #gpFoot { display: flex !important; }
+.tas-iaase label.check { display: flex !important; align-items: flex-start; justify-content: flex-start; gap: 10px; text-align: left; width: 100%; }
+.tas-iaase label.check input { flex: none; margin-top: 3px; }
+.tas-cform label.check { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -7947,7 +7950,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   function fotoImg(ref, cls) {
     var im = el('img', { class: cls || 'tas-img', alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' });
     fotoGet(ref).then(function (s) { if (s) im.src = s; else im.classList.add('ph'); });
-    im.addEventListener('error', function () { im.classList.add('ph'); im.removeAttribute('src'); });
+    im.addEventListener('error', function () { var cur = im.getAttribute('src') || ''; if (/^https?:/.test(cur) && cur.indexOf('wsrv.nl') < 0) { im.src = proxImg(cur, 500); return; } im.classList.add('ph'); im.removeAttribute('src'); });
     return im;
   }
   function imgCompress(file, max, q) {
@@ -8179,26 +8182,80 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   }; })(renderTas);
 
   /* ===================== informe PDF ===================== */
-  function imgBox(src, wmm, hmm, cover) {
-    return fotoGet(src).then(function (s) {
-      return new Promise(function (res) {
-        if (!s) return res(null);
-        var im = new Image(), done = false; if (!/^data:/.test(s)) im.crossOrigin = 'anonymous';
-        var to = setTimeout(function () { if (!done) { done = true; res(null); } }, 9000);
-        im.onload = function () {
-          if (done) return; done = true; clearTimeout(to);
-          try {
-            var px = 9, W = Math.round(wmm * px), H = Math.round(hmm * px), iw = im.naturalWidth, ih = im.naturalHeight, c = document.createElement('canvas');
-            if (cover) { c.width = W; c.height = H; var k = Math.max(W / iw, H / ih), dw = iw * k, dh = ih * k; c.getContext('2d').drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh); }
-            else { var k2 = Math.min(W / iw, H / ih, 1.5); c.width = Math.round(iw * k2); c.height = Math.round(ih * k2); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); }
-            res({ d: c.toDataURL('image/jpeg', 0.82), w: c.width / px, h: c.height / px });
-          } catch (e) { res(null); }
-        };
-        im.onerror = function () { if (!done) { done = true; clearTimeout(to); res(null); } };
-        im.src = s;
-      });
+  function proxImg(u, w) { return 'https://wsrv.nl/?url=' + encodeURIComponent(u) + '&w=' + (w || 1400) + '&output=jpg&q=85'; }
+  function loadImg(s, cors) {
+    return new Promise(function (res) {
+      var im = new Image(), done = false; if (cors) im.crossOrigin = 'anonymous';
+      var to = setTimeout(function () { if (!done) { done = true; res(null); } }, 12000);
+      im.onload = function () { if (!done) { done = true; clearTimeout(to); res(im); } };
+      im.onerror = function () { if (!done) { done = true; clearTimeout(to); res(null); } };
+      im.src = s;
     });
   }
+  async function imgBox(src, wmm, hmm, cover) {
+    var s = await fotoGet(src); if (!s) return null;
+    var tries = /^data:/.test(s) ? [[s, false]] : [[s, true], [proxImg(s), true]];
+    for (var i = 0; i < tries.length; i++) {
+      var im = await loadImg(tries[i][0], tries[i][1]); if (!im || !im.naturalWidth) continue;
+      try {
+        var px = 9, W = Math.round(wmm * px), H = Math.round(hmm * px), iw = im.naturalWidth, ih = im.naturalHeight, c = document.createElement('canvas');
+        if (cover) { c.width = W; c.height = H; var k = Math.max(W / iw, H / ih), dw = iw * k, dh = ih * k; c.getContext('2d').drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh); }
+        else { var k2 = Math.min(W / iw, H / ih, 1.5); c.width = Math.round(iw * k2); c.height = Math.round(ih * k2); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); }
+        return { d: c.toDataURL('image/jpeg', 0.82), w: c.width / px, h: c.height / px };
+      } catch (e) { /* imagen protegida: probamos con el proxy */ }
+    }
+    return null;
+  }
+
+  /* ----- fotos automáticas desde el link del aviso ----- */
+  function fotoOK(u) { return typeof u === 'string' && /^https?:\/\//.test(u) && !/logo|icon|sprite|avatar|placeholder|blank|pixel|badge|\.svg|\.gif|maps\.googleapis|google\.com\/maps|facebook|doubleclick|whatsapp/i.test(u) && /\.(jpe?g|webp|png)(\?|$)|imgar|zonapropcdn|argenprop|mlstatic|tokko|cloudfront|images|img|photo|foto/i.test(u); }
+  async function fotosDeAviso(url) {
+    var out = [];
+    var ml = /ML[A-Z]-?(\d{6,})/i.exec(url || '');
+    if (ml) {
+      try { var r = await fetch('https://api.mercadolibre.com/items/MLA' + ml[1]); if (r.ok) { var j = await r.json(); out = (j.pictures || []).map(function (p) { return p.secure_url || p.url; }).filter(Boolean); } } catch (e) {}
+    }
+    if (out.length < 3) {
+      var base = 'https://api.microlink.io/?url=' + encodeURIComponent(url) + '&audio=false&video=false&iframe=false&palette=false';
+      var j2 = null;
+      try { var r2 = await fetch(base + '&data.fotos.selectorAll=img&data.fotos.attr=src'); j2 = await r2.json(); } catch (e) {}
+      if (!j2 || j2.status !== 'success') { try { var r3 = await fetch(base); j2 = await r3.json(); } catch (e) { j2 = null; } }
+      if (j2 && j2.status === 'success') {
+        var d = j2.data || {};
+        if (d.image && d.image.url) out.unshift(d.image.url);
+        (Array.isArray(d.fotos) ? d.fotos : []).forEach(function (u) { if (fotoOK(u)) out.push(u); });
+      } else if (j2 && /rate|limit|429/i.test(JSON.stringify(j2).slice(0, 300))) throw Object.assign(new Error('limite'), { code: 'limite' });
+    }
+    var seen = {}; return out.filter(function (u) { var k = String(u).replace(/[?#].*$/, ''); if (!/^https?:/.test(u) || seen[k]) return false; seen[k] = 1; return true; }).slice(0, 4);
+  }
+  var fotosRun = {};
+  async function fotosAuto(tid, force, quiet) {
+    if (fotosRun[tid]) return fotosRun[tid];
+    fotosRun[tid] = (async function () {
+      var t = gGet('tasaciones', tid); if (!t) return 0;
+      var pend = (t.comps || []).filter(function (c) { return c.url && !(c.fotos || []).length && (force || !c.fotosTry); });
+      var n = 0, lim = false;
+      for (var i = 0; i < pend.length && !lim; i++) {
+        var c = pend[i], fs = [];
+        try { fs = await fotosDeAviso(c.url); } catch (e) { if (e && e.code === 'limite') lim = true; }
+        tasUpdComp(t, c.id, fs.length ? { fotos: fs, fotosTry: true } : { fotosTry: true });
+        if (fs.length) n++;
+      }
+      if (!quiet) toast(lim ? 'Se alcanzó el límite diario del servicio que lee los avisos. Probá mañana o subí las fotos a mano.' : n ? 'Traje fotos de ' + n + (n === 1 ? ' aviso.' : ' avisos.') : pend.length ? 'No pude leer las fotos de esos avisos. Podés subirlas a mano con «Editar».' : 'Todos los comparables con link ya tienen fotos.', lim || (!n && pend.length) ? { kind: 'error' } : undefined);
+      if (gOpen && gOpen.id === tid) tasAseRefreshSafe();
+      return n;
+    })();
+    try { return await fotosRun[tid]; } finally { delete fotosRun[tid]; }
+  }
+  function tasAseRefreshSafe() { try { if (document.querySelector('#modal[open]')) return; gFill(); } catch (e) {} }
+  tasAdd = (function (o) { return function (t, list) { var r = o.apply(this, arguments); if ((list || []).some(function (c) { return c.url && !(c.fotos || []).length; })) setTimeout(function () { fotosAuto(t.id, false, true); }, 400); return r; }; })(tasAdd);
+  tasComp = (function (o) { return function (t) {
+    o(t);
+    var falt = (t.comps || []).filter(function (c) { return c.url && !(c.fotos || []).length; }).length;
+    var ext = $('#gpBody .tas-ext'); if (!ext || !falt) return;
+    var b = el('button', { type: 'button', class: 'btn', onclick: async function () { b.disabled = true; b.textContent = 'Buscando fotos…'; await fotosAuto(t.id, true); } }, 'Traer fotos de los avisos (' + falt + ')');
+    ext.append(b);
+  }; })(tasComp);
   function tlx(l, z) { return (l + 180) / 360 * Math.pow(2, z) * 256; }
   function tly(la, z) { var r = la * Math.PI / 180; return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * Math.pow(2, z) * 256; }
   async function staticMap(pts, zona, subj, W, H) {
@@ -8232,6 +8289,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 
   async function tasPdfV2(t) {
     var JsPDF; try { JsPDF = await loadJsPDF(); } catch (e) { toast('No se pudo generar el PDF. Revisá la conexión.', { kind: 'error' }); return; }
+    if ((t.comps || []).some(function (c) { return c.incl !== false && c.url && !(c.fotos || []).length && !c.fotosTry; })) { var pf = tasBusy('Buscando las fotos de los avisos…'); try { await fotosAuto(t.id, false, true); } catch (e) {} pf(); t = gGet('tasaciones', t.id) || t; }
     var prog = tasBusy('Armando el informe con fotos y mapa…');
     try {
       var s = t.s || {}, r = tasCalc(t), cf = r.cf, ac = acmConf(), ai = aseInfo(t), op = Object.assign({ que: true, sem: true, fichas: true, eleg: true, cond: true }, t.pdf || {});
