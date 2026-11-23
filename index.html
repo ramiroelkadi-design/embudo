@@ -1031,6 +1031,29 @@ body.side-mini .side-foot { flex-direction: column; }
 .g-vend tr.clk { cursor: pointer; }
 .g-vend tr.clk:hover th, .g-vend tr.clk:hover td { background: var(--accent-soft); }
 .g-vend td.warn { color: #C2410C; font-weight: 600; }
+/* tasaciones */
+.tas-map { height: 340px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); margin-top: 8px; z-index: 0; }
+.tas-pin span { display: block; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.tas-pin { background: none; border: 0; }
+.tas-filt { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: flex-end; }
+.tas-filt .field { margin: 0; }
+.tas-cands { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 520px; overflow: auto; }
+.tas-cand { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.tas-cmain, .tas-cp, .tas-cn { display: flex; flex-direction: column; min-width: 0; }
+.tas-cmain .sm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tas-cp { text-align: right; }
+.tas-ext { display: flex; flex-wrap: wrap; gap: 8px; }
+.tas-tbl tr.off th, .tas-tbl tr.off td { opacity: .45; }
+.tas-tbl td.num { white-space: nowrap; }
+.tas-pick { display: flex; flex-direction: column; gap: 6px; max-height: 55vh; overflow: auto; }
+.tas-pk { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; }
+.tas-pk > span { display: flex; flex-direction: column; gap: 2px; }
+.tas-row { display: grid !important; grid-template-columns: 1.2fr 2fr auto; gap: 12px; align-items: center; }
+.tas-busy { display: flex; align-items: center; gap: 12px; }
+.tas-busy .spin { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); animation: tspin 1s linear infinite; flex: 0 0 auto; }
+@keyframes tspin { to { transform: rotate(360deg); } }
+@media (max-width: 800px) { .tas-row { grid-template-columns: 1fr; } .tas-cand { grid-template-columns: auto 1fr; } .tas-map { height: 260px; } }
+.tas-hb .hbar { grid-template-columns: minmax(110px, 35%) 1fr 90px; } .tas-hb .hbar b { white-space: nowrap; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1295,7 +1318,26 @@ body.side-mini .side-foot { flex-direction: column; }
     }
   };
 
+  function aiRaw(body, betas) {
+    var conf = aiConfig();
+    if (!conf.key) { var e0 = new Error('Falta la clave de la IA (menú ⋯ → Asistente).'); e0.code = 'no_key'; return Promise.reject(e0); }
+    body = Object.assign({ model: conf.model }, body);
+    var h = { 'content-type': 'application/json', 'x-api-key': conf.key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+    if (betas && betas.length) h['anthropic-beta'] = betas.join(',');
+    var msgs = body.messages.slice(), all = [];
+    function go(n) {
+      return fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: h, body: JSON.stringify(Object.assign({}, body, { messages: msgs })) }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw apiError(r.status, j); return j; });
+      }).then(function (j) {
+        all = all.concat(j.content || []);
+        if (j.stop_reason === 'pause_turn' && n < 6) { msgs.push({ role: 'assistant', content: j.content }); return go(n + 1); }
+        j.content = all; return j;
+      });
+    }
+    return go(0);
+  }
   window.claude = {
+    aiRaw: aiRaw,
     use: function (name) {
       if (name === 'db') return booted.then(function (u) { return u ? dbApi : null; });
       if (name === 'user') return booted.then(function (u) { return u ? userApi : null; });
@@ -1326,6 +1368,7 @@ body.side-mini .side-foot { flex-direction: column; }
     <button type="button" class="vbtn" data-v="cie" aria-pressed="false"><span data-icon="key" data-size="20"></span><span class="vl">Cierres</span></button>
     <button type="button" class="vbtn" data-v="ase" aria-pressed="false"><span data-icon="users" data-size="20"></span><span class="vl">Asesores</span><span id="aseN" class="bn" hidden></span></button>
     <button type="button" class="vbtn" data-v="cap" aria-pressed="false"><span data-icon="building" data-size="20"></span><span class="vl">Captaciones</span></button>
+  <button type="button" class="vbtn" data-v="tas" aria-pressed="false"><span data-icon="calc" data-size="20"></span><span class="vl">Tasaciones</span></button>
   <button type="button" class="vbtn" data-v="cc" aria-pressed="false"><span data-icon="wallet" data-size="20"></span><span class="vl">Cuentas corrientes</span></button>
   </nav>
   <div class="side-foot"><button id="themeBtn" class="side-theme" type="button"></button><button id="sideMini" class="side-mini-btn" type="button" aria-label="Achicar el menú" title="Achicar el menú"><span data-icon="sidechev" data-size="16"></span></button><span id="sideUser" class="side-user"></span></div>
@@ -1540,6 +1583,7 @@ body.side-mini .side-foot { flex-direction: column; }
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
     moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
     monitor: '<rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>',
+    calc: '<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8"/><path d="M16 14v4"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>',
     wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
     menu: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
     sidechev: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/>',
@@ -2344,7 +2388,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var oldBoard = document.querySelector('.board');
     var sl = oldBoard ? oldBoard.scrollLeft : 0;
     $('#stats').textContent = statsText();
-    var PT = { hoy: 'Inicio', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores', cc: 'Cuentas corrientes', cap: 'Captaciones' };
+    var PT = { hoy: 'Inicio', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores', cc: 'Cuentas corrientes', cap: 'Captaciones', tas: 'Tasaciones' };
     $('#pageTitle').textContent = PT[view] || 'Inicio'; document.title = (PT[view] ? PT[view] + ' · ' : '') + 'Juntos Gestión';
     var su = $('#sideUser'); if (su) su.textContent = me.name ? me.name : '';
     document.body.classList.toggle('v-cal', view === 'cal');
@@ -4562,6 +4606,7 @@ body.side-mini .side-foot { flex-direction: column; }
     else if (view === 'hoy') renderHoy(box);
     else if (view === 'cc') renderCc(box);
     else if (view === 'cap') renderCap(box);
+    else if (view === 'tas') renderTas(box);
   }
   function gHead(title, sub, actions) {
     return el('div', { class: 'g-head' },
@@ -4897,7 +4942,7 @@ body.side-mini .side-foot { flex-direction: column; }
     gDirty = false;
     var keep = $('#gpBody') ? $('#gpBody').scrollTop : 0;
     if (gOpen.id && !gRec()) { closePanels(); toast('Ese registro ya no existe.'); return; }
-    if (gOpen.t === 'res') fillRes(); else if (gOpen.t === 'cie') fillCie(); else fillAse();
+    if (gOpen.t === 'res') fillRes(); else if (gOpen.t === 'cie') fillCie(); else if (gOpen.t === 'tas') fillTas(); else fillAse();
     var b = $('#gpBody'); if (b) b.scrollTop = keep;
   }
   $('#gp').addEventListener('focusout', function () { setTimeout(function () { if (!gDirty || !gOpen) return; var a = document.activeElement; if (a && $('#gp').contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return; gFill(); }, 60); });
@@ -6252,8 +6297,8 @@ body.side-mini .side-foot { flex-direction: column; }
   }
   function applyRoles() {
     var ok = canGestion();
-    document.querySelectorAll('.vbtn[data-v=res], .vbtn[data-v=cie], .vbtn[data-v=ase], .vbtn[data-v=cc], .vbtn[data-v=cap], .vgl-g').forEach(function (b) { b.hidden = !ok; });
-    if (!ok && (view === 'res' || view === 'cie' || view === 'ase' || view === 'cc' || view === 'cap')) setView('hoy');
+    document.querySelectorAll('.vbtn[data-v=res], .vbtn[data-v=cie], .vbtn[data-v=ase], .vbtn[data-v=cc], .vbtn[data-v=cap], .vbtn[data-v=tas], .vgl-g').forEach(function (b) { b.hidden = !ok; });
+    if (!ok && (view === 'res' || view === 'cie' || view === 'ase' || view === 'cc' || view === 'cap' || view === 'tas')) setView('hoy');
     return ok;
   }
 
@@ -6495,12 +6540,12 @@ body.side-mini .side-foot { flex-direction: column; }
 
   /* ===== Ficha del asesor a página completa ===== */
   function gPageSync() {
-    var on = !!(gOpen && gOpen.t === 'ase' && !$('#gp').hidden);
+    var on = !!(gOpen && (gOpen.t === 'ase' || gOpen.t === 'tas') && !$('#gp').hidden);
     $('#gp').classList.toggle('page', on);
     document.body.classList.toggle('gp-page', on);
     if (on) { var bk = $('#gpBackTxt'); if (bk) bk.textContent = PT_BACK[view] || 'Volver'; }
   }
-  var PT_BACK = { hoy: 'Inicio', ase: 'Asesores', cc: 'Cuentas corrientes', cie: 'Cierres', res: 'Reservas', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding' };
+  var PT_BACK = { hoy: 'Inicio', ase: 'Asesores', cc: 'Cuentas corrientes', cap: 'Captaciones', tas: 'Tasaciones', cie: 'Cierres', res: 'Reservas', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding' };
 
   /* ===== Reservas v2: puntas, inmobiliarias, localidades ===== */
   var PCT_OPTS = [0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.0415, 0.045, 0.05, 0.06];
@@ -6870,7 +6915,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var prod = p.producer || {};
     return { tid: p.id, ref: p.reference_code || '', titulo: p.publication_title || '', dir: p.address || p.real_address || p.fake_address || '', loc: (p.location && (p.location.name || '')) || '', tipo: (p.type && p.type.name) || '', ops: ops,
       prod: prod.name || '', pmail: String(prod.email || '').toLowerCase(), suc: (p.branch && p.branch.name) || '', alta: String(p.created_at || '').slice(0, 10), url: p.public_url || '', foto: ph.thumb || ph.image || '',
-      sup: +p.total_surface || +p.roofed_surface || null, supCub: +p.roofed_surface || null, supTot: +p.total_surface || null, amb: +p.room_amount || null, st: p.status != null ? p.status : null };
+      lat: +p.geo_lat || null, lng: +p.geo_long || null, sup: +p.total_surface || +p.roofed_surface || null, supCub: +p.roofed_surface || null, supTot: +p.total_surface || null, amb: +p.room_amount || null, st: p.status != null ? p.status : null };
   }
   async function tokkoSync(opts) {
     opts = opts || {};
@@ -6898,7 +6943,11 @@ body.side-mini .side-foot { flex-direction: column; }
   function portalSyncAll() { if (typeof portalLast === 'object') Object.keys(portalLast).forEach(function (k) { portalLast[k] = ''; }); if (typeof portalSync === 'function') portalSync(); }
   function capOpsKey(ops) { return (ops || []).map(function (o) { return o.op + ':' + o.mon + ':' + (o.precio || 0); }).join('|'); }
   function capAct() { return G.captaciones.filter(function (c) { return c.estado !== 'baja'; }); }
-  function capMerge(out) {
+  var gHoldN = 0, gHoldP = false;
+  gRefresh = (function (o) { return function () { if (gHoldN) { gHoldP = true; return; } return o.apply(this, arguments); }; })(gRefresh);
+  function gHold(fn) { gHoldN++; try { return fn(); } finally { setTimeout(function () { gHoldN--; if (!gHoldN && gHoldP) { gHoldP = false; gRefresh(); } }, 400); } }
+  function capMerge(out) { return gHold(function () { return capMerge0(out); }); }
+  function capMerge0(out) {
     var today = todayStr(), seen = {}, nNew = 0, nUpd = 0, nBaja = 0;
     out.forEach(function (p) {
       if (p.tid == null) return;
@@ -6908,7 +6957,7 @@ body.side-mini .side-foot { flex-direction: column; }
       var f = {};
       if (ex.estado === 'baja') { f.estado = 'activa'; f.baja = ''; }
       if (capOpsKey(ex.ops) !== capOpsKey(p.ops)) { f.ops = p.ops; f.precios = (ex.precios || []).concat([{ f: today, ops: p.ops }]); }
-      ['ref', 'titulo', 'dir', 'loc', 'tipo', 'prod', 'pmail', 'suc', 'alta', 'url', 'foto', 'sup', 'supCub', 'supTot', 'amb', 'st'].forEach(function (k) { if (p[k] !== undefined && JSON.stringify(p[k]) !== JSON.stringify(ex[k])) f[k] = p[k]; });
+      ['ref', 'titulo', 'dir', 'loc', 'tipo', 'prod', 'pmail', 'suc', 'alta', 'url', 'foto', 'sup', 'supCub', 'supTot', 'amb', 'st', 'lat', 'lng'].forEach(function (k) { if (p[k] !== undefined && JSON.stringify(p[k]) !== JSON.stringify(ex[k])) f[k] = p[k]; });
       if (aid && ex.ase !== aid) f.ase = aid;
       if (ex.ultimaVez !== today) f.ultimaVez = today;
       if (Object.keys(f).length) { gUpd('captaciones', id, f); nUpd++; }
@@ -6926,12 +6975,20 @@ body.side-mini .side-foot { flex-direction: column; }
       if (age > 6) tokkoSync().then(function () { if (view === 'cap') gRenderView(); }, function (e) { CAP.err = e.code || 'error'; });
     }, 4000);
   }
+  var capIx = { arr: null, map: null, mail: {}, name: {}, memo: {} };
+  function capIndex() {
+    var mp = gConf.tokkoMap;
+    if (capIx.arr === G.asesores && capIx.mp0 === mp && capIx.n === G.asesores.length) return capIx;
+    var ix = { arr: G.asesores, mp0: mp, map: mp || {}, n: G.asesores.length, mail: {}, name: {}, memo: {} };
+    G.asesores.forEach(function (x) { if (x.mail) ix.mail[String(x.mail).toLowerCase()] = x.id; var k1 = norm(aseFull(x) || ''), k2 = norm(x.nombre || ''); if (k1 && !ix.name[k1]) ix.name[k1] = x.id; if (k2 && !ix.name[k2]) ix.name[k2] = x.id; });
+    capIx = ix; return ix;
+  }
   function capAse(p) {
-    var map = gConf.tokkoMap || {};
+    var ix = capIndex(), map = ix.map;
     if (map[p.prod]) return map[p.prod];
-    var a = p.pmail ? G.asesores.filter(function (x) { return String(x.mail || '').toLowerCase() === p.pmail; })[0] : null;
-    if (!a && p.prod) { var n = norm(p.prod); a = G.asesores.filter(function (x) { return norm(aseFull(x)) === n || norm(x.nombre || '') === n; })[0]; }
-    return a ? a.id : (p.ase || '');
+    var key = (p.pmail || '') + '|' + (p.prod || '');
+    if (!(key in ix.memo)) ix.memo[key] = (p.pmail && ix.mail[p.pmail]) || (p.prod && ix.name[norm(p.prod)]) || '';
+    return ix.memo[key] || p.ase || '';
   }
   function capVenta(p) { return p.ops.filter(function (o) { return /venta/i.test(o.op); })[0] || null; }
   function capPrecioTxt(p) { return p.ops.map(function (o) { return o.op + (o.precio ? ' ' + money(o.precio, o.mon) : ''); }).join(' · '); }
@@ -7371,6 +7428,375 @@ body.side-mini .side-foot { flex-direction: column; }
       return [dmy(v.fecha), v.dir, v.loc, v.tipo, v.amb || '', v.m2 || '', v.pub ? Math.round(v.pub) : '', v.cierre ? Math.round(v.cierre) : '', v.m2 && v.cierre ? Math.round(v.cierre / v.m2) : '', v.neg != null ? (v.neg * 100).toFixed(1).replace('.', ',') : '', v.dias != null ? v.dias : '', FUENTE[v.fuente] || '', (v.ase || []).map(aseName).join(' / ')].map(function (x) { return csvCell(String(x)); }).join(';');
     }));
     await saveFile('vendidos-' + todayStr() + '.csv', new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+  }
+
+  /* ===== Tasaciones / ACM ===== */
+  G.tasaciones = [];
+  G_VIEWS.tas = 'tasaciones';
+  var EST_INM = ['A estrenar', 'Excelente', 'Muy bueno', 'Bueno', 'Regular', 'A refaccionar'];
+  var DISP = ['Frente', 'Contrafrente', 'Lateral', 'Interno'];
+  var SRC_LBL = { 'base-v': 'Vendida (base)', 'base-a': 'Publicada (nuestra)', portal: 'Portal', link: 'Link', pdf: 'PDF', texto: 'Texto', manual: 'Manual' };
+  function tasNeg() { var n = vendidosDB().map(function (v) { return v.neg; }).filter(function (x) { return x != null && x > -0.4 && x < 0.1; }); return n.length >= 3 ? Math.round(avg(n) * 1000) / 1000 : -0.05; }
+  function tasConf(t) { return Object.assign({ coef: 0.5, neg: tasNeg(), radio: 1.5, m2p: 0.35, amb: 1, vend: true, pub: true, base: 'mediana' }, t.cfg || {}); }
+  function m2Hom(c, t, coef) { c = +c || 0; t = +t || 0; if (!c && !t) return null; if (!c) return t; if (!t || t <= c) return c; return c + (t - c) * coef; }
+  function km(a, b) { if (!a || !b || a.lat == null || b.lat == null) return null; var R = 6371, dLa = (b.lat - a.lat) * Math.PI / 180, dLo = (b.lng - a.lng) * Math.PI / 180, x = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLo / 2) * Math.sin(dLo / 2); return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
+  function median(a) { if (!a.length) return null; var s = a.slice().sort(function (x, y) { return x - y; }), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+  function quant(a, q) { if (!a.length) return null; var s = a.slice().sort(function (x, y) { return x - y; }), p = (s.length - 1) * q, lo = Math.floor(p), hi = Math.ceil(p); return s[lo] + (s[hi] - s[lo]) * (p - lo); }
+  function compUSD(c) { return +c.precio ? toUSD(+c.precio, c.mon || 'U$S', c.cot) : null; }
+  function compM2(c, cf) { var h = m2Hom(c.m2c, c.m2t, cf.coef); var u = compUSD(c); if (!h || !u) return null; return u * (c.estado === 'publicada' ? 1 + cf.neg : 1) * (1 + (+c.aj || 0)) / h; }
+  /* ----- geocodificación y mapa ----- */
+  var geoQ = Promise.resolve();
+  function geocode(dir, loc) {
+    var q = [dir, loc, 'Buenos Aires', 'Argentina'].filter(Boolean).join(', ');
+    geoQ = geoQ.then(function () { return new Promise(function (r) { setTimeout(r, 1100); }); });
+    return geoQ.then(function () { return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=' + encodeURIComponent(q), { headers: { 'Accept-Language': 'es' } }); })
+      .then(function (r) { return r.json(); }).then(function (j) { return j && j[0] ? { lat: +j[0].lat, lng: +j[0].lon } : null; }, function () { return null; });
+  }
+  var leafP = null;
+  function loadLeaflet() {
+    if (window.L && window.L.map) return Promise.resolve(window.L);
+    if (!leafP) leafP = new Promise(function (res, rej) {
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.append(l);
+      var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      s.onload = function () { window.L ? res(window.L) : rej(new Error('map')); }; s.onerror = function () { leafP = null; rej(new Error('map')); };
+      document.head.append(s);
+    });
+    return leafP;
+  }
+  function dot(L, color, big) { return L.divIcon({ className: 'tas-pin', html: '<span style="background:' + color + ';width:' + (big ? 18 : 12) + 'px;height:' + (big ? 18 : 12) + 'px"></span>', iconSize: [big ? 18 : 12, big ? 18 : 12] }); }
+  function tasMap(box, t, cands, onPick) {
+    var s = t.s || {}, cf = tasConf(t);
+    loadLeaflet().then(function (L) {
+      if (!box.isConnected) return;
+      var center = s.lat != null ? [s.lat, s.lng] : [-34.51, -58.49];
+      var m = L.map(box, { scrollWheelZoom: false }).setView(center, s.lat != null ? 15 : 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
+      if (s.lat != null) {
+        var mk = L.marker(center, { draggable: true, icon: dot(L, '#E5484D', true), title: 'El inmueble' }).addTo(m);
+        mk.on('dragend', function () { var p = mk.getLatLng(); gUpd('tasaciones', t.id, { s: Object.assign({}, t.s, { lat: p.lat, lng: p.lng }) }); toast('Ubicación actualizada.'); });
+        if (cands) L.circle(center, { radius: cf.radio * 1000, color: '#1F69FF', weight: 1, fillOpacity: 0.05 }).addTo(m);
+      }
+      (t.comps || []).forEach(function (c) { if (c.lat != null) L.marker([c.lat, c.lng], { icon: dot(L, '#012169'), title: c.dir }).addTo(m).bindPopup('<b>' + esc(c.dir || 'Comparable') + '</b><br>' + (compUSD(c) ? usd(compUSD(c)) : '') + (c.m2c ? ' · ' + c.m2c + ' m²' : '')); });
+      (cands || []).forEach(function (c) {
+        if (c.lat == null) return;
+        var mk2 = L.marker([c.lat, c.lng], { icon: dot(L, c.src === 'base-v' ? '#1F8A4C' : '#8FA9E0'), title: c.dir }).addTo(m);
+        var b = document.createElement('div'); b.innerHTML = '<b>' + esc(c.dir || '') + '</b><br>' + (compUSD(c) ? usd(compUSD(c)) : '') + (c.m2c ? ' · ' + c.m2c + ' m²' : '') + '<br>';
+        var bt = document.createElement('button'); bt.className = 'btn sm-btn'; bt.textContent = 'Agregar'; bt.onclick = function () { onPick(c); }; b.append(bt);
+        mk2.bindPopup(b);
+      });
+      setTimeout(function () { m.invalidateSize(); }, 200);
+    }, function () { box.replaceChildren(el('p', { class: 'hint', text: 'No se pudo cargar el mapa.' })); });
+  }
+  function esc(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
+  /* ----- candidatos de nuestra base ----- */
+  function tasCands(t) {
+    var s = t.s || {}, cf = tasConf(t), out = [], have = {};
+    (t.comps || []).forEach(function (c) { if (c.key) have[c.key] = 1; });
+    var sm2 = +s.m2c || +s.m2t || null, sl = norm(s.loc || '');
+    function ok(c) {
+      if (have[c.key]) return false;
+      if (s.tipo && c.tipo && c.tipo !== s.tipo) return false;
+      var cm = +c.m2c || +c.m2t || null; if (sm2 && cm && Math.abs(cm / sm2 - 1) > cf.m2p) return false;
+      if (+s.amb && +c.amb && Math.abs(+c.amb - +s.amb) > cf.amb) return false;
+      var d = km(s, c); c.km = d;
+      if (d != null) return d <= cf.radio;
+      return !sl || norm(c.loc || '') === sl;
+    }
+    if (cf.vend) vendidosDB().forEach(function (v) {
+      var cp = v.pid ? gGet('captaciones', v.pid) : null, cie = v.cid ? gGet('cierres', v.cid) : null;
+      var c = { key: v.k, src: 'base-v', dir: v.dir, loc: v.loc, tipo: v.tipo, amb: v.amb, m2c: v.m2, m2t: null, precio: v.cierre || v.pub, mon: 'U$S', estado: v.cierre ? 'vendida' : 'publicada', fecha: v.fecha, lat: cp ? cp.lat : cie && cie.geo ? cie.geo.lat : null, lng: cp ? cp.lng : cie && cie.geo ? cie.geo.lng : null, nota: v.cierre ? 'Vendida ' + dmy(v.fecha) + (v.pub ? ' · publicada en ' + usdK(v.pub) : '') : 'Vendida ' + dmy(v.fecha) + ' · precio publicado' };
+      if (c.precio && ok(c)) out.push(c);
+    });
+    if (cf.pub) capAct().forEach(function (p) {
+      var v = capVenta(p); if (!v) return;
+      var c = { key: 'a' + p.id, src: 'base-a', dir: p.dir || p.titulo, loc: p.loc, tipo: p.tipo, amb: p.amb, m2c: p.supCub || p.sup, m2t: p.supTot, precio: v.precio, mon: v.mon, estado: 'publicada', url: p.url, fecha: String(p.alta || '').slice(0, 10), lat: p.lat, lng: p.lng, nota: 'Captación ' + (p.ref || '') + ' · ' + aseName(capAse(p)) };
+      if (ok(c)) out.push(c);
+    });
+    return out.sort(function (a, b) { return (a.km == null ? 99 : a.km) - (b.km == null ? 99 : b.km); });
+  }
+  function tasAdd(t, list) {
+    var cur = gGet('tasaciones', t.id) || t, comps = (cur.comps || []).slice();
+    list.forEach(function (c) { var x = Object.assign({ id: uid(), incl: true, aj: 0 }, c); delete x.km; comps.push(x); });
+    gUpd('tasaciones', t.id, { comps: comps }); gFill();
+    list.forEach(function (c, i) { if (c.lat == null && c.dir) { var cid = comps[comps.length - list.length + i].id; geocode(c.dir, c.loc).then(function (g) { if (!g) return; var cc = gGet('tasaciones', t.id); if (!cc) return; var cs = (cc.comps || []).map(function (x) { return x.id === cid ? Object.assign({}, x, g) : x; }); gUpd('tasaciones', t.id, { comps: cs }); }); } });
+  }
+  function tasUpdComp(t, id, f) { var cur = gGet('tasaciones', t.id); if (!cur) return; gUpd('tasaciones', t.id, { comps: (cur.comps || []).map(function (x) { return x.id === id ? Object.assign({}, x, f) : x; }) }); }
+  /* ----- IA: portales, links, PDF y texto ----- */
+  var COMP_SCHEMA = 'Devolvé SOLO un JSON válido, sin texto antes ni después, con esta forma: {"comparables":[{"portal":"zonaprop|argenprop|mercadolibre|otro","url":"","titulo":"","direccion":"calle y altura si aparece","localidad":"barrio o localidad","tipo":"Departamento|Casa|PH|Terreno|Local|Oficina|Otro","ambientes":0,"m2_cubiertos":0,"m2_totales":0,"precio":0,"moneda":"USD|ARS","estado":"publicada|vendida","antiguedad":0,"notas":"cochera, amenities, estado, piso, etc."}]}. Usá null cuando un dato no aparezca. No inventes datos.';
+  function aiOK() { return !!(window.claude && window.claude.aiRaw); }
+  function aiNeed() { toast(window.claude && window.claude.standalone ? 'Falta configurar la clave de la IA (menú ⋯ → Asistente).' : 'La búsqueda con IA funciona en la versión de GitHub. Acá podés cargar comparables a mano.', { kind: 'error' }); }
+  function parseComps(txt, src) {
+    var a = String(txt || ''), i = a.indexOf('{'), j = a.lastIndexOf('}');
+    if (i < 0 || j < i) return [];
+    try { var o = JSON.parse(a.slice(i, j + 1)); } catch (e) { return []; }
+    return (o.comparables || []).map(function (x) {
+      var tipo = PROP_TIPOS.filter(function (p) { return norm(p) === norm(x.tipo || ''); })[0] || (x.tipo ? 'Otro' : '');
+      return { src: src, portal: x.portal || '', url: x.url || '', titulo: x.titulo || '', dir: x.direccion || x.titulo || '', loc: x.localidad || '', tipo: tipo, amb: +x.ambientes || null, m2c: +x.m2_cubiertos || null, m2t: +x.m2_totales || null, precio: +x.precio || null, mon: /ARS|\$/.test(x.moneda || '') && !/USD|U\$S/.test(x.moneda || '') ? '$' : 'U$S', estado: x.estado === 'vendida' ? 'vendida' : 'publicada', antig: +x.antiguedad || null, nota: x.notas || '' };
+    }).filter(function (c) { return c.precio || c.m2c || c.url; });
+  }
+  async function aiRun(content, tools) {
+    var body = { max_tokens: 6000, messages: [{ role: 'user', content: content }] };
+    if (tools && tools.length) body.tools = tools;
+    var j = await window.claude.aiRaw(body, tools && tools.some(function (x) { return /web_fetch/.test(x.type); }) ? ['web-fetch-2025-09-10'] : null);
+    return (j.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join('\n');
+  }
+  function sujetoTxt(s) { return [s.tipo || 'propiedad', s.amb ? s.amb + ' ambientes' : '', s.m2c ? s.m2c + ' m² cubiertos' : '', s.m2t ? s.m2t + ' m² totales' : '', s.antig ? s.antig + ' años de antigüedad' : '', s.estado ? 'estado ' + s.estado : '', s.cochera ? 'con cochera' : '', s.dir ? 'en ' + s.dir : '', s.loc ? s.loc : ''].filter(Boolean).join(', '); }
+  function tasBusy(txt) { var m = el('div', { class: 'tas-busy' }, el('span', { class: 'spin' }), el('p', { text: txt })); showModal('Trabajando…', m, [el('button', { type: 'button', class: 'btn ghost', text: 'Cerrar', onclick: function () { closeModal(null); } })]); return function () { closeModal(null); }; }
+  async function pickComps(t, list, title) {
+    if (!list.length) { toast('No encontré comparables con datos suficientes. Probá con otro link, un PDF o cargalo a mano.', { kind: 'error' }); return; }
+    var sel = list.map(function () { return true; });
+    var body = el('div', { class: 'tas-pick' }, list.map(function (c, i) {
+      var cb = el('input', { type: 'checkbox' }); cb.checked = true; cb.addEventListener('change', function () { sel[i] = cb.checked; });
+      var u = compUSD(c), h = m2Hom(c.m2c, c.m2t, 0.5);
+      return el('label', { class: 'tas-pk' }, cb, el('span', {}, el('b', { text: c.dir || c.titulo || 'Sin dirección' }), el('span', { class: 'sm', text: [c.portal, c.loc, c.tipo, c.amb ? c.amb + ' amb.' : '', c.m2c ? c.m2c + ' m² cub.' : '', c.m2t ? c.m2t + ' m² tot.' : ''].filter(Boolean).join(' · ') }), el('span', { class: 'sm', text: (u ? usd(u) : 'Sin precio') + (u && h ? ' · ' + usd(u / h) + '/m²' : '') + (c.nota ? ' · ' + c.nota : '') }), c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', class: 'sm', text: 'Ver aviso' }) : null));
+    }));
+    var ok = await showModal(title, el('div', { class: 'field' }, el('p', { class: 'hint', text: 'Revisá los datos antes de sumarlos: la IA los saca del aviso y puede equivocarse. Después los podés corregir en la tabla.' }), body), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Agregar los elegidos', onclick: function () { closeModal(true); } })]);
+    if (ok) tasAdd(t, list.filter(function (c, i) { return sel[i]; }));
+  }
+  async function tasPortales(t) {
+    if (!aiOK()) return aiNeed();
+    var s = t.s || {}; if (!s.loc && !s.dir) { toast('Primero cargá la dirección o la localidad del inmueble.', { kind: 'error' }); return; }
+    var done = tasBusy('Buscando avisos comparables en Zonaprop, Argenprop y Mercado Libre. Puede tardar un minuto…');
+    try {
+      var doms = ['zonaprop.com.ar', 'argenprop.com', 'mercadolibre.com.ar', 'inmuebles.mercadolibre.com.ar'];
+      var txt = await aiRun('Sos tasador inmobiliario en Argentina. Buscá avisos de VENTA actuales comparables a esta propiedad: ' + sujetoTxt(s) + '. Priorizá la misma localidad o barrio (y lo más cerca posible de la dirección), el mismo tipo y superficie y ambientes parecidos. Buscá en Zonaprop, Argenprop y Mercado Libre Inmuebles; abrí los avisos que haga falta para confirmar precio y superficie. Traé hasta 10 avisos individuales (no listados), cada uno con su URL. ' + COMP_SCHEMA,
+        [{ type: 'web_search_20250305', name: 'web_search', max_uses: 6, allowed_domains: doms }, { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 10, allowed_domains: doms }]);
+      done(); pickComps(t, parseComps(txt, 'portal'), 'Comparables encontrados en portales');
+    } catch (e) { done(); toast('No se pudo buscar: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
+  }
+  async function tasLink(t) {
+    var inp = el('input', { type: 'url', placeholder: 'https://www.zonaprop.com.ar/propiedades/…' });
+    var url = await showModal('Agregar comparable por link', el('div', { class: 'field' }, el('p', { class: 'hint', text: 'Pegá el link del aviso (Zonaprop, Argenprop, Mercado Libre u otra inmobiliaria). La IA lee el aviso y completa los datos.' }), fld('Link', inp)), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Leer el aviso', onclick: function () { closeModal(inp.value.trim()); } })]);
+    if (!url) return;
+    if (!aiOK()) { tasManual(t, { url: url, src: 'link' }); return; }
+    var done = tasBusy('Leyendo el aviso…');
+    try {
+      var txt = await aiRun('Leé este aviso inmobiliario y extraé sus datos: ' + url + ' . Si no podés abrir la página, buscá el mismo aviso por su URL o código. ' + COMP_SCHEMA, [{ type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 3 }, { type: 'web_search_20250305', name: 'web_search', max_uses: 3 }]);
+      done(); var cs = parseComps(txt, 'link'); cs.forEach(function (c) { if (!c.url) c.url = url; });
+      if (!cs.length) { toast('No pude leer ese aviso (algunos portales bloquean la lectura). Probá guardándolo como PDF o pegando el texto.', { kind: 'error' }); tasManual(t, { url: url, src: 'link' }); return; }
+      pickComps(t, cs, 'Datos del aviso');
+    } catch (e) { done(); toast('No se pudo leer: ' + ((e && e.message) || 'error'), { kind: 'error' }); tasManual(t, { url: url, src: 'link' }); }
+  }
+  function fileB64(f) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(String(r.result).split(',')[1]); }; r.onerror = rej; r.readAsDataURL(f); }); }
+  function tasPdf(t) {
+    if (!aiOK()) return aiNeed();
+    var fi = el('input', { type: 'file', accept: 'application/pdf,image/*', multiple: true, hidden: true });
+    document.body.append(fi);
+    fi.addEventListener('change', async function () {
+      var fs = Array.prototype.slice.call(fi.files || []); fi.remove(); if (!fs.length) return;
+      var done = tasBusy('Leyendo ' + (fs.length === 1 ? 'el archivo' : fs.length + ' archivos') + '…');
+      try {
+        var parts = [];
+        for (var i = 0; i < fs.length; i++) { var f = fs[i], b = await fileB64(f); parts.push(/pdf/.test(f.type) ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b } } : { type: 'image', source: { type: 'base64', media_type: f.type || 'image/jpeg', data: b } }); }
+        parts.push({ type: 'text', text: 'Estos archivos son avisos o informes inmobiliarios (pueden tener uno o varios inmuebles). Extraé cada inmueble como comparable. ' + COMP_SCHEMA });
+        var txt = await aiRun(parts, null);
+        done(); pickComps(t, parseComps(txt, 'pdf'), 'Comparables del archivo');
+      } catch (e) { done(); toast('No se pudo leer el archivo: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
+    });
+    fi.click();
+  }
+  async function tasTexto(t) {
+    var ta = el('textarea', { rows: 10, placeholder: 'Copiá todo el texto del aviso (Ctrl+A, Ctrl+C en la página) y pegalo acá. Podés pegar varios avisos juntos.' });
+    var url = el('input', { type: 'url', placeholder: 'Link del aviso (opcional)' });
+    var v = await showModal('Pegar el texto del aviso', el('div', { class: 'field' }, fld('Texto', ta), fld('Link', url)), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Extraer datos', onclick: function () { closeModal(ta.value.trim()); } })]);
+    if (!v) return;
+    if (!aiOK()) { tasManual(t, { url: url.value, nota: v.slice(0, 300), src: 'texto' }); return; }
+    var done = tasBusy('Extrayendo los datos…');
+    try { var txt = await aiRun('Texto copiado de uno o varios avisos inmobiliarios:\n\n' + v.slice(0, 40000) + '\n\n' + COMP_SCHEMA, null); done(); var cs = parseComps(txt, 'texto'); if (url.value) cs.forEach(function (c) { if (!c.url) c.url = url.value; }); pickComps(t, cs, 'Datos del texto'); }
+    catch (e) { done(); toast('No se pudo procesar: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
+  }
+  async function tasManual(t, pre) {
+    pre = pre || {};
+    var d = Object.assign({ src: 'manual', estado: 'publicada', mon: 'U$S', tipo: (t.s || {}).tipo || '', loc: (t.s || {}).loc || '' }, pre);
+    function inp(k, ph, type) { var i = el('input', { type: type || 'text', value: d[k] != null ? String(d[k]) : '', placeholder: ph || '' }); i.addEventListener('change', function () { d[k] = type === 'num' ? numIn(i.value) : i.value.trim(); }); if (type === 'num') { i.type = 'text'; i.inputMode = 'decimal'; } return i; }
+    var tipo = el('select', {}, PROP_TIPOS.map(function (x) { return el('option', { value: x, text: x }); })); tipo.value = d.tipo || 'Departamento'; tipo.addEventListener('change', function () { d.tipo = tipo.value; }); d.tipo = tipo.value;
+    var est = el('select', {}, [['publicada', 'Publicada (precio de oferta)'], ['vendida', 'Vendida (precio de cierre)']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); est.value = d.estado; est.addEventListener('change', function () { d.estado = est.value; });
+    var mon = el('select', {}, [['U$S', 'U$S'], ['$', '$']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); mon.value = d.mon; mon.addEventListener('change', function () { d.mon = mon.value; });
+    var ok = await showModal('Comparable', el('div', { class: 'field' },
+      fld('Dirección', inp('dir', 'Calle y altura')), el('div', { class: 'grid' }, fld('Localidad', inp('loc')), fld('Tipo', tipo)),
+      el('div', { class: 'grid' }, fld('Ambientes', inp('amb', '', 'num')), fld('m² cubiertos', inp('m2c', '', 'num')), fld('m² totales', inp('m2t', '', 'num'))),
+      el('div', { class: 'grid' }, fld('Precio', el('span', { class: 'g-money-in' }, mon, inp('precio', '', 'num'))), fld('Estado', est)),
+      fld('Link', inp('url', 'https://…')), fld('Notas', inp('nota', 'Cochera, amenities, estado, piso…'))), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Agregar', onclick: function () { closeModal(true); } })]);
+    if (ok) tasAdd(t, [d]);
+  }
+  /* ----- cálculo ----- */
+  function tasCalc(t) {
+    var cf = tasConf(t), s = t.s || {}, inc = (t.comps || []).filter(function (c) { return c.incl !== false; });
+    var vals = inc.map(function (c) { return compM2(c, cf); }).filter(function (x) { return x; });
+    var sh = s.m2hom ? +s.m2hom : m2Hom(s.m2c, s.m2t, cf.coef);
+    var base = cf.base === 'manual' && +t.m2man ? +t.m2man : cf.base === 'promedio' ? avg(vals) : median(vals);
+    var r = { n: vals.length, avg: avg(vals), med: median(vals), min: vals.length ? Math.min.apply(null, vals) : null, max: vals.length ? Math.max.apply(null, vals) : null, base: base, sh: sh, cf: cf };
+    var lo = vals.length >= 4 ? quant(vals, 0.25) : r.min, hi = vals.length >= 4 ? quant(vals, 0.75) : r.max;
+    function rd(x) { return x ? Math.round(x / 1000) * 1000 : null; }
+    r.valor = base && sh ? rd(base * sh) : null; r.lo = lo && sh ? rd(lo * sh) : null; r.hi = hi && sh ? rd(hi * sh) : null;
+    r.pub = r.valor ? rd(r.valor / (1 + cf.neg)) : null;
+    r.valorF = +t.valorFinal || r.valor; r.pubF = +t.pubFinal || r.pub;
+    return r;
+  }
+  /* ----- vistas ----- */
+  function renderTas(box) {
+    var q = norm(gF.tasQ || '');
+    var list = G.tasaciones.filter(function (t) { var s = t.s || {}; return !q || norm([s.dir, s.loc, t.cliente, aseName(t.ase || '')].join(' ')).indexOf(q) >= 0; }).sort(function (a, b) { return String(b.creado) < String(a.creado) ? -1 : 1; });
+    var head = gHead('Tasaciones', G.tasaciones.length + ' tasaciones · análisis comparativo de mercado', [el('button', { type: 'button', class: 'btn primary', onclick: tasNew }, icon('plus', 16), 'Nueva tasación')]);
+    if (!G.tasaciones.length) { box.replaceChildren(head, gEmpty('Hacé tu primera tasación', 'Cargá el inmueble, sumá comparables de nuestra base (vendidas y publicadas), de portales, links o PDF, y la plataforma calcula el valor por m² y arma el informe.', 'Nueva tasación', tasNew)); return; }
+    var rows = list.map(function (t) {
+      var s = t.s || {}, r = tasCalc(t);
+      return el('button', { type: 'button', class: 'g-link tas-row', onclick: function () { tasOpen(t.id); } },
+        el('b', { text: s.dir || 'Sin dirección' }), el('span', { class: 'sm', text: [s.loc, s.tipo, s.amb ? s.amb + ' amb.' : '', s.m2c ? s.m2c + ' m²' : '', t.cliente ? 'Cliente: ' + t.cliente : '', t.ase ? aseName(t.ase) : ''].filter(Boolean).join(' · ') }),
+        el('span', {}, el('b', { text: r.valorF ? usd(r.valorF) : 'Sin valor' }), el('span', { class: 'sm', text: ' · ' + r.n + ' comparables · ' + dmy(String(t.creado || '').slice(0, 10)) })));
+    });
+    box.replaceChildren(head, el('div', { class: 'onb-tools' }, searchBox(gF.tasQ, 'Buscar dirección, cliente o asesor', function (v) { gF.tasQ = v; keepFocusRender(function () { gRenderView(); }); })), el('div', { class: 'g-links tas-list' }, rows));
+  }
+  function tasNew() { var id = gNewId('tasaciones'); gSet('tasaciones', id, { s: {}, comps: [], creado: new Date().toISOString(), creadoPor: meName(), cfg: {} }); tasOpen(id, 'inm'); }
+  function tasOpen(id, tab) { gPanelOpen({ t: 'tas', id: id, tab: tab || 'inm', draft: {} }); }
+  function fillTas() {
+    var t = gRec(); if (!t) return;
+    var s = t.s || {};
+    var tab = gOpen.tab || 'inm';
+    gHeadSet(s.dir || 'Nueva tasación', [el('span', { class: 'sm', text: [s.loc, s.tipo, t.cliente ? 'Cliente: ' + t.cliente : ''].filter(Boolean).join(' · ') })], [['inm', 'Inmueble'], ['comp', 'Comparables (' + (t.comps || []).length + ')'], ['res', 'Resultado e informe']]);
+    if (tab === 'comp') tasComp(t); else if (tab === 'res') tasRes(t); else tasInm(t);
+    gFoot([moreBtn([{ label: 'Duplicar la tasación', fn: function () { var id = gNewId('tasaciones'), o = clone(t); delete o.id; o.creado = new Date().toISOString(); o.s = Object.assign({}, t.s, { dir: (s.dir || '') + ' (copia)' }); gSet('tasaciones', id, JSON.parse(JSON.stringify(o))); tasOpen(id); } }, { sep: true }, { label: 'Eliminar la tasación', danger: true, fn: function () { delRec('tasaciones', t, 'la tasación de ' + (s.dir || 'este inmueble')); } }])]);
+  }
+  function setS(t, f, refresh) { var cur = gGet('tasaciones', t.id) || t; gUpd('tasaciones', t.id, { s: Object.assign({}, cur.s || {}, f) }); if (refresh) gFill(); }
+  function tasInm(t) {
+    var s = t.s || {};
+    function txt(k, ph, refresh) { var i = el('input', { type: 'text', value: s[k] != null ? String(s[k]) : '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = i.value.trim(); setS(t, o, refresh); }); return i; }
+    function num(k, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: s[k] != null ? String(s[k]).replace('.', ',') : '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = numIn(i.value); setS(t, o); }); return i; }
+    function sel(k, opts) { var e = el('select', {}, [el('option', { value: '', text: 'Elegí…' })].concat(opts.map(function (x) { return el('option', { value: x, text: x }); }))); e.value = s[k] || ''; e.addEventListener('change', function () { var o = {}; o[k] = e.value; setS(t, o); }); return e; }
+    var cli = el('input', { type: 'text', value: t.cliente || '', placeholder: 'Nombre del propietario' }); cli.addEventListener('change', function () { gUpd('tasaciones', t.id, { cliente: cli.value.trim() }); });
+    var cb = el('input', { type: 'checkbox' }); cb.checked = !!s.cochera; cb.addEventListener('change', function () { setS(t, { cochera: cb.checked }); });
+    var mapBox = el('div', { class: 'tas-map' });
+    var geoBtn = el('button', { type: 'button', class: 'btn', onclick: function () { var cur = (gGet('tasaciones', t.id) || t).s || {}; if (!cur.dir) { toast('Cargá la dirección primero.', { kind: 'error' }); return; } geoBtn.disabled = true; geoBtn.textContent = 'Buscando…'; geocode(cur.dir, cur.loc).then(function (g) { geoBtn.disabled = false; if (!g) { toast('No encontré esa dirección en el mapa. Revisala o arrastrá el punto a mano.', { kind: 'error' }); g = { lat: -34.51, lng: -58.49 }; } setS(t, g, true); }); } }, s.lat != null ? 'Volver a ubicar por la dirección' : 'Ubicar en el mapa');
+    gBody([el('div', { class: 'g-pane' },
+      sect('Inmueble a tasar', [
+        el('div', { class: 'grid' }, fld('Dirección', txt('dir', 'Calle, altura, piso y depto.', true)), fld('Localidad o barrio', listSel('localidades', s.loc, function (v) { setS(t, { loc: v }, true); }, 'Elegí la localidad'))),
+        el('div', { class: 'grid' }, fld('Tipo', sel('tipo', PROP_TIPOS)), fld('Ambientes', num('amb')), fld('Dormitorios', num('dorm')), fld('Baños', num('banos'))),
+        el('div', { class: 'grid' }, fld('m² cubiertos', num('m2c')), fld('m² totales', num('m2t')), fld('Antigüedad (años)', num('antig')), fld('Piso', txt('piso'))),
+        el('div', { class: 'grid' }, fld('Estado', sel('estado', EST_INM)), fld('Disposición', sel('disp', DISP)), fld('Amenities y extras', txt('extras', 'Pileta, SUM, balcón, parrilla…')), el('label', { class: 'check' }, cb, 'Con cochera')),
+        el('div', { class: 'grid' }, fld('Propietario / cliente', cli), fld('Asesor', aseSimpleSel(t.ase || '', function (v) { gUpd('tasaciones', t.id, { ase: v }); }))),
+        fld('Observaciones', txt('obs', 'Lo que suma o resta valor: luminosidad, vista, ruidos, expensas…'))]),
+      sect('Ubicación', [el('div', { class: 'row-wrap' }, geoBtn, el('span', { class: 'sm', text: s.lat != null ? 'Podés arrastrar el punto rojo para ajustarlo.' : 'Sirve para buscar comparables cercanos.' })), mapBox]),
+      el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn primary', text: 'Siguiente: comparables', onclick: function () { gOpen.tab = 'comp'; gFill(); } })))]);
+    tasMap(mapBox, t, null);
+  }
+  function tasComp(t) {
+    var cf = tasConf(t), cands = tasCands(t);
+    function setCfg(f) { var cur = gGet('tasaciones', t.id) || t; gUpd('tasaciones', t.id, { cfg: Object.assign({}, cur.cfg || {}, f) }); gFill(); }
+    function ninp(v, k, sc, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: v != null ? String(Math.round(v * sc * 100) / 100).replace('.', ',') : '', placeholder: ph || '', style: 'max-width:90px' }); i.addEventListener('change', function () { var n = numIn(i.value), o = {}; o[k] = n == null ? null : n / sc; setCfg(o); }); return i; }
+    function chk(k, lbl) { var c = el('input', { type: 'checkbox' }); c.checked = !!cf[k]; c.addEventListener('change', function () { var o = {}; o[k] = c.checked; setCfg(o); }); return el('label', { class: 'check sm' }, c, lbl); }
+    var filt = el('div', { class: 'tas-filt' }, fld('Radio (km)', ninp(cf.radio, 'radio', 1)), fld('Superficie ±%', ninp(cf.m2p, 'm2p', 100)), fld('Ambientes ±', ninp(cf.amb, 'amb', 1)), chk('vend', 'Vendidas'), chk('pub', 'Publicadas nuestras'));
+    var mapBox = el('div', { class: 'tas-map' });
+    var candSec = sect('Sugeridos de nuestra base (' + cands.length + ')', [filt,
+      el('p', { class: 'sm', text: (t.s || {}).lat != null ? 'Mismo tipo, superficie y ambientes parecidos, dentro del radio (las que no tienen ubicación se toman si son de la misma localidad). En el mapa: verde vendidas, celeste publicadas.' : 'Ubicá el inmueble en el mapa para filtrar por cercanía. Mientras tanto se usan los de la misma localidad.' }),
+      mapBox,
+      cands.length ? el('div', { class: 'tas-cands' }, cands.slice(0, 40).map(function (c) {
+        var u = compUSD(c), h = m2Hom(c.m2c, c.m2t, cf.coef);
+        return el('div', { class: 'tas-cand' }, el('span', { class: 'tag ' + (c.src === 'base-v' ? 'ok' : 'soon'), text: c.src === 'base-v' ? 'Vendida' : 'Publicada' }),
+          el('span', { class: 'tas-cmain' }, el('b', { text: c.dir || '–' }), el('span', { class: 'sm', text: [c.loc, c.tipo, c.amb ? c.amb + ' amb.' : '', h ? Math.round(h) + ' m²' : 'sin m²', c.km != null ? c.km.toFixed(1).replace('.', ',') + ' km' : '', c.nota].filter(Boolean).join(' · ') })),
+          el('span', { class: 'tas-cp' }, el('b', { text: u ? usdK(u) : '–' }), el('span', { class: 'sm', text: u && h ? usd(u / h) + '/m²' : '' })),
+          el('button', { type: 'button', class: 'btn sm-btn', text: 'Agregar', onclick: function () { tasAdd(t, [c]); } }));
+      })) : el('p', { class: 'hint', text: 'No hay comparables de nuestra base con esos filtros. Ampliá el radio o la superficie, o sumá externos.' })]);
+    var ext = sect('Sumar comparables externos', [
+      el('p', { class: 'sm', text: 'Como nuestra base es chica, completá con avisos de portales o comparables que encuentres por tu cuenta.' }),
+      el('div', { class: 'tas-ext' },
+        el('button', { type: 'button', class: 'btn primary', onclick: function () { tasPortales(t); } }, icon('search', 16), 'Buscar en portales con IA'),
+        el('button', { type: 'button', class: 'btn', onclick: function () { tasLink(t); } }, 'Pegar un link'),
+        el('button', { type: 'button', class: 'btn', onclick: function () { tasPdf(t); } }, 'Subir PDF o captura'),
+        el('button', { type: 'button', class: 'btn', onclick: function () { tasTexto(t); } }, 'Pegar el texto del aviso'),
+        el('button', { type: 'button', class: 'btn ghost', onclick: function () { tasManual(t); } }, 'Cargar a mano')),
+      aiOK() ? null : el('p', { class: 'sm warn', text: 'La búsqueda en portales y la lectura de links y PDF usan la IA de la versión de GitHub.' })]);
+    var comps = t.comps || [];
+    var tbl = comps.length ? el('div', { class: 'mx-wrap' }, el('table', { class: 'g-rank tas-tbl' },
+      el('thead', {}, el('tr', {}, ['', 'Comparable', 'm² cub.', 'm² tot.', 'Precio U$S', 'Estado', 'Ajuste %', 'U$S/m² ajustado', ''].map(function (h) { return el('th', { scope: 'col', text: h }); }))),
+      el('tbody', {}, comps.map(function (c) {
+        var inc = el('input', { type: 'checkbox', 'aria-label': 'Usar este comparable' }); inc.checked = c.incl !== false; inc.addEventListener('change', function () { tasUpdComp(t, c.id, { incl: inc.checked }); gFill(); });
+        function n(k, sc) { var i = el('input', { type: 'text', inputmode: 'decimal', value: c[k] != null ? String(Math.round(+c[k] * (sc || 1) * 100) / 100).replace('.', ',') : '', style: 'width:78px' }); i.addEventListener('change', function () { var v = numIn(i.value), o = {}; o[k] = v == null ? null : v / (sc || 1); tasUpdComp(t, c.id, o); gFill(); }); return i; }
+        var es = el('select', {}, [['publicada', 'Publicada'], ['vendida', 'Vendida']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); es.value = c.estado || 'publicada'; es.addEventListener('change', function () { tasUpdComp(t, c.id, { estado: es.value }); gFill(); });
+        var v = compM2(c, cf), u = compUSD(c);
+        return el('tr', { class: c.incl === false ? 'off' : '' }, el('td', {}, inc),
+          el('th', { scope: 'row' }, el('div', { class: 'tas-cn' }, c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', text: c.dir || c.titulo || 'Ver aviso' }) : el('b', { text: c.dir || '–' }), el('span', { class: 'sm', text: [SRC_LBL[c.src] || c.src, c.portal, c.loc, c.tipo, c.amb ? c.amb + ' amb.' : '', c.nota].filter(Boolean).join(' · ') }))),
+          el('td', {}, n('m2c')), el('td', {}, n('m2t')), el('td', {}, c.mon === '$' ? el('span', {}, n('precio'), el('span', { class: 'sm', text: ' $ → ' + (u ? usdK(u) : '') })) : n('precio')), el('td', {}, es),
+          el('td', {}, n('aj', 100)), el('td', { class: 'num' }, el('b', { text: v ? usd(v) : '–' }), c.estado === 'publicada' && v ? el('span', { class: 'sm', text: ' incl. ' + pctTxt(cf.neg, 1) + ' negoc.' }) : null),
+          el('td', {}, el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Quitar', text: '×', onclick: function () { var cur = gGet('tasaciones', t.id); gUpd('tasaciones', t.id, { comps: (cur.comps || []).filter(function (x) { return x.id !== c.id; }) }); gFill(); } })));
+      })))) : el('p', { class: 'hint', text: 'Todavía no sumaste comparables.' });
+    var sel = sect('Comparables elegidos (' + comps.length + ')', [
+      el('div', { class: 'tas-filt' }, fld('Negociación para publicadas (%)', ninp(cf.neg, 'neg', 100), 'Promedio real de la base: ' + pctTxt(tasNeg(), 1)), fld('Coef. m² descubiertos', ninp(cf.coef, 'coef', 1), '0,5 = cuentan la mitad')),
+      el('p', { class: 'sm', text: 'Ajuste %: corregí por ubicación, estado, antigüedad, cochera, piso, etc. (ej.: −5 si el comparable es mejor que el inmueble). U$S/m² ajustado = precio × (1 + negociación si está publicada) × (1 + ajuste) ÷ m² homogeneizados.' }),
+      tbl, comps.length ? el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn primary', text: 'Ver el resultado', onclick: function () { gOpen.tab = 'res'; gFill(); } })) : null]);
+    gBody([el('div', { class: 'g-pane' }, sel, ext, candSec)]);
+    tasMap(mapBox, t, cands, function (c) { tasAdd(t, [c]); });
+  }
+  function tasRes(t) {
+    var r = tasCalc(t), cf = r.cf, s = t.s || {};
+    function setCfg(f) { var cur = gGet('tasaciones', t.id) || t; gUpd('tasaciones', t.id, { cfg: Object.assign({}, cur.cfg || {}, f) }); gFill(); }
+    var bsel = el('select', {}, [['mediana', 'Mediana'], ['promedio', 'Promedio'], ['manual', 'Valor a mano']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); bsel.value = cf.base; bsel.addEventListener('change', function () { setCfg({ base: bsel.value }); });
+    function money0(k, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: t[k] ? String(t[k]) : '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = numIn(i.value); gUpd('tasaciones', t.id, o); gFill(); }); return i; }
+    var shI = el('input', { type: 'text', inputmode: 'decimal', value: s.m2hom ? String(s.m2hom).replace('.', ',') : '', placeholder: r.sh ? String(Math.round(r.sh)) : '' }); shI.addEventListener('change', function () { setS(t, { m2hom: numIn(shI.value) }, true); });
+    var vals = (t.comps || []).filter(function (c) { return c.incl !== false; }).map(function (c) { return { c: c, v: compM2(c, cf) }; }).filter(function (x) { return x.v; }).sort(function (a, b) { return a.v - b.v; });
+    var mx = Math.max.apply(null, vals.map(function (x) { return x.v; }).concat([1]));
+    var concl = el('textarea', { rows: 4, placeholder: 'Conclusión para el informe: por qué este valor, fortalezas y debilidades del inmueble, estrategia de precio…' }); concl.value = t.concl || ''; concl.addEventListener('change', function () { gUpd('tasaciones', t.id, { concl: concl.value }); });
+    gBody([el('div', { class: 'g-pane' },
+      r.n ? null : el('p', { class: 'banner-lite warn', text: 'Sumá comparables con precio y superficie para calcular el valor.' }),
+      el('div', { class: 'kpis two' },
+        kpi('Valor de mercado estimado', r.valorF ? usd(r.valorF) : '–', r.lo && r.hi ? 'Rango ' + usdK(r.lo) + ' – ' + usdK(r.hi) : ''),
+        kpi('Precio de publicación sugerido', r.pubF ? usd(r.pubF) : '–', 'Contempla una negociación de ' + pctTxt(-cf.neg, 1)),
+        kpi('U$S/m² aplicado', r.base ? usd(r.base) : '–', r.n + ' comparables · promedio ' + (r.avg ? usd(r.avg) : '–') + ' · mediana ' + (r.med ? usd(r.med) : '–')),
+        kpi('Superficie homogeneizada', r.sh ? Math.round(r.sh) + ' m²' : '–', s.m2c ? s.m2c + ' cub. + ' + Math.max(0, (+s.m2t || 0) - (+s.m2c || 0)) + ' desc. × ' + String(cf.coef).replace('.', ',') : 'Cargá los m² del inmueble')),
+      sect('Ajustes', [el('div', { class: 'grid' }, fld('Base del cálculo', bsel), cf.base === 'manual' ? fld('U$S/m² a mano', money0('m2man')) : null, fld('m² homogeneizados (opcional)', shI)),
+        el('div', { class: 'grid' }, fld('Valor final de mercado (opcional)', money0('valorFinal', r.valor ? String(r.valor) : '')), fld('Precio de publicación final (opcional)', money0('pubFinal', r.pub ? String(r.pub) : '')))]),
+      vals.length ? sect('U$S/m² de cada comparable', [el('div', { class: 'hbars tas-hb' }, vals.map(function (x) { return el('div', { class: 'hbar' }, el('span', { class: 'hbar-l', text: (x.c.dir || x.c.titulo || '–') + (x.c.estado === 'vendida' ? ' (vendida)' : '') }), el('span', { class: 'hbar-t' }, el('i', { style: 'width:' + Math.round(x.v * 100 / mx) + '%;background:' + (x.c.estado === 'vendida' ? 'var(--c-se-suma)' : 'var(--accent)') })), el('b', { text: usd(x.v) })); })),
+        r.base ? el('p', { class: 'sm', text: 'Valor aplicado: ' + usd(r.base) + '/m². Verde: vendidas; azul: publicadas (con descuento de negociación).' }) : null]) : null,
+      sect('Conclusión', [concl]),
+      el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn primary', onclick: function () { tasPdfOut(gGet('tasaciones', t.id) || t); } }, 'Generar informe PDF'), el('button', { type: 'button', class: 'btn', text: 'Copiar resumen', onclick: function () { copyText(tasResumen(gGet('tasaciones', t.id) || t)); } })))]);
+  }
+  function tasResumen(t) {
+    var s = t.s || {}, r = tasCalc(t);
+    return ['Tasación · ' + (s.dir || '') + (s.loc ? ', ' + s.loc : ''), sujetoTxt(s), 'Valor de mercado estimado: ' + (r.valorF ? usd(r.valorF) : '–') + (r.lo && r.hi ? ' (rango ' + usd(r.lo) + ' – ' + usd(r.hi) + ')' : ''), 'Precio de publicación sugerido: ' + (r.pubF ? usd(r.pubF) : '–'), 'Base: ' + r.n + ' comparables · ' + (r.base ? usd(r.base) + '/m²' : '')].join('\n');
+  }
+  async function tasPdfOut(t) {
+    var JsPDF; try { JsPDF = await loadJsPDF(); } catch (e) { toast('No se pudo generar el PDF. Revisá la conexión.', { kind: 'error' }); return; }
+    var s = t.s || {}, r = tasCalc(t), cf = r.cf, doc = new JsPDF({ unit: 'mm', format: 'a4' }), W = 210, M = 16, y = 18;
+    var _tx = doc.text.bind(doc); doc.text = function (tx, x, yy, o) { var f = function (q) { return String(q).replace(/²/g, '2').replace(/[–—]/g, '-'); }; return _tx(Array.isArray(tx) ? tx.map(f) : f(tx), x, yy, o); };
+    function line(txt, size, bold, color) { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(size || 10); doc.setTextColor(color || 30); var ls = doc.splitTextToSize(String(txt), W - 2 * M); if (y + ls.length * (size || 10) * 0.42 > 280) { doc.addPage(); y = 18; } doc.text(ls, M, y); y += ls.length * (size || 10) * 0.42 + 2; }
+    doc.setFillColor(1, 33, 105); doc.rect(0, 0, W, 26, 'F'); doc.setTextColor(255); doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text('Informe de tasación · Análisis comparativo de mercado', M, 12); doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.text(String(gConf.razon || 'Coldwell Banker Juntos') + ' · ' + dmy(todayStr()), M, 19);
+    y = 36;
+    line(s.dir || 'Inmueble', 14, true); line([s.loc, sujetoTxt(Object.assign({}, s, { dir: '', loc: '' }))].filter(Boolean).join(' · '), 10, false, 70);
+    if (t.cliente) line('Cliente: ' + t.cliente, 10, false, 70);
+    if (t.ase) line('Asesor: ' + aseName(t.ase), 10, false, 70);
+    if (s.obs) line('Observaciones: ' + s.obs, 9.5, false, 80);
+    y += 3; doc.setDrawColor(210); doc.setFillColor(238, 243, 252); doc.roundedRect(M, y, W - 2 * M, 30, 3, 3, 'F');
+    doc.setTextColor(1, 33, 105); doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text('VALOR DE MERCADO ESTIMADO', M + 5, y + 8); doc.text('PRECIO DE PUBLICACIÓN SUGERIDO', M + 98, y + 8);
+    doc.setFontSize(18); doc.text(r.valorF ? usd(r.valorF) : '–', M + 5, y + 18); doc.text(r.pubF ? usd(r.pubF) : '–', M + 98, y + 18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(70); doc.text(r.lo && r.hi ? 'Rango: ' + usd(r.lo) + ' – ' + usd(r.hi) : '', M + 5, y + 25); doc.text('Negociación estimada: ' + pctTxt(-cf.neg, 1), M + 98, y + 25);
+    y += 38;
+    line('Metodología', 11, true);
+    line('Se comparó el inmueble con ' + r.n + ' propiedades similares (vendidas y publicadas) de la zona. A los precios publicados se les aplicó un descuento de negociación de ' + pctTxt(-cf.neg, 1) + ' y a cada comparable un ajuste por sus diferencias (ubicación, estado, antigüedad, etc.). La superficie se homogeneizó contando los m² descubiertos o semicubiertos al ' + Math.round(cf.coef * 100) + '%. Valor aplicado: ' + (r.base ? usd(r.base) : '–') + ' por m² (' + (cf.base === 'promedio' ? 'promedio' : cf.base === 'manual' ? 'definido por el tasador' : 'mediana') + ') sobre ' + (r.sh ? Math.round(r.sh) : '–') + ' m² homogeneizados.', 9.5, false, 60);
+    y += 2; line('Comparables', 11, true);
+    var cols = [M, M + 70, M + 92, M + 112, M + 137, M + 157], hd = ['Dirección', 'm² cub/tot', 'Estado', 'Precio U$S', 'Ajuste', 'U$S/m² aj.'];
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(1, 33, 105); hd.forEach(function (h, i) { doc.text(h, cols[i], y); }); y += 2; doc.setDrawColor(200); doc.line(M, y, W - M, y); y += 4;
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(40);
+    (t.comps || []).filter(function (c) { return c.incl !== false; }).forEach(function (c) {
+      if (y > 275) { doc.addPage(); y = 18; }
+      var u = compUSD(c), v = compM2(c, cf);
+      var nm = doc.splitTextToSize((c.dir || c.titulo || '–') + (c.loc ? ', ' + c.loc : ''), 66)[0];
+      [nm, (c.m2c || '–') + ' / ' + (c.m2t || '–'), c.estado === 'vendida' ? 'Vendida' : 'Publicada', u ? fmtN(u) : '–', c.aj ? pctTxt(+c.aj, 0) : '–', v ? fmtN(v) : '–'].forEach(function (x, i) { doc.text(String(x), cols[i], y); });
+      y += 5.5;
+    });
+    y += 3;
+    if (t.concl) { line('Conclusión', 11, true); line(t.concl, 9.5, false, 50); }
+    y = Math.max(y + 16, 245); if (y > 270) { doc.addPage(); y = 40; }
+    doc.setDrawColor(120); doc.line(M, y, M + 70, y); doc.setFontSize(9); doc.setTextColor(60); doc.text('Firma y sello', M, y + 5);
+    if (gConf.pie) { doc.setFontSize(8); doc.setTextColor(110); doc.text(doc.splitTextToSize(String(gConf.pie), W - 2 * M), M, 284); }
+    doc.setFontSize(7.5); doc.setTextColor(130); doc.text('Valores orientativos basados en información de mercado disponible a la fecha. No constituye tasación oficial.', M, 290);
+    await saveFile('Tasación ' + String(s.dir || 'inmueble').replace(/[\\/:*?"<>|]/g, '').slice(0, 40) + '.pdf', doc.output('blob'));
   }
 
   /* ---------- arranque ---------- */
