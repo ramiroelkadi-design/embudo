@@ -1020,6 +1020,7 @@ body.side-mini .side-foot { flex-direction: column; }
 .login-sent div { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
 .login-sent b { font-size: 15px; }
 .login-linkbtn { align-self: flex-start; border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; font-size: 13.5px; }
+.g-onb-ctl { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin-bottom: 12px; } .g-onb-ctl .field { margin: 0; min-width: 260px; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -2124,7 +2125,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var prev = { estado: c.estado, proximoContacto: c.proximoContacto || '', entrevistas: ivsOf(c), entrevista: '', motivo: c.motivo || '', entrevistadoEl: c.entrevistadoEl || '', responsable: c.responsable || '', incorporadoEl: c.incorporadoEl || '', obFin: c.obFin || '', obRes: c.obRes || '', obMotivo: c.obMotivo || '' };
     var fields = Object.assign({ estado: to }, extra || {});
     if (to === 'coordinar-ingreso') fields.responsable = 'Vero';
-    if (to === 'se-suma') { fields.incorporadoEl = new Date().toISOString(); fields.obFin = ''; fields.obRes = ''; fields.obMotivo = ''; }
+    if (to === 'se-suma') { fields.incorporadoEl = new Date().toISOString(); fields.obFin = ''; fields.obRes = ''; fields.obMotivo = ''; fields.desdeAsesor = false; }
     if ((to === 'realizada' || to === 'coordinar-ingreso') && !c.entrevistadoEl) fields.entrevistadoEl = new Date().toISOString();
     if (to !== 'descartado' && c.motivo && !('motivo' in fields)) fields.motivo = '';
     var nid = pushNote(id, { t: new Date().toISOString(), tipo: 'estado', texto: stageName(c.estado) + ' → ' + stageName(to) });
@@ -2463,6 +2464,7 @@ body.side-mini .side-foot { flex-direction: column; }
   var OB_ICO = { cap: 'book', acc: 'check', hito: 'flag' };
   var OB_META = { b2: 50, b4: 100, m6: 3, z2: 3 };
   var OB_SEMANAS = ['Arranque: bienvenida, accesos y marca', 'Plan de negocios y base de contactos', 'Anuncio a la base y primeras prácticas', 'Captación, tasación y 100 contactos', 'Legales y primera tasación acompañada', 'Hábito diario y primera presentación', 'Impuestos, negociación y compradores', 'Primera visita y primera publicación', 'Mitad de camino con la Broker', 'Finanzas del agente', 'Primera captación firmada', 'Base segmentada y testimonios', 'Cierre de los 90 días'];
+  var OB_EXP = ['i1', 'i2', 'i3', 'i5', 'i6', 'i7', 'm1', 'm2', 'm3', 'm4', 'l3'];
   var OB_DEFAULT = [
     ['i1', 0, 'acc', 1, 'Reunión de bienvenida con la Broker y recorrida de la oficina'],
     ['i2', 0, 'acc', 3, 'Firmar la documentación de alta y confirmar la matrícula vigente'],
@@ -2510,7 +2512,7 @@ body.side-mini .side-foot { flex-direction: column; }
     ['z3', 8, 'hito', 90, 'Primera reserva u operación en marcha'],
     ['z4', 8, 'hito', 90, 'Revisión final de los 90 días con la Broker y plan del próximo trimestre'],
     ['g1', 9, 'cap', 70, 'Capacitación: finanzas del agente (monotributo y facturación, presupuesto, flujo de ingresos)']
-  ].map(function (t) { return { id: t[0], tema: OB_TEMAS[t[1]], tipo: t[2], dia: t[3], texto: t[4], meta: OB_META[t[0]] || 0 }; });
+  ].map(function (t) { return { id: t[0], tema: OB_TEMAS[t[1]], tipo: t[2], dia: t[3], texto: t[4], meta: OB_META[t[0]] || 0, exp: OB_EXP.indexOf(t[0]) >= 0 }; });
   var PLAN_KEY = 'embudo-plan';
   var obPlanDoc = null, planColl = null;
   var onbWk = {}, onbOpen = null, onbTab = 'plan', onbFilter = 'todo', onbMenu = null, onbEdit = null, onbKeep = {}, onbScrollTo = 0;
@@ -2521,11 +2523,12 @@ body.side-mini .side-foot { flex-direction: column; }
     var arr = d && Array.isArray(d.tareas) ? d.tareas : [];
     var out = arr.map(function (t) {
       return { id: str(t.id) || ('p' + uid().slice(1, 7)), tema: OB_TEMAS.indexOf(t.tema) >= 0 ? t.tema : 'Extra', tipo: t.tipo === 'cap' || t.tipo === 'hito' ? t.tipo : 'acc',
-        dia: Math.min(98, Math.max(1, parseInt(t.dia, 10) || 7)), texto: str(t.texto).slice(0, 200), meta: Math.max(0, parseInt(t.meta, 10) || 0) };
+        dia: Math.min(98, Math.max(1, parseInt(t.dia, 10) || 7)), texto: str(t.texto).slice(0, 200), meta: Math.max(0, parseInt(t.meta, 10) || 0), exp: t.exp == null ? OB_EXP.indexOf(str(t.id)) >= 0 : !!t.exp };
     }).filter(function (t) { return t.texto; });
     return out.length ? { version: parseInt(d.version, 10) || 1, editado: str(d.editado), por: str(d.por), tareas: out } : null;
   }
   function obPlan() { return obPlanDoc ? obPlanDoc.tareas : OB_DEFAULT; }
+  function obPlanFor(c) { return c && c.obTipo === 'exp' ? obPlan().filter(function (t) { return t.exp; }) : obPlan(); }
   function loadPlanLocal() { try { obPlanDoc = sanPlan(JSON.parse(lsGet(PLAN_KEY) || 'null')); } catch (e) { obPlanDoc = null; } }
   function savePlan(tareas) {
     var doc = { version: (obPlanDoc ? obPlanDoc.version : 1) + 1, editado: new Date().toISOString(), por: meName(), tareas: tareas };
@@ -2571,7 +2574,7 @@ body.side-mini .side-foot { flex-direction: column; }
   function obEnrich(c, g) {
     var extra = (Array.isArray(c.obx) ? c.obx : []).map(function (x) { return { id: x.id, tema: 'Extra', tipo: x.tipo === 'cap' ? 'cap' : 'acc', dia: +x.dia || 90, fecha: validDate(x.fecha) || (x.dia ? dayStr(addD(g.S, Math.max(0, +x.dia - 1))) : ''), texto: x.texto || '', meta: 0, extra: true }; });
     var today = todayStr();
-    return obPlan().concat(extra).map(function (t, i) {
+    return obPlanFor(c).concat(extra).map(function (t, i) {
       var due = obDue(c, t, g), v = c['ob_' + t.id] || '', na = v === 'na', k = +c['obk_' + t.id] || 0;
       return { id: t.id, tema: t.tema, tipo: t.tipo, texto: t.texto, meta: t.meta || 0, extra: !!t.extra, i: i, due: due, w: obWeekOfDate(g, due), left: dayDiff(due),
         v: v, na: na, done: !!v && !na, by: c['obp_' + t.id] || '', k: k, m: obM(c, t.id), late: !v && due < today };
@@ -2600,10 +2603,10 @@ body.side-mini .side-foot { flex-direction: column; }
     o.reasons = [];
     if (o.late) o.reasons.push(o.late + (o.late === 1 ? ' vencido' : ' vencidos'));
     if (o.segLate) o.reasons.push(o.segDays === null ? 'sin seguimiento' : 'sin seguimiento hace ' + o.segDays + ' d');
-    o.status = c.obFin ? (c.obRes === 'abandono' ? 'out' : 'done') : (o.late >= 3 ? 'bad' : (o.late > 0 || o.segLate) ? 'warn' : 'ok');
+    o.status = c.obFin ? (c.obRes === 'abandono' ? 'out' : c.obRes === 'off' ? 'off' : 'done') : (o.late >= 3 ? 'bad' : (o.late > 0 || o.segLate) ? 'warn' : 'ok');
     return o;
   }
-  var OB_PILL = { ok: ['ok', 'check', 'En ritmo'], warn: ['today', 'alert', 'Atención'], bad: ['late', 'alert', 'Atrasado'], done: ['ok', 'check', 'Completo'], out: ['muted', 'alert', 'No continuó'] };
+  var OB_PILL = { ok: ['ok', 'check', 'En ritmo'], warn: ['today', 'alert', 'Atención'], bad: ['late', 'alert', 'Atrasado'], done: ['ok', 'check', 'Completo'], out: ['muted', 'alert', 'No continuó'], off: ['muted', 'alert', 'Desactivado'] };
   function obPill(o) { var p = OB_PILL[o.status]; return el('span', { class: 'tag ' + p[0] }, icon(p[1], 14), p[2]); }
   function avatar(name, big) {
     return name ? el('span', { class: 'avatar' + (big ? ' big' : ''), style: 'border-color:' + pColor(name), title: 'Responsable: ' + name, role: 'img', 'aria-label': 'Responsable: ' + name, text: name.charAt(0) })
@@ -2958,6 +2961,7 @@ body.side-mini .side-foot { flex-direction: column; }
     who.value = c.responsable || '';
     var out = [
       el('label', { class: 'field' }, el('span', { text: 'Inicio del onboarding' }), startIn, el('span', { class: 'sm', text: 'Semana 1: ' + fmtRange(obRange(o.g, 1)) + '. Desde ahí, semanas de lunes a domingo.' })),
+      el('label', { class: 'field' }, el('span', { text: 'Plan' }), (function () { var s = el('select', { 'aria-label': 'Plan de onboarding' }, [['nuevo', 'Asesor nuevo (plan completo)'], ['exp', 'Con experiencia (plan corto)']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); s.value = c.obTipo === 'exp' ? 'exp' : 'nuevo'; s.addEventListener('change', function () { patch(c.id, { obTipo: s.value }); toast('Plan cambiado. Lo que ya estaba tildado se mantiene.'); }); return s; })()),
       el('label', { class: 'field' }, el('span', { text: 'Responsable del onboarding' }), who),
       el('div', { class: 'field' }, el('span', { text: 'Seguimiento semanal' }),
         el('p', { class: 'hint', text: o.seg ? 'Último: ' + (o.segDays === 0 ? 'hoy' : 'hace ' + o.segDays + ' días') + ' (' + fmtDay(o.seg) + ')' : 'Todavía no se registró ninguno.' }),
@@ -3020,7 +3024,7 @@ body.side-mini .side-foot { flex-direction: column; }
 
   /* ----- editor del plan ----- */
   function showPlanEditor() {
-    var rows = obPlan().map(function (t) { return { id: t.id, tema: t.tema, tipo: t.tipo, dia: t.dia, texto: t.texto, meta: t.meta || 0, w: Math.max(1, Math.ceil(t.dia / 7)), w0: Math.max(1, Math.ceil(t.dia / 7)) }; });
+    var rows = obPlan().map(function (t) { return { id: t.id, tema: t.tema, tipo: t.tipo, dia: t.dia, texto: t.texto, meta: t.meta || 0, exp: !!t.exp, w: Math.max(1, Math.ceil(t.dia / 7)), w0: Math.max(1, Math.ceil(t.dia / 7)) }; });
     var list = el('div', { class: 'pe-list' });
     function draw() {
       list.replaceChildren.apply(list, rows.map(function (r, i) {
@@ -3029,12 +3033,13 @@ body.side-mini .side-foot { flex-direction: column; }
         var wk = el('select', { 'aria-label': 'Semana', onchange: function (e) { r.w = +e.target.value; } }, Array.apply(null, Array(13)).map(function (_, j) { return el('option', { value: String(j + 1), text: 'Semana ' + (j + 1) }); })); wk.value = String(r.w);
         var tm = el('select', { 'aria-label': 'Tema', onchange: function (e) { r.tema = e.target.value; } }, OB_TEMAS.map(function (k) { return el('option', { value: k, text: k }); })); tm.value = r.tema;
         var mt = el('input', { type: 'number', min: '0', placeholder: 'Meta', value: r.meta ? String(r.meta) : '', 'aria-label': 'Meta de cantidad (opcional)', oninput: function (e) { r.meta = parseInt(e.target.value, 10) || 0; } });
-        return el('div', { class: 'pe-row' }, tx, el('div', { class: 'pe-opts' }, tp, wk, tm, mt, el('button', { type: 'button', class: 'btn danger sm-btn', text: 'Quitar', onclick: function () { rows.splice(i, 1); draw(); } })));
+        var ex = el('input', { type: 'checkbox', onchange: function (e) { r.exp = e.target.checked; } }); ex.checked = !!r.exp;
+        return el('div', { class: 'pe-row' }, tx, el('div', { class: 'pe-opts' }, tp, wk, tm, mt, el('label', { class: 'check sm', title: 'Incluir también en el onboarding para asesores con experiencia' }, ex, 'Con experiencia'), el('button', { type: 'button', class: 'btn danger sm-btn', text: 'Quitar', onclick: function () { rows.splice(i, 1); draw(); } })));
       }));
     }
     draw();
     var body = el('div', { class: 'pe' },
-      el('p', { class: 'hint', text: 'Los cambios valen para todos los agentes en onboarding, nuevos y actuales. Lo que ya tildaron se mantiene. «Meta» agrega un contador (por ejemplo, 100 contactos).' }),
+      el('p', { class: 'hint', text: 'Tildá «Con experiencia» en los objetivos que también hacen los asesores que ya vienen del rubro (su plan es solo esos). Los cambios valen para todos los agentes en onboarding, nuevos y actuales. Lo que ya tildaron se mantiene. «Meta» agrega un contador (por ejemplo, 100 contactos).' }),
       list,
       el('button', { type: 'button', class: 'btn', text: 'Agregar objetivo', onclick: function () { rows.push({ id: 'p' + uid().slice(1, 7), tema: 'Extra', tipo: 'acc', dia: 7, texto: '', meta: 0, w: 1, w0: 0 }); draw(); var inp = list.querySelector('.pe-row:last-child input'); if (inp) inp.focus(); } }));
     $('#modal').classList.add('wide');
@@ -3047,7 +3052,7 @@ body.side-mini .side-foot { flex-direction: column; }
       if (r === 'reset') { var ok = await confirmBox('¿Restaurar el plan original?', 'Se pierden los cambios que hiciste al plan.', 'Restaurar', true); if (ok) { savePlan(OB_DEFAULT.map(function (t) { return Object.assign({}, t); })); toast('Plan restaurado'); } return; }
       if (r !== 'save') return;
       var out = rows.filter(function (x) { return str(x.texto); }).map(function (x) {
-        return { id: x.id, tema: x.tema, tipo: x.tipo, texto: str(x.texto), meta: x.meta || 0, dia: x.w === x.w0 ? x.dia : (x.w <= 1 ? 7 : x.w * 7) };
+        return { id: x.id, tema: x.tema, tipo: x.tipo, texto: str(x.texto), meta: x.meta || 0, exp: !!x.exp, dia: x.w === x.w0 ? x.dia : (x.w <= 1 ? 7 : x.w * 7) };
       });
       if (!out.length) { toast('El plan no puede quedar vacío.', { kind: 'error' }); return; }
       savePlan(out); toast('Plan guardado');
@@ -5530,10 +5535,10 @@ body.side-mini .side-foot { flex-direction: column; }
     $('#gp').classList.toggle('wide', !isNew && (gOpen.tab === 'ops' || gOpen.tab === 'cc'));
     var s = isNew ? null : aseStats(a, y);
     gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
-      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], aseOnbData(a) ? ['onb', 'Onboarding'] : null, aseCapAvail(a) ? ['cap', 'Captaciones'] : null, ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
+      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], (aseOnbData(a) || !window.ASE_MODE) ? ['onb', 'Onboarding'] : null, aseCapAvail(a) ? ['cap', 'Captaciones'] : null, ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
     if (window.ASE_MODE && gOpen.tab === 'datos') gOpen.tab = 'resumen';
     if (isNew || gOpen.tab === 'datos') aseDatos(a, d, isNew);
-    else if (gOpen.tab === 'onb') aseOnb(a);
+    else if (gOpen.tab === 'onb') aseOnbPanel(a);
     else if (gOpen.tab === 'cap') aseCapTab(a);
     else if (gOpen.tab === 'ops') aseOps(a, s, y);
     else if (gOpen.tab === 'cc') aseCuenta(a);
@@ -6675,11 +6680,11 @@ body.side-mini .side-foot { flex-direction: column; }
     if (!a) return null;
     var c = a.candidatoId ? cands.filter(function (x) { return x.id === a.candidatoId; })[0] : null;
     if (!c) { var n = norm(a.nombre || ''); c = n ? cands.filter(function (x) { return norm(x.nombre || '') === n; })[0] : null; }
-    return c && obStart(c) ? c : null;
+    return c && obStart(c) && c.estado === 'se-suma' && c.obRes !== 'off' ? c : null;
   }
   function obSummary(c) {
     var o = obInfo(c);
-    return { start: o.start, day: o.day, pct: o.pct, status: o.status, tot: o.tot, done: o.done, late: o.late, fin: !!c.obFin,
+    return { tipo: c.obTipo === 'exp' ? 'exp' : 'nuevo', start: o.start, day: o.day, pct: o.pct, status: o.status, tot: o.tot, done: o.done, late: o.late, fin: !!c.obFin,
       tasks: o.tasks.filter(function (t) { return !t.na; }).map(function (t) { return { texto: t.texto, due: t.due, done: t.done, late: t.late, tipo: t.tipo, w: t.w }; }) };
   }
   function aseOnbData(a) {
@@ -6688,14 +6693,14 @@ body.side-mini .side-foot { flex-direction: column; }
   }
   function aseOnb(a) {
     var o = aseOnbData(a);
-    if (!o) { gBody([el('div', { class: 'g-pane' }, el('p', { class: 'hint', text: 'No hay un onboarding cargado para este asesor.' }))]); return; }
+    if (!o) { gBody([el('div', { class: 'g-pane' }, el('p', { class: 'hint', text: 'No hay un onboarding activo para este asesor.' }))]); return; }
     var p = OB_PILL[o.status] || OB_PILL.ok, weeks = {};
     o.tasks.forEach(function (t) { (weeks[t.w] = weeks[t.w] || []).push(t); });
     var next = o.tasks.filter(function (t) { return !t.done; }).sort(function (x, y) { return x.due < y.due ? -1 : 1; })[0];
     gBody([el('div', { class: 'g-pane' },
       el('div', { class: 'kpis two' },
         kpi('Avance del onboarding', o.pct + '%', o.done + ' de ' + o.tot + ' objetivos cumplidos'),
-        kpi(o.fin ? 'Onboarding terminado' : 'Día ' + Math.max(1, o.day) + ' de 90', o.late ? o.late + (o.late === 1 ? ' vencido' : ' vencidos') : 'Al día', 'Empezó el ' + dmy(o.start))),
+        kpi(o.fin ? 'Onboarding terminado' : 'Día ' + Math.max(1, o.day) + (o.tipo === 'exp' ? ' · plan con experiencia' : ' de 90'), o.late ? o.late + (o.late === 1 ? ' vencido' : ' vencidos') : 'Al día', 'Empezó el ' + dmy(o.start))),
       el('div', { class: 'g-road-bar g-onb-bar', role: 'img', 'aria-label': o.pct + '% completo' }, el('i', { class: 'r', style: 'width:' + o.pct + '%' })),
       el('p', {}, el('span', { class: 'tag ' + p[0] }, icon(p[1], 14), p[2]), next ? el('span', { class: 'sm', text: '  Próximo: ' + next.texto + ' (' + dmy(next.due) + ')' }) : null),
       Object.keys(weeks).sort(function (x, y) { return x - y; }).map(function (w) {
@@ -7089,6 +7094,77 @@ body.side-mini .side-foot { flex-direction: column; }
       el('div', { class: 'g-links' }, resv.map(function (r) { var ro = !!window.ASE_MODE; return el(ro ? 'div' : 'button', { type: ro ? null : 'button', class: 'g-link', onclick: ro ? null : function () { openRes(r.id); } }, el('b', { text: r.propiedad || r.tokko.dir || 'Sin dirección' }), el('span', {}, rPill(r), el('span', { class: 'sm', text: ' ' + dmy(r.fecha) + (r.tokko.ref ? ' · ' + r.tokko.ref : '') }))); }))) : null;
     gBody([el('div', { class: 'g-pane' }, kp, chart, rl, list, CAP.t && !window.ASE_MODE ? el('p', { class: 'sm', text: 'Datos de Tokko Broker, actualizados ' + ago(CAP.t) + '.' }) : null)]);
   }
+
+  /* ===== Onboarding desde la ficha del asesor ===== */
+  var OB_TIPO = { nuevo: 'Asesor nuevo (plan completo)', exp: 'Con experiencia (accesos, manuales y herramientas)' };
+  function aseCandAny(a) {
+    if (!a) return null;
+    var c = a.candidatoId ? cands.filter(function (x) { return x.id === a.candidatoId; })[0] : null;
+    if (!c) { var n = norm(aseFull(a) || ''); c = n ? cands.filter(function (x) { return x.estado === 'se-suma' && norm(x.nombre || '') === n; })[0] : null; }
+    return c || null;
+  }
+  function obActivate(a, tipo, start) {
+    var c = aseCandAny(a);
+    if (c) {
+      patch(c.id, { estado: 'se-suma', obTipo: tipo, obInicio: start, obFin: '', obRes: '', obMotivo: '' });
+      if (a.candidatoId !== c.id) gUpd('asesores', a.id, { candidatoId: c.id });
+      return c.id;
+    }
+    var now = new Date().toISOString(), inc = validDate(a.ingreso) || start;
+    var data = { nombre: aseFull(a), email: a.mail || '', telefono: a.tel || '', estado: 'se-suma', creado: now, actualizado: now, ultimoContacto: now, editor: me.id || '', incorporadoEl: inc + 'T12:00:00.000Z', obInicio: start, obTipo: tipo, motivo: '', entrevistas: [], entrevista: '', desdeAsesor: true };
+    if (!coll) data.notas = [];
+    var id = newId(); create(id, data);
+    gUpd('asesores', a.id, { candidatoId: id, historial: gLog(a, 'Onboarding activado (' + (tipo === 'exp' ? 'con experiencia' : 'asesor nuevo') + ')') });
+    return id;
+  }
+  function aseOnbPanel(a) {
+    var c = aseCandAny(a), on = c && obStart(c) && c.obRes !== 'off' && c.estado === 'se-suma';
+    var ro = !!window.ASE_MODE;
+    if (ro) { aseOnb(a); return; }
+    if (!on) {
+      var tipo = el('select', { 'aria-label': 'Tipo de onboarding' }, Object.keys(OB_TIPO).map(function (k) { return el('option', { value: k, text: OB_TIPO[k] }); }));
+      var ex = (Date.now() - new Date(a.ingreso || Date.now()).getTime()) / 864e5 > 120; tipo.value = c && c.obTipo ? c.obTipo : ex ? 'exp' : 'nuevo';
+      var dt = el('input', { type: 'date', value: todayStr(), 'aria-label': 'Fecha de inicio' });
+      gBody([el('div', { class: 'g-pane' }, el('section', { class: 'g-sec g-card' },
+        el('h3', { class: 'g-sec-h', text: c && c.obRes === 'off' ? 'Onboarding desactivado' : 'Sin onboarding' }),
+        el('p', { class: 'hint', text: c && c.obRes === 'off' ? 'Se desactivó el ' + dmy(validDate(c.obFin) || todayStr()) + '. Lo podés volver a activar.' : 'Activalo si este asesor tiene que hacer el onboarding. Para quien ya tiene experiencia, elegí el plan corto: solo accesos, manuales, material y herramientas.' }),
+        el('div', { class: 'grid' }, fld('Plan', tipo), fld('Empieza el', dt)),
+        el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn primary', text: c && c.obRes === 'off' ? 'Volver a activar' : 'Activar onboarding', onclick: function () {
+          obActivate(a, tipo.value, validDate(dt.value) || todayStr()); toast('Onboarding activado para ' + aseFull(a) + '. Ya aparece en la sección Onboarding.'); setTimeout(function () { gFill(); }, 50);
+        } }))))]);
+      return;
+    }
+    aseOnb(a);
+    var sel = el('select', { 'aria-label': 'Plan de onboarding' }, Object.keys(OB_TIPO).map(function (k) { return el('option', { value: k, text: OB_TIPO[k] }); }));
+    sel.value = c.obTipo === 'exp' ? 'exp' : 'nuevo';
+    sel.addEventListener('change', function () { patch(c.id, { obTipo: sel.value }); toast('Plan cambiado. Lo que ya estaba tildado se mantiene.'); setTimeout(function () { gFill(); }, 50); });
+    var bar = el('div', { class: 'g-onb-ctl' }, fld('Plan', sel),
+      el('div', { class: 'row-wrap' },
+        el('button', { type: 'button', class: 'btn', text: 'Abrir en Onboarding', onclick: function () { var id = c.id; closePanels(); setView('onb'); setTimeout(function () { openOnb(id); }, 60); } }),
+        el('button', { type: 'button', class: 'btn ghost', text: 'Desactivar onboarding', onclick: async function () {
+          var ok = await confirmBox('¿Desactivar el onboarding de ' + aseFull(a) + '?', 'Sale de la lista de Onboarding. Lo tildado se guarda por si lo volvés a activar.', 'Desactivar', false);
+          if (!ok) return; patch(c.id, { obFin: todayStr(), obRes: 'off', obMotivo: '' }); toast('Onboarding desactivado.'); setTimeout(function () { gFill(); }, 50);
+        } })));
+    var pane = $('#gpBody .g-pane'); if (pane) pane.prepend(bar);
+  }
+  /* al pasar un candidato a "Se incorporó", se crea su perfil de asesor */
+  var sweepT = null, sweepDone = {};
+  function aseSweep() {
+    if (window.ASE_MODE || !canGestion() || !gReady.asesores) return;
+    clearTimeout(sweepT);
+    sweepT = setTimeout(function () {
+      cands.forEach(function (c) {
+        if (c.estado !== 'se-suma' || c.obFin || c.desdeAsesor || sweepDone[c.id] || !str(c.nombre)) return;
+        var ex = aseFromCand(c);
+        if (ex) { if (!ex.candidatoId) gUpd('asesores', ex.id, { candidatoId: c.id }); sweepDone[c.id] = 1; return; }
+        var id = 'cand-' + c.id; if (gGet('asesores', id)) { sweepDone[c.id] = 1; return; }
+        sweepDone[c.id] = 1;
+        gSet('asesores', id, { nombre: c.nombre || '', mail: c.email || '', tel: c.telefono || '', ingreso: validDate(c.obInicio) || validDate(String(c.incorporadoEl || '').slice(0, 10)) || todayStr(), split: 0.5, activo: true, objetivos: {}, candidatoId: c.id, creado: new Date().toISOString(), historial: [{ t: new Date().toISOString(), por: meName(), txt: 'Perfil creado al incorporarse (desde el tablero de candidatos)' }] });
+        toast('Se creó el perfil de asesor de ' + (c.nombre || 'el agente') + '. Completá su split y objetivo.', { action: { label: 'Abrir', fn: function () { setView('ase'); openAse(id, 'datos'); } } });
+      });
+    }, 800);
+  }
+  render = (function (o) { return function () { var r = o.apply(this, arguments); try { aseSweep(); } catch (e) {} return r; }; })(render);
 
   /* ---------- arranque ---------- */
   var gStarted = false;
