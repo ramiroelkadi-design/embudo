@@ -973,6 +973,26 @@ body.ase-mode #gpBody .linkish { pointer-events: none; color: inherit; text-deco
 body.ase-mode #gp #gpPageBack { display: none !important; }
 .g-road-hoy span { top: auto; bottom: -18px; }
 .g-road-bar { margin-bottom: 26px; }
+/* captaciones */
+.g-cap-ch { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; margin: 12px 0; }
+.g-cap-sin { margin-top: 10px; }
+.g-cap-list { display: flex; flex-direction: column; gap: 6px; }
+.g-cap { display: grid; grid-template-columns: 64px minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.2fr) 92px auto; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.g-cap-list.mini .g-cap { grid-template-columns: 56px minmax(0, 2fr) minmax(0, 1.4fr) 92px auto; }
+.g-cap-img { width: 64px; height: 48px; object-fit: cover; border-radius: 8px; background: var(--surface-2); display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2); }
+.g-cap-list.mini .g-cap-img { width: 56px; height: 42px; }
+.g-cap-main { display: flex; flex-direction: column; min-width: 0; }
+.g-cap-main b, .g-cap-main .sm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-cap-p { font-weight: 600; font-variant-numeric: tabular-nums; font-size: 14px; }
+.g-cap-a .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.g-cap-d { display: flex; flex-direction: column; text-align: right; }
+.g-tk-res { min-height: 24px; }
+@media (max-width: 900px) {
+  .g-cap-ch { grid-template-columns: 1fr; }
+  .g-cap, .g-cap-list.mini .g-cap { grid-template-columns: 56px minmax(0, 1fr) auto; grid-template-areas: "i m l" "i p d" "i a a"; row-gap: 4px; }
+  .g-cap-img { grid-area: i; width: 56px; height: 56px; } .g-cap-main { grid-area: m; } .g-cap-p { grid-area: p; font-size: 13px; } .g-cap-a { grid-area: a; } .g-cap-d { grid-area: d; } .g-cap > a, .g-cap > span:last-child { grid-area: l; }
+}
+.g-cap-list.mini .g-cap-a { display: none; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1217,7 +1237,8 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
     <button type="button" class="vbtn" data-v="res" aria-pressed="false"><span data-icon="receipt" data-size="20"></span><span class="vl">Reservas</span><span id="resN" class="bn alert" hidden></span></button>
     <button type="button" class="vbtn" data-v="cie" aria-pressed="false"><span data-icon="key" data-size="20"></span><span class="vl">Cierres</span></button>
     <button type="button" class="vbtn" data-v="ase" aria-pressed="false"><span data-icon="users" data-size="20"></span><span class="vl">Asesores</span><span id="aseN" class="bn" hidden></span></button>
-    <button type="button" class="vbtn" data-v="cc" aria-pressed="false"><span data-icon="wallet" data-size="20"></span><span class="vl">Cuentas corrientes</span></button>
+    <button type="button" class="vbtn" data-v="cap" aria-pressed="false"><span data-icon="building" data-size="20"></span><span class="vl">Captaciones</span></button>
+  <button type="button" class="vbtn" data-v="cc" aria-pressed="false"><span data-icon="wallet" data-size="20"></span><span class="vl">Cuentas corrientes</span></button>
   </nav>
   <div class="side-foot"><button id="sideMini" class="side-mini-btn" type="button" aria-label="Achicar el menú" title="Achicar el menú"><span data-icon="sidechev" data-size="16"></span></button><span id="sideUser" class="side-user"></span></div>
 </aside>
@@ -1427,6 +1448,7 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
     receipt: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>',
     key: '<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',
     users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    building: '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/>',
     wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
     menu: '<path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/>',
     sidechev: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/>',
@@ -2231,7 +2253,7 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
     var oldBoard = document.querySelector('.board');
     var sl = oldBoard ? oldBoard.scrollLeft : 0;
     $('#stats').textContent = statsText();
-    var PT = { hoy: 'Inicio', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores', cc: 'Cuentas corrientes' };
+    var PT = { hoy: 'Inicio', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores', cc: 'Cuentas corrientes', cap: 'Captaciones' };
     $('#pageTitle').textContent = PT[view] || 'Inicio'; document.title = (PT[view] ? PT[view] + ' · ' : '') + 'Juntos Gestión';
     var su = $('#sideUser'); if (su) su.textContent = me.name ? me.name : '';
     document.body.classList.toggle('v-cal', view === 'cal');
@@ -4124,6 +4146,7 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
   }
   function gSaveLocal(n) { if (!gDb) lsSet('embudo-g-' + n, JSON.stringify(G[n])); }
   function gStart(db) {
+    setTimeout(function () { capLoad(); }, 0);
     gDb = db || null;
     if (!gDb) { gLoadLocal(); gRefresh(); return; }
     Object.keys(G).forEach(function (n) {
@@ -4434,6 +4457,7 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
     else if (view === 'ase') renderAse(box);
     else if (view === 'hoy') renderHoy(box);
     else if (view === 'cc') renderCc(box);
+    else if (view === 'cap') renderCap(box);
   }
   function gHead(title, sub, actions) {
     return el('div', { class: 'g-head' },
@@ -4902,6 +4926,17 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
     }
     var notas = sect('Notas', [d.notasLiq ? el('p', { class: 'sm', text: d.notasLiq }) : null, fld('Notas internas', inArea(d.notas, set, 'notas', { rows: d.notas && d.notas.length > 120 ? 5 : 3, placeholder: 'Condiciones, contraoferta, pendientes…' })), isNew ? null : histList(d.historial)]);
     gBody([est, opSec, dinero, notas]);
+    var pin = $('#gResProp');
+    if (pin) capPickForRes(pin, function (p) {
+      var v = capVenta(p) || p.ops[0] || {}, aid = capAse(p), nl = JSON.parse(JSON.stringify(rLados(d))); delete nl.legacy;
+      var it = listFind('localidades', p.loc);
+      var f = { propiedad: p.dir || p.titulo, tokkoId: p.id };
+      if (p.loc) { f.localidad = it ? it.n : p.loc; f.juris = (it && it.juris) || jurisDe(p.loc); }
+      if (v.precio && !+d.precio) { f.precio = v.precio; f.precioMon = v.mon; }
+      if (v.op && /alquiler/i.test(v.op)) f.operacion = 'alquiler';
+      if (aid) { nl.v = { nos: true, ase: aid, pct: nl.v.nos && nl.v.pct != null ? nl.v.pct : +gConf.pctVend, inmob: '' }; f.lados = nl; f.asesorIds = rAseIds(nl); f.punta = puntaDe(nl); }
+      set(f); toast('Datos tomados de la captación de Tokko' + (aid ? ': la punta vendedora queda para ' + aseName(aid) + '.' : '.'));
+    });
     if (isNew) {
       gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }),
         el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }),
@@ -6114,8 +6149,8 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
   }
   function applyRoles() {
     var ok = canGestion();
-    document.querySelectorAll('.vbtn[data-v=res], .vbtn[data-v=cie], .vbtn[data-v=ase], .vbtn[data-v=cc], .vgl-g').forEach(function (b) { b.hidden = !ok; });
-    if (!ok && (view === 'res' || view === 'cie' || view === 'ase' || view === 'cc')) setView('hoy');
+    document.querySelectorAll('.vbtn[data-v=res], .vbtn[data-v=cie], .vbtn[data-v=ase], .vbtn[data-v=cc], .vbtn[data-v=cap], .vgl-g').forEach(function (b) { b.hidden = !ok; });
+    if (!ok && (view === 'res' || view === 'cie' || view === 'ase' || view === 'cc' || view === 'cap')) setView('hoy');
     return ok;
   }
 
@@ -6696,6 +6731,218 @@ body.ase-mode #gp #gpPageBack { display: none !important; }
     if (ref.onSnapshot) ref.onSnapshot(on, function () { apply(null); }); else ref.get().then(on, function () { apply(null); });
   }
   if (window.__FB_MOCK) window.__t2 = { buildPortal: function (id) { return buildPortal(gGet('asesores', id)); } };
+
+  /* ===== Captaciones desde Tokko Broker ===== */
+  G_VIEWS.cap = 'tokko';
+  var CAP = { t: '', props: [], err: '' }, capBusy = false;
+  var TOKKO_BASE = 'https://www.tokkobroker.com/api/v1/property/';
+  function tokkoUrl(key, limit, offset, jsonp) { return TOKKO_BASE + '?format=' + (jsonp ? 'jsonp&callback=' + jsonp : 'json') + '&lang=es_ar&key=' + encodeURIComponent(key) + '&limit=' + limit + '&offset=' + offset; }
+  function jsonp(url, cbName) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script'), done = false;
+      window[cbName] = function (d) { done = true; res(d); cleanup(); };
+      function cleanup() { try { delete window[cbName]; } catch (e) { window[cbName] = undefined; } s.remove(); }
+      s.onerror = function () { if (!done) { rej(new Error('jsonp')); cleanup(); } };
+      setTimeout(function () { if (!done) { rej(new Error('timeout')); cleanup(); } }, 20000);
+      s.src = url; document.head.appendChild(s);
+    });
+  }
+  var tokkoMode = null;
+  async function tokkoPage(key, limit, offset) {
+    if (tokkoMode !== 'jsonp') {
+      try {
+        var r = await fetch(tokkoUrl(key, limit, offset));
+        if (r.status === 401 || r.status === 403) throw Object.assign(new Error('clave'), { code: 'clave' });
+        if (!r.ok) throw Object.assign(new Error('http ' + r.status), { code: 'http' });
+        tokkoMode = 'fetch'; return await r.json();
+      } catch (e) { if (e.code) throw e; if (tokkoMode === 'fetch') throw Object.assign(new Error('red'), { code: 'red' }); }
+    }
+    try { var cb = 'tk' + Date.now() + Math.floor(Math.random() * 1000); var d = await jsonp(tokkoUrl(key, limit, offset, cb), cb); tokkoMode = 'jsonp'; return d; }
+    catch (e) { throw Object.assign(new Error('bloqueado'), { code: 'bloqueado' }); }
+  }
+  function tkMon(c) { c = String(c || '').toUpperCase(); return c === 'ARS' || c === '$' ? '$' : 'U$S'; }
+  function tkSlim(p) {
+    var ops = (p.operations || []).map(function (o) { var pr = (o.prices || [])[0] || {}; return { op: o.operation_type || '', mon: tkMon(pr.currency), precio: +pr.price || null }; });
+    var ph = (p.photos || []).filter(function (x) { return x.is_front_cover; })[0] || (p.photos || [])[0] || {};
+    var prod = p.producer || {};
+    return { id: p.id, ref: p.reference_code || '', titulo: p.publication_title || '', dir: p.address || p.real_address || p.fake_address || '', loc: (p.location && (p.location.name || '')) || '', tipo: (p.type && p.type.name) || '', ops: ops,
+      prod: prod.name || '', pmail: String(prod.email || '').toLowerCase(), suc: (p.branch && p.branch.name) || '', alta: String(p.created_at || '').slice(0, 10), url: p.public_url || '', foto: ph.thumb || ph.image || '',
+      sup: +p.total_surface || +p.roofed_surface || null, amb: +p.room_amount || null, st: p.status != null ? p.status : null };
+  }
+  async function tokkoSync(opts) {
+    opts = opts || {};
+    var key = String(gConf.tokkoKey || '').trim();
+    if (!key) throw Object.assign(new Error('sin clave'), { code: 'sinclave' });
+    capBusy = true; if (view === 'cap') gRenderView();
+    try {
+      var out = [], off = 0, lim = opts.test ? 1 : 50, total = null, guard = 0;
+      while (guard++ < 60) {
+        var d = await tokkoPage(key, lim, off);
+        var objs = (d && (d.objects || d.results)) || [];
+        if (total == null) total = d && d.meta && d.meta.total_count != null ? +d.meta.total_count : null;
+        objs.forEach(function (p) { out.push(tkSlim(p)); });
+        if (opts.test) return { total: total != null ? total : objs.length, first: out[0] || null, mode: tokkoMode };
+        off += objs.length;
+        if (!objs.length || (total != null && off >= total) || (!(d.meta && d.meta.next) && objs.length < lim)) break;
+      }
+      CAP = { t: new Date().toISOString(), props: out, err: '' };
+      capSave();
+      return { total: out.length };
+    } finally { capBusy = false; }
+  }
+  function capSave() {
+    try { lsSet('juntos-tokko', JSON.stringify(CAP)); } catch (e) {}
+    if (gDb && !window.ASE_MODE) { try { gDb.collection('tokko').doc('cache').set(JSON.parse(JSON.stringify(CAP))).catch(function () {}); } catch (e) {} }
+    portalSyncAll();
+  }
+  function portalSyncAll() { if (typeof portalLast === 'object') Object.keys(portalLast).forEach(function (k) { portalLast[k] = ''; }); if (typeof portalSync === 'function') portalSync(); }
+  function capLoad() {
+    try { var l = JSON.parse(lsGet('juntos-tokko') || 'null'); if (l && l.props) CAP = l; } catch (e) {}
+    if (gDb && !window.ASE_MODE) {
+      try {
+        var p = gDb.collection('tokko').doc('cache').get();
+        if (p && p.then) p.then(function (s) { var ex = s && (typeof s.exists === 'function' ? s.exists() : s.exists); if (!ex) return; var d = s.data(); if (d && d.props && (!CAP.t || d.t > CAP.t)) { CAP = d; if (view === 'cap') gRenderView(); } }, function () {});
+      } catch (e) {}
+    }
+    setTimeout(function () {
+      if (window.ASE_MODE || !gConf.tokkoKey || !canGestion()) return;
+      var age = CAP.t ? (Date.now() - new Date(CAP.t).getTime()) / 36e5 : 999;
+      if (age > 6) tokkoSync().then(function () { if (view === 'cap') gRenderView(); }, function (e) { CAP.err = e.code || 'error'; });
+    }, 4000);
+  }
+  function capAse(p) {
+    var map = gConf.tokkoMap || {};
+    if (map[p.prod]) return map[p.prod];
+    var a = p.pmail ? G.asesores.filter(function (x) { return String(x.mail || '').toLowerCase() === p.pmail; })[0] : null;
+    if (!a && p.prod) { var n = norm(p.prod); a = G.asesores.filter(function (x) { return norm(aseFull(x)) === n || norm(x.nombre || '') === n; })[0]; }
+    return a ? a.id : '';
+  }
+  function capVenta(p) { return p.ops.filter(function (o) { return /venta/i.test(o.op); })[0] || null; }
+  function capPrecioTxt(p) { return p.ops.map(function (o) { return o.op + (o.precio ? ' ' + money(o.precio, o.mon) : ''); }).join(' · '); }
+  function capDe(aid) { return CAP.props.filter(function (p) { return capAse(p) === aid; }); }
+  function tkErrTxt(e) {
+    var c = e && e.code;
+    return c === 'sinclave' ? 'Falta cargar la clave API de Tokko.' : c === 'clave' ? 'Tokko rechazó la clave. Revisá que esté bien copiada (Mi empresa → Permisos).' : c === 'bloqueado' || c === 'red' ? (window.claude && window.claude.standalone ? 'El navegador no pudo conectarse con Tokko. Puede ser la conexión, o que Tokko no permita consultas desde otras páginas: en ese caso hay que sumar un intermediario.' : 'Desde la versión de Claude no se puede conectar con sitios externos. Usá la versión de GitHub.') : 'No se pudo conectar con Tokko (' + (e && e.message || 'error') + ').';
+  }
+  function capConfig() {
+    var key = el('input', { type: 'password', value: gConf.tokkoKey || '', autocomplete: 'off', placeholder: 'Pegá la clave API' });
+    var show = el('button', { type: 'button', class: 'btn ghost sm-btn', text: 'Mostrar', onclick: function () { key.type = key.type === 'password' ? 'text' : 'password'; show.textContent = key.type === 'password' ? 'Mostrar' : 'Ocultar'; } });
+    var res = el('div', { class: 'g-tk-res', 'aria-live': 'polite' });
+    var test = el('button', { type: 'button', class: 'btn', text: 'Probar conexión', onclick: async function () {
+      gConf.tokkoKey = key.value.trim(); res.replaceChildren(el('p', { class: 'sm', text: 'Probando…' }));
+      try {
+        var r = await tokkoSync({ test: true });
+        res.replaceChildren(el('p', { class: 'ok-t' }, icon('check', 16), 'Conectado. Tokko informa ' + r.total + ' propiedades publicadas.'),
+          r.first ? el('p', { class: 'sm', text: 'Ejemplo: ' + (r.first.dir || r.first.titulo) + (r.first.prod ? ' · captó ' + r.first.prod : ' · (Tokko no informa quién la captó)') + (r.first.ops.length ? ' · ' + capPrecioTxt(r.first) : '') }) : null);
+      } catch (e) { res.replaceChildren(el('p', { class: 'err-t', text: tkErrTxt(e) })); }
+    } });
+    return showModal('Conexión con Tokko Broker', el('div', { class: 'field' },
+      el('p', { class: 'hint', text: 'La clave está en Tokko: Mi empresa → Permisos → Clave API. Se guarda en la plataforma y solo la ve el equipo.' }),
+      fld('Clave API', el('span', { class: 'row-wrap' }, key, show)), el('div', { class: 'row-wrap' }, test), res,
+      el('p', { class: 'sm', text: 'Tokko solo comparte las propiedades que tienen habilitada la visualización en la web.' })), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar y actualizar', onclick: function () { closeModal(key.value.trim()); } })]).then(function (v) {
+      if (v == null) return;
+      gSaveConf({ tokkoKey: v });
+      if (v) capRefresh();
+    });
+  }
+  function capRefresh() {
+    tokkoSync().then(function (r) { toast('Captaciones actualizadas: ' + r.total + ' propiedades.'); gRenderView(); },
+      function (e) { CAP.err = e.code || 'error'; gRenderView(); toast(tkErrTxt(e), { kind: 'error' }); });
+  }
+  async function capMapForm(prod) {
+    var s = aseSimpleSel((gConf.tokkoMap || {})[prod] || '', function () {});
+    var ok = await showModal('¿Quién es ' + prod + '?', el('div', { class: 'field' }, el('p', { class: 'hint', text: 'Así figura en Tokko. Elegí a qué asesor corresponde, para sumarle sus captaciones.' }), fld('Asesor', s)), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () { closeModal(s.value); } })]);
+    if (ok == null) return;
+    var m = Object.assign({}, gConf.tokkoMap || {}); if (ok) m[prod] = ok; else delete m[prod];
+    gSaveConf({ tokkoMap: m }); portalSyncAll(); gRenderView();
+  }
+  function capAge(p) { return p.alta ? Math.max(0, -dayDiff(p.alta)) : null; }
+  function renderCap(box) {
+    var key = gConf.tokkoKey;
+    var head = gHead('Captaciones', CAP.t ? CAP.props.length + ' propiedades de Tokko Broker · actualizado ' + ago(CAP.t) : 'Propiedades tomadas por los asesores, desde Tokko Broker', [
+      el('button', { type: 'button', class: 'btn', onclick: capConfig }, key ? 'Conexión' : 'Conectar Tokko'),
+      key ? el('button', { type: 'button', class: 'btn primary', disabled: capBusy || null, onclick: capRefresh }, capBusy ? 'Actualizando…' : 'Actualizar') : null]);
+    if (!key && !CAP.props.length) { box.replaceChildren(head, gEmpty('Conectá Tokko Broker', 'Pegá la clave API de Tokko y las captaciones de cada asesor aparecen acá, en su ficha y en su perfil.', 'Conectar Tokko', capConfig)); return; }
+    var errB = CAP.err ? el('div', { class: 'banner-lite warn' }, el('span', { text: 'La última actualización falló: ' + tkErrTxt({ code: CAP.err }) })) : null;
+    var all = CAP.props, now = new Date(), mk = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    if (!gF.capOp) gF.capOp = 'todas';
+    var q = norm(gF.capQ || '');
+    var list = all.filter(function (p) {
+      if (gF.capOp === 'venta' && !capVenta(p)) return false;
+      if (gF.capOp === 'alquiler' && !p.ops.some(function (o) { return /alquiler/i.test(o.op); })) return false;
+      if (gF.capA === '_none' && capAse(p)) return false;
+      if (gF.capA && gF.capA !== '_none' && capAse(p) !== gF.capA) return false;
+      if (q && norm([p.dir, p.titulo, p.loc, p.ref, p.prod, p.tipo].join(' ')).indexOf(q) < 0) return false;
+      return true;
+    });
+    var sortK = gF.capS || 'alta';
+    list.sort(function (a, b) {
+      if (sortK === 'precio') { var va = capVenta(a), vb = capVenta(b); return (vb ? toUSD(vb.precio || 0, vb.mon) : 0) - (va ? toUSD(va.precio || 0, va.mon) : 0); }
+      if (sortK === 'ase') return aseName(capAse(a) || '').localeCompare(aseName(capAse(b) || ''), 'es');
+      return String(b.alta) < String(a.alta) ? -1 : 1;
+    });
+    var ventas = all.filter(capVenta), valor = ventas.reduce(function (s, p) { var v = capVenta(p); return s + toUSD(v.precio || 0, v.mon); }, 0);
+    var nuevas = all.filter(function (p) { return String(p.alta).slice(0, 7) === mk; }).length;
+    var byA = {}, sinA = {};
+    all.forEach(function (p) { var a = capAse(p); if (a) byA[a] = (byA[a] || 0) + 1; else if (p.prod) sinA[p.prod] = (sinA[p.prod] || 0) + 1; });
+    var ak = Object.keys(byA).sort(function (x, y) { return byA[y] - byA[x]; }), mx = Math.max.apply(null, ak.map(function (k) { return byA[k]; }).concat([1]));
+    var months = []; for (var i = 5; i >= 0; i--) { var d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ k: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), n: MES3[d.getMonth()], v: 0 }); }
+    all.forEach(function (p) { months.forEach(function (m) { if (String(p.alta).slice(0, 7) === m.k) m.v++; }); });
+    var mxm = Math.max.apply(null, months.map(function (m) { return m.v; }).concat([1]));
+    var kp = el('div', { class: 'kpis' },
+      kpi('Captaciones', String(all.length), ventas.length + ' en venta · ' + (all.length - ventas.length) + ' en alquiler u otras'),
+      kpi('Valor en venta', usdK(valor), ventas.length ? 'Promedio ' + usdK(valor / ventas.length) : ''),
+      kpi('Nuevas este mes', String(nuevas), cap(MESES[now.getMonth()])),
+      kpi('Por asesor', ak.length ? (all.length / ak.length).toFixed(1).replace('.', ',') : '–', ak.length + ' asesores con captaciones'));
+    var charts = el('div', { class: 'g-cap-ch' },
+      el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Por asesor' }),
+        el('div', { class: 'hbars' }, ak.slice(0, 15).map(function (k) { return el('button', { type: 'button', class: 'hbar', onclick: function () { gF.capA = gF.capA === k ? '' : k; gKeepF(); gRenderView(); } }, el('span', { class: 'hbar-l', text: aseName(k) }), el('span', { class: 'hbar-t' }, el('i', { style: 'width:' + Math.round(byA[k] * 100 / mx) + '%;background:var(--accent)' })), el('b', { text: String(byA[k]) })); })),
+        Object.keys(sinA).length ? el('div', { class: 'g-cap-sin' }, el('p', { class: 'sm', text: 'Sin asesor vinculado (tocá para elegir quién es):' }), el('div', { class: 'row-wrap' }, Object.keys(sinA).map(function (n) { return el('button', { type: 'button', class: 'chip', onclick: function () { capMapForm(n); } }, n, el('span', { class: 'n', text: sinA[n] })); }))) : null),
+      el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Altas por mes' }),
+        el('div', { class: 'bchart small' }, months.map(function (m) { return el('div', { class: 'bc', role: 'img', 'aria-label': m.n + ': ' + m.v }, el('span', { class: 'bc-v', text: m.v ? String(m.v) : '' }), el('span', { class: 'bc-bars' }, el('i', { class: 'bb', style: 'height:' + Math.round(m.v * 100 / mxm) + '%' })), el('span', { class: 'bc-m', text: m.n })); }))));
+    var ops = [['todas', 'Todas'], ['venta', 'Venta'], ['alquiler', 'Alquiler']];
+    var tools = el('div', { class: 'onb-tools' },
+      el('div', { class: 'onb-chips', role: 'group', 'aria-label': 'Operación' }, ops.map(function (o) { return el('button', { type: 'button', class: 'chip' + (gF.capOp === o[0] ? ' on' : ''), 'aria-pressed': String(gF.capOp === o[0]), onclick: function () { gF.capOp = o[0]; gKeepF(); gRenderView(); } }, o[1]); })),
+      searchBox(gF.capQ, 'Buscar dirección, localidad o código', function (v) { gF.capQ = v; keepFocusRender(function () { gRenderView(); }); }),
+      selectEl('Asesor', [['', 'Todos los asesores'], ['_none', 'Sin asesor vinculado']].concat(ak.map(function (k) { return [k, aseName(k)]; })), gF.capA || '', function (v) { gF.capA = v; gKeepF(); gRenderView(); }),
+      selectEl('Ordenar', [['alta', 'Más nuevas'], ['precio', 'Precio'], ['ase', 'Asesor']], sortK, function (v) { gF.capS = v; gKeepF(); gRenderView(); }));
+    var rows = list.slice(0, gF.capAll ? 2000 : 80).map(capRow);
+    var tbl = list.length ? el('div', { class: 'g-cap-list' }, rows) : el('p', { class: 'hint', text: all.length ? 'No hay captaciones con ese filtro.' : 'Todavía no se trajeron captaciones. Tocá "Actualizar".' });
+    box.replaceChildren.apply(box, [head, errB, kp, charts, tools, tbl, list.length > rows.length ? el('button', { type: 'button', class: 'btn ghost', text: 'Ver las ' + list.length, onclick: function () { gF.capAll = true; gRenderView(); } }) : null].filter(Boolean));
+  }
+  function capRow(p) {
+    var aid = capAse(p), age = capAge(p), ro = !!window.ASE_MODE;
+    return el('div', { class: 'g-cap' },
+      p.foto ? el('img', { class: 'g-cap-img', src: p.foto, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : el('span', { class: 'g-cap-img ph' }, icon('home', 20)),
+      el('div', { class: 'g-cap-main' }, el('b', { text: p.dir || p.titulo || 'Sin dirección' }), el('span', { class: 'sm', text: [p.tipo, p.loc, p.amb ? p.amb + ' amb.' : '', p.sup ? p.sup + ' m²' : '', p.ref].filter(Boolean).join(' · ') })),
+      el('div', { class: 'g-cap-p' }, el('span', { text: capPrecioTxt(p) || '–' })),
+      ro ? null : el('div', { class: 'g-cap-a' }, aid ? el('span', { class: 'row-wrap' }, aseAv(aid), el('span', { text: aseName(aid) })) : el('button', { type: 'button', class: 'chip', title: 'Elegir el asesor', onclick: function () { if (p.prod) capMapForm(p.prod); } }, p.prod || 'Sin captador')),
+      el('div', { class: 'g-cap-d' }, el('span', { class: 'sm', text: p.alta ? 'Alta ' + dmy(p.alta) : '' }), age != null ? el('span', { class: 'sm' + (age > 180 ? ' warn' : ''), text: age < 1 ? 'hoy' : age + ' días' }) : null),
+      p.url ? el('a', { class: 'btn ghost sm-btn', href: p.url, target: '_blank', rel: 'noopener', text: 'Ver' }) : el('span'));
+  }
+  /* en la ficha del asesor */
+  function aseCapSec(a) {
+    var ps = capDe(a.id); if (!CAP.props.length && !(window.ASE_MODE && window.ASE_MODE.portal && window.ASE_MODE.portal.cap)) return null;
+    if (window.ASE_MODE && window.ASE_MODE.portal) ps = window.ASE_MODE.portal.cap || [];
+    var y = String(new Date().getFullYear()), ny = ps.filter(function (p) { return String(p.alta).slice(0, 4) === y; }).length;
+    var vv = ps.filter(capVenta).reduce(function (s, p) { var v = capVenta(p); return s + toUSD(v.precio || 0, v.mon); }, 0);
+    return el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Captaciones activas (' + ps.length + ')' }),
+      el('p', { class: 'sm', text: ny + ' tomadas en ' + y + (vv ? ' · ' + usdK(vv) + ' en venta' : '') + ' · según Tokko Broker' }),
+      ps.length ? el('div', { class: 'g-cap-list mini' }, ps.slice().sort(function (a, b) { return String(b.alta) < String(a.alta) ? -1 : 1; }).map(capRow)) : el('p', { class: 'hint', text: 'No tiene captaciones publicadas en Tokko.' }));
+  }
+  aseResumen = (function (o) { return function (a, s, y) { o(a, s, y); var sec = aseCapSec(a); if (sec) { var pane = $('#gpBody .g-pane'); if (pane) pane.append(sec); } }; })(aseResumen);
+  buildPortal = (function (o) { return function (a) { var p = o(a); p.cap = capDe(a.id).map(function (x) { var c = Object.assign({}, x); delete c.pmail; return c; }); return p; }; })(buildPortal);
+  /* reserva: elegir la propiedad de las captaciones */
+  function capPickForRes(inp, onPick) {
+    if (!CAP.props.length) return;
+    var dl = el('datalist', { id: 'gCapDL' }, CAP.props.map(function (p) { return el('option', { value: p.dir || p.titulo, text: [p.loc, capPrecioTxt(p), p.prod].filter(Boolean).join(' · ') }); }));
+    inp.setAttribute('list', 'gCapDL'); inp.after(dl);
+    var last = null; inp.addEventListener('change', function () { var v = inp.value; var p = CAP.props.filter(function (x) { return (x.dir || x.titulo) === v; })[0]; if (p && p !== last) { last = p; onPick(p); } });
+  }
 
   /* ---------- arranque ---------- */
   var gStarted = false;
