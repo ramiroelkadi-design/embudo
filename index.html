@@ -7810,7 +7810,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
       el('div', { class: 'tas-ext' },
         el('button', { type: 'button', class: 'btn primary', onclick: function () { tasPortales(t); } }, icon('search', 16), 'Buscar en portales con IA'),
         el('button', { type: 'button', class: 'btn', onclick: function () { tasLink(t); } }, 'Pegar un link'),
-        el('button', { type: 'button', class: 'btn', onclick: function () { tasPdf(t); } }, 'Subir PDF o captura'),
+        el('button', { type: 'button', class: 'btn', onclick: function () { tasPdf(t); } }, 'Subir PDF del aviso (datos y fotos)'),
         el('button', { type: 'button', class: 'btn', onclick: function () { tasTexto(t); } }, 'Pegar el texto del aviso'),
         el('button', { type: 'button', class: 'btn ghost', onclick: function () { tasManual(t); } }, 'Cargar a mano')),
       aiOK() ? null : el('p', { class: 'sm warn', text: 'La búsqueda en portales y la lectura de links y PDF usan la IA de la versión de GitHub.' })]);
@@ -7918,7 +7918,8 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     docs: ['Copia de Título de la Propiedad (Escritura).', 'Copia de Plano de Obra aprobado (Plano Municipal).', 'Copia Plano PH y Reglamento de Co-Propiedad.', 'Copia de impuestos y servicios: ARBA / AySA / ABL.', 'Copia de liquidación de expensas (si corresponde).', 'Copia de DNI de los propietarios. Constancia de CUIL/CUIT.', 'Sentencia de Divorcio (si corresponde).', 'Firma de la Autorización de Venta.', 'COTI (si el valor de venta es mayor al del nomenclador de AFIP).'],
     gastos: true,
     integridad: 'Queremos que sepas que tenemos un compromiso total con la integridad. Creemos que, en el largo plazo, buscar lo mejor para los demás y hacer lo que es correcto produce resultados máximos mutuos.',
-    mart: 'MARTILLEROS RESPONSABLES: Erica Cano | CMCPSI 6880 · Ramiro El Kadi | CUCICBA 6534'
+    mart: 'MARTILLEROS RESPONSABLES: Erica Cano | CMCPSI 6880 · Ramiro El Kadi | CUCICBA 6534',
+    microKey: ''
   };
   function acmConf() { var src = aseLive() ? (TB && TB.conf) || {} : gConf.acm || {}; var o = JSON.parse(JSON.stringify(ACM_DEF)); Object.keys(src).forEach(function (k) { if (src[k] != null && src[k] !== '') o[k] = src[k]; }); return o; }
   var SEM = {
@@ -7964,12 +7965,84 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   async function fotoUpload(t, file) {
     var d = await imgCompress(file, 1280, 0.74);
     if (d.length > 850000) d = await imgCompress(file, 900, 0.6);
+    return fotoSaveData(t, d);
+  }
+  async function fotoSaveData(t, d) {
     var id = 'f' + uid().slice(1), db = tfDb();
     if (db) await db.collection('tasfotos').doc(id).set({ d: d, tas: t.id, ase: t.ase || (window.ASE_MODE && window.ASE_MODE.asesorId) || '', t: new Date().toISOString() });
     else { try { localStorage.setItem('juntos-tf-' + id, d); } catch (e) { toast('No hay espacio para guardar más fotos en este navegador.', { kind: 'error' }); return null; } }
     fotoCache['tf:' + id] = Promise.resolve(d);
     return 'tf:' + id;
   }
+  var pdfjsP = null;
+  function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (!pdfjsP) pdfjsP = new Promise(function (res, rej) {
+      var b = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/', sc = document.createElement('script'); sc.src = b + 'pdf.min.js';
+      sc.onload = function () { var L = window.pdfjsLib; if (!L) { pdfjsP = null; return rej(new Error('pdf')); } L.GlobalWorkerOptions.workerSrc = b + 'pdf.worker.min.js'; res(L); };
+      sc.onerror = function () { pdfjsP = null; rej(new Error('No se pudo cargar el lector de PDF')); };
+      document.head.append(sc);
+    });
+    return pdfjsP;
+  }
+  function pdfImgCanvas(img) {
+    if (!img) return null;
+    var w = img.width || (img.bitmap && img.bitmap.width), h = img.height || (img.bitmap && img.bitmap.height); if (!w || !h) return null;
+    var c = document.createElement('canvas'); c.width = w; c.height = h; var g = c.getContext('2d');
+    if (img.bitmap) { g.drawImage(img.bitmap, 0, 0); return c; }
+    if (typeof HTMLImageElement !== 'undefined' && img instanceof HTMLImageElement) { g.drawImage(img, 0, 0); return c; }
+    if (!img.data) return null;
+    var id = g.createImageData(w, h), src = img.data, dst = id.data, n = w * h;
+    if (img.kind === 3 || src.length === n * 4) dst.set(src.subarray ? src.subarray(0, n * 4) : src.slice(0, n * 4));
+    else if (img.kind === 2 || src.length === n * 3) { for (var i = 0, j = 0; i < n; i++, j += 3) { dst[i * 4] = src[j]; dst[i * 4 + 1] = src[j + 1]; dst[i * 4 + 2] = src[j + 2]; dst[i * 4 + 3] = 255; } }
+    else return null;
+    g.putImageData(id, 0, 0); return c;
+  }
+  async function fotosDePdf(file, max) {
+    var L = await loadPdfJs(), pdf = await L.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise, out = [], seen = {};
+    for (var p = 1; p <= Math.min(pdf.numPages, 20) && out.length < (max || 6); p++) {
+      var page = await pdf.getPage(p), ops = await page.getOperatorList();
+      for (var i = 0; i < ops.fnArray.length && out.length < (max || 6); i++) {
+        var fn = ops.fnArray[i]; if (fn !== L.OPS.paintImageXObject && fn !== L.OPS.paintJpegXObject) continue;
+        var nm = ops.argsArray[i][0];
+        var img = await new Promise(function (res) { var to = setTimeout(function () { res(null); }, 5000); try { var o = /^g_/.test(nm) ? page.commonObjs : page.objs; o.get(nm, function (x) { clearTimeout(to); res(x); }); } catch (e) { clearTimeout(to); res(null); } });
+        var c = pdfImgCanvas(img); if (!c || c.width < 300 || c.height < 200 || c.width / c.height > 3.2 || c.height / c.width > 2.2) continue;
+        var g = c.getContext('2d'), px = g.getImageData(Math.floor(c.width / 3), Math.floor(c.height / 3), 4, 4).data, k = c.width + 'x' + c.height + ':' + Array.prototype.slice.call(px, 0, 24).join(',');
+        if (seen[k]) continue; seen[k] = 1;
+        var k2 = Math.min(1, 1280 / Math.max(c.width, c.height)), c2 = document.createElement('canvas'); c2.width = Math.round(c.width * k2); c2.height = Math.round(c.height * k2); c2.getContext('2d').drawImage(c, 0, 0, c2.width, c2.height);
+        out.push(c2.toDataURL('image/jpeg', 0.78));
+      }
+    }
+    return out;
+  }
+  async function fotosPdfGuardar(t, file, max) { var ds = await fotosDePdf(file, max), refs = []; for (var i = 0; i < ds.length; i++) { var r = await fotoSaveData(t, ds[i]); if (r) refs.push(r); } return refs; }
+  tasPdf = function (t) {
+    var fi = el('input', { type: 'file', accept: 'application/pdf,image/*', multiple: true, hidden: true });
+    document.body.append(fi);
+    fi.addEventListener('change', async function () {
+      var fs = Array.prototype.slice.call(fi.files || []); fi.remove(); if (!fs.length) return;
+      var pdfs = fs.filter(function (f) { return /pdf/.test(f.type) || /\.pdf$/i.test(f.name); });
+      var done = tasBusy('Leyendo ' + (fs.length === 1 ? 'el archivo' : fs.length + ' archivos') + ' y sacando las fotos…');
+      var fotos = [];
+      try { for (var k = 0; k < pdfs.length; k++) fotos = fotos.concat(await fotosPdfGuardar(t, pdfs[k], 6)); } catch (e) { console.warn(e); }
+      if (!aiOK()) { done(); compForm(t, { src: 'pdf', fotos: fotos.slice(0, 6) }, null); if (fotos.length) toast('Saqué ' + fotos.length + ' fotos del PDF. Completá los datos del comparable.'); else aiNeed(); return; }
+      try {
+        var parts = [];
+        for (var i = 0; i < fs.length; i++) { var f = fs[i], b = await fileB64(f); parts.push(/pdf/.test(f.type) ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b } } : { type: 'image', source: { type: 'base64', media_type: f.type || 'image/jpeg', data: b } }); }
+        parts.push({ type: 'text', text: 'Estos archivos son avisos o informes inmobiliarios (pueden tener uno o varios inmuebles). Extraé cada inmueble como comparable. ' + COMP_SCHEMA });
+        var txt = await aiRun(parts, null);
+        done();
+        var cs = parseComps(txt, 'pdf');
+        if (fotos.length) {
+          if (cs.length === 1) cs[0].fotos = fotos.concat(cs[0].fotos || []).slice(0, 6);
+          else if (cs.length > 1) toast('Saqué ' + fotos.length + ' fotos del PDF. Como hay varios inmuebles, asignalas desde «Editar» en cada comparable.');
+          else { compForm(t, { src: 'pdf', fotos: fotos.slice(0, 6) }, null); return; }
+        }
+        pickComps(t, cs, 'Comparables del archivo');
+      } catch (e) { done(); toast('No se pudo leer el archivo: ' + ((e && e.message) || 'error'), { kind: 'error' }); if (fotos.length) compForm(t, { src: 'pdf', fotos: fotos.slice(0, 6) }, null); }
+    });
+    fi.click();
+  };
   function fotosEditor(t, list, onChange) {
     list = (list || []).slice();
     var box = el('div', { class: 'tas-fed' });
@@ -7982,6 +8055,14 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
       busyTxt.hidden = true; onChange(list.slice()); draw();
     });
     var url = el('input', { type: 'url', placeholder: 'O pegá el link de una foto (https://…)' });
+    var fp = el('input', { type: 'file', accept: 'application/pdf', hidden: true });
+    fp.addEventListener('change', async function () {
+      var f = (fp.files || [])[0]; fp.value = ''; if (!f) return;
+      busyTxt.hidden = false; busyTxt.textContent = 'Sacando fotos del PDF…';
+      try { var rs = await fotosPdfGuardar(t, f, Math.max(0, 6 - list.length)); rs.forEach(function (r) { list.push(r); }); toast(rs.length ? 'Saqué ' + rs.length + (rs.length === 1 ? ' foto' : ' fotos') + ' del PDF.' : 'No encontré fotos en ese PDF.', rs.length ? undefined : { kind: 'error' }); }
+      catch (e) { toast('No se pudo leer el PDF: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
+      busyTxt.hidden = true; busyTxt.textContent = 'Subiendo…'; onChange(list.slice()); draw();
+    });
     var busyTxt = el('span', { class: 'sm', text: 'Subiendo…', hidden: true });
     function addUrl() { var v = url.value.trim(); if (!/^https?:\/\//.test(v)) { toast('Pegá un link que empiece con https://', { kind: 'error' }); return; } if (list.length >= 6) { toast('Hasta 6 fotos por propiedad.'); return; } list.push(v); url.value = ''; onChange(list.slice()); draw(); }
     url.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } });
@@ -7992,7 +8073,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
             el('button', { type: 'button', class: 'tas-ft-x', 'aria-label': 'Quitar la foto', text: '×', onclick: function () { list.splice(i, 1); onChange(list.slice()); draw(); } }),
             i === 0 ? el('span', { class: 'tas-ft-p', text: 'Portada' }) : el('button', { type: 'button', class: 'tas-ft-p', text: 'Portada', title: 'Usar como foto principal', onclick: function () { var x = list.splice(i, 1)[0]; list.unshift(x); onChange(list.slice()); draw(); } }));
         }), list.length < 6 ? el('button', { type: 'button', class: 'tas-ft add', onclick: function () { fi.click(); } }, icon('plus', 18), el('span', { text: 'Subir fotos' })) : null),
-        el('div', { class: 'row-wrap' }, url, el('button', { type: 'button', class: 'btn sm-btn', text: 'Agregar link', onclick: addUrl }), busyTxt), fi);
+        el('div', { class: 'row-wrap' }, url, el('button', { type: 'button', class: 'btn sm-btn', text: 'Agregar link', onclick: addUrl }), el('button', { type: 'button', class: 'btn sm-btn', text: 'Sacar fotos de un PDF del aviso', onclick: function () { if (list.length >= 6) { toast('Hasta 6 fotos por propiedad.'); return; } fp.click(); } }), busyTxt), fi, fp);
     }
     draw(); return box;
   }
@@ -8161,6 +8242,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
       fld('¿Qué es un ACM?', ta('queEs', 2)), fld('Por qué elegirnos', ta('elegirnos', 6, true)), fld('Condiciones comerciales', ta('cond', 3, true)),
       fld('Documentación necesaria', ta('docs', 6, true)), el('label', { class: 'check' }, g, 'Incluir la tabla de gastos aproximados del vendedor'),
       fld('Nuestros clientes son muy importantes', ta('integridad', 3)), fld('Pie de página (martilleros responsables)', ta('mart', 2)),
+      fld('Clave de Microlink (opcional, para leer las fotos de los avisos)', (function () { var i = el('input', { type: 'text', value: d.microKey || '', placeholder: 'Sin clave: unos 50 avisos por día entre todos' }); i.addEventListener('change', function () { d.microKey = i.value.trim(); }); return i; })()),
       ia ? el('div', { class: 'tas-iaase' }, el('label', { class: 'check' }, ia, 'Los asesores pueden usar la IA en sus tasaciones (buscar en portales, leer links y PDF)'),
         el('p', { class: 'sm', text: 'Para eso la clave de la IA se comparte con los asesores habilitados: técnicamente alguien con conocimientos podría verla desde su navegador. Los consumos se cobran en la misma cuenta.' })) : null), [
       el('button', { type: 'button', class: 'btn ghost', text: 'Restablecer textos', onclick: function () { closeModal('reset'); } }),
@@ -8209,37 +8291,66 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 
   /* ----- fotos automáticas desde el link del aviso ----- */
   function fotoOK(u) { return typeof u === 'string' && /^https?:\/\//.test(u) && !/logo|icon|sprite|avatar|placeholder|blank|pixel|badge|\.svg|\.gif|maps\.googleapis|google\.com\/maps|facebook|doubleclick|whatsapp/i.test(u) && /\.(jpe?g|webp|png)(\?|$)|imgar|zonapropcdn|argenprop|mlstatic|tokko|cloudfront|images|img|photo|foto/i.test(u); }
+  function microReq(url, extra) {
+    var k = acmConf().microKey;
+    var u = (k ? 'https://pro.microlink.io/' : 'https://api.microlink.io/') + '?url=' + encodeURIComponent(url) + '&audio=false&video=false&iframe=false&palette=false&screenshot=false' + (extra || '');
+    return fetch(u, k ? { headers: { 'x-api-key': k } } : {}).then(function (r) { return r.json().catch(function () { return { status: 'fail', code: 'HTTP' + r.status }; }); });
+  }
+  function fotoKey(u) { return String(u).replace(/[?#].*$/, '').replace(/\/\d{2,4}x\d{2,4}\//, '/').replace(/_(\d{2,4}x\d{2,4})(?=\.)/, '').replace(/-[A-Z](\.(jpe?g|webp|png))$/i, '$1').replace(/D_NQ_NP_(2X_)?/, 'D_').replace(/\.(jpe?g|webp|png)$/i, ''); }
+  function fotoSize(u) { var m = /(\d{2,4})x(\d{2,4})/.exec(u); return m ? +m[1] * +m[2] : /-F\.|_2X_|original|full|large|1200|1024/i.test(u) ? 1e6 : 2e5; }
+  function fotosDeHtml(html, pageUrl) {
+    var h = String(html || '').replace(/\\u002F/gi, '/').replace(/\\\//g, '/').replace(/&amp;/g, '&');
+    var re = /https?:\/\/[^"'\s()<>\\,]+?\.(?:jpe?g|webp|png)(?:\?[^"'\s()<>\\,]*)?/gi, m, best = {}, order = [];
+    while ((m = re.exec(h))) {
+      var u = m[0];
+      if (!fotoOK(u) || /logo|isotipo|favicon|banner|staticmap|static-map|avatar|agente|agent|perfil|profile|qr|flag|app-?store|google-?play|play-?store|badge|share|\/icons?\/|\/static\/images\//i.test(u)) continue;
+      var sz = fotoSize(u); if (sz < 200 * 150) continue;
+      var k = fotoKey(u);
+      if (!best[k]) { best[k] = u; order.push(k); } else if (sz > fotoSize(best[k])) best[k] = u;
+    }
+    var host = ''; try { host = new URL(pageUrl).hostname.replace(/^www\./, '').split('.')[0]; } catch (e) {}
+    var list = order.map(function (k) { return best[k]; });
+    var cdn = list.filter(function (u) { return /zonapropcdn|mlstatic|argenprop|tokko|navent|properati|remax|cdn/i.test(u) || (host && u.indexOf(host) >= 0); });
+    return (cdn.length >= 2 ? cdn : list).map(function (u) { return u.replace(/^http:/, 'https:'); });
+  }
   async function fotosDeAviso(url) {
-    var out = [];
+    var out = [], lim = false;
     var ml = /ML[A-Z]-?(\d{6,})/i.exec(url || '');
     if (ml) {
       try { var r = await fetch('https://api.mercadolibre.com/items/MLA' + ml[1]); if (r.ok) { var j = await r.json(); out = (j.pictures || []).map(function (p) { return p.secure_url || p.url; }).filter(Boolean); } } catch (e) {}
     }
     if (out.length < 3) {
-      var base = 'https://api.microlink.io/?url=' + encodeURIComponent(url) + '&audio=false&video=false&iframe=false&palette=false';
-      var j2 = null;
-      try { var r2 = await fetch(base + '&data.fotos.selectorAll=img&data.fotos.attr=src'); j2 = await r2.json(); } catch (e) {}
-      if (!j2 || j2.status !== 'success') { try { var r3 = await fetch(base); j2 = await r3.json(); } catch (e) { j2 = null; } }
-      if (j2 && j2.status === 'success') {
-        var d = j2.data || {};
-        if (d.image && d.image.url) out.unshift(d.image.url);
-        (Array.isArray(d.fotos) ? d.fotos : []).forEach(function (u) { if (fotoOK(u)) out.push(u); });
-      } else if (j2 && /rate|limit|429/i.test(JSON.stringify(j2).slice(0, 300))) throw Object.assign(new Error('limite'), { code: 'limite' });
+      // 1) un navegador remoto abre el aviso y nos devuelve la página completa
+      try {
+        var j2 = await microReq(url, '&meta=false&data.html.selector=html&data.html.attr=outerHTML');
+        if (j2 && j2.status === 'success' && j2.data && j2.data.html) out = out.concat(fotosDeHtml(j2.data.html, url));
+        else if (j2 && /rate|limit|quota|429|EAUTH|ERATE/i.test(JSON.stringify(j2).slice(0, 400))) lim = true;
+      } catch (e) {}
     }
-    var seen = {}; return out.filter(function (u) { var k = String(u).replace(/[?#].*$/, ''); if (!/^https?:/.test(u) || seen[k]) return false; seen[k] = 1; return true; }).slice(0, 4);
+    if (out.length < 3) {
+      // 2) lectura directa de la página (sirve en sitios sin protección)
+      try { var r4 = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)); if (r4.ok) out = out.concat(fotosDeHtml(await r4.text(), url)); } catch (e) {}
+    }
+    if (!out.length && !lim) {
+      // 3) al menos la foto principal del aviso
+      try { var j3 = await microReq(url, ''); if (j3 && j3.status === 'success' && j3.data && j3.data.image && j3.data.image.url) out.push(j3.data.image.url); } catch (e) {}
+    }
+    if (!out.length && lim) throw Object.assign(new Error('limite'), { code: 'limite' });
+    var seen = {}; return out.filter(function (u) { var k = fotoKey(u); if (!/^https?:/.test(u) || seen[k]) return false; seen[k] = 1; return true; }).slice(0, 6);
   }
   var fotosRun = {};
   async function fotosAuto(tid, force, quiet) {
     if (fotosRun[tid]) return fotosRun[tid];
     fotosRun[tid] = (async function () {
       var t = gGet('tasaciones', tid); if (!t) return 0;
-      var pend = (t.comps || []).filter(function (c) { return c.url && !(c.fotos || []).length && (force || !c.fotosTry); });
+      var pend = (t.comps || []).filter(function (c) { return c.url && (c.fotos || []).filter(function (x) { return !/^tf:/.test(x); }).length < 2 && (force || !c.fotosTry); });
       var n = 0, lim = false;
       for (var i = 0; i < pend.length && !lim; i++) {
         var c = pend[i], fs = [];
         try { fs = await fotosDeAviso(c.url); } catch (e) { if (e && e.code === 'limite') lim = true; }
-        tasUpdComp(t, c.id, fs.length ? { fotos: fs, fotosTry: true } : { fotosTry: true });
-        if (fs.length) n++;
+        var prev = c.fotos || [], merged = prev.concat(fs.filter(function (u) { return !prev.some(function (p) { return fotoKey(p) === fotoKey(u); }); })).slice(0, 6);
+        tasUpdComp(t, c.id, merged.length > prev.length ? { fotos: merged, fotosTry: true } : { fotosTry: true });
+        if (merged.length > prev.length) n++;
       }
       if (!quiet) toast(lim ? 'Se alcanzó el límite diario del servicio que lee los avisos. Probá mañana o subí las fotos a mano.' : n ? 'Traje fotos de ' + n + (n === 1 ? ' aviso.' : ' avisos.') : pend.length ? 'No pude leer las fotos de esos avisos. Podés subirlas a mano con «Editar».' : 'Todos los comparables con link ya tienen fotos.', lim || (!n && pend.length) ? { kind: 'error' } : undefined);
       if (gOpen && gOpen.id === tid) tasAseRefreshSafe();
@@ -8248,10 +8359,10 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     try { return await fotosRun[tid]; } finally { delete fotosRun[tid]; }
   }
   function tasAseRefreshSafe() { try { if (document.querySelector('#modal[open]')) return; gFill(); } catch (e) {} }
-  tasAdd = (function (o) { return function (t, list) { var r = o.apply(this, arguments); if ((list || []).some(function (c) { return c.url && !(c.fotos || []).length; })) setTimeout(function () { fotosAuto(t.id, false, true); }, 400); return r; }; })(tasAdd);
+  tasAdd = (function (o) { return function (t, list) { var r = o.apply(this, arguments); if ((list || []).some(function (c) { return c.url && (c.fotos || []).length < 2; })) setTimeout(function () { fotosAuto(t.id, false, true); }, 400); return r; }; })(tasAdd);
   tasComp = (function (o) { return function (t) {
     o(t);
-    var falt = (t.comps || []).filter(function (c) { return c.url && !(c.fotos || []).length; }).length;
+    var falt = (t.comps || []).filter(function (c) { return c.url && (c.fotos || []).length < 2; }).length;
     var ext = $('#gpBody .tas-ext'); if (!ext || !falt) return;
     var b = el('button', { type: 'button', class: 'btn', onclick: async function () { b.disabled = true; b.textContent = 'Buscando fotos…'; await fotosAuto(t.id, true); } }, 'Traer fotos de los avisos (' + falt + ')');
     ext.append(b);
@@ -8289,7 +8400,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 
   async function tasPdfV2(t) {
     var JsPDF; try { JsPDF = await loadJsPDF(); } catch (e) { toast('No se pudo generar el PDF. Revisá la conexión.', { kind: 'error' }); return; }
-    if ((t.comps || []).some(function (c) { return c.incl !== false && c.url && !(c.fotos || []).length && !c.fotosTry; })) { var pf = tasBusy('Buscando las fotos de los avisos…'); try { await fotosAuto(t.id, false, true); } catch (e) {} pf(); t = gGet('tasaciones', t.id) || t; }
+    if ((t.comps || []).some(function (c) { return c.incl !== false && c.url && (c.fotos || []).length < 2 && !c.fotosTry; })) { var pf = tasBusy('Buscando las fotos de los avisos…'); try { await fotosAuto(t.id, false, true); } catch (e) {} pf(); t = gGet('tasaciones', t.id) || t; }
     var prog = tasBusy('Armando el informe con fotos y mapa…');
     try {
       var s = t.s || {}, r = tasCalc(t), cf = r.cf, ac = acmConf(), ai = aseInfo(t), op = Object.assign({ que: true, sem: true, fichas: true, eleg: true, cond: true }, t.pdf || {});
