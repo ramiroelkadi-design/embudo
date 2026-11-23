@@ -1054,6 +1054,11 @@ body.side-mini .side-foot { flex-direction: column; }
 @keyframes tspin { to { transform: rotate(360deg); } }
 @media (max-width: 800px) { .tas-row { grid-template-columns: 1fr; } .tas-cand { grid-template-columns: auto 1fr; } .tas-map { height: 260px; } }
 .tas-hb .hbar { grid-template-columns: minmax(110px, 35%) 1fr 90px; } .tas-hb .hbar b { white-space: nowrap; }
+.tas-zbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 10px; }
+.tas-zbar .btn .ico { margin-right: 6px; }
+.tas-zhint { font-size: 13px; font-weight: 600; color: var(--brand, #1F69FF); flex-basis: 100%; }
+.tas-map.drawing, .tas-map.drawing .leaflet-container { cursor: crosshair !important; }
+.tag.warn { background: var(--today-bg); color: var(--today); }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -7440,6 +7445,10 @@ body.side-mini .side-foot { flex-direction: column; }
   function tasConf(t) { return Object.assign({ coef: 0.5, neg: tasNeg(), radio: 1.5, m2p: 0.35, amb: 1, vend: true, pub: true, base: 'mediana' }, t.cfg || {}); }
   function m2Hom(c, t, coef) { c = +c || 0; t = +t || 0; if (!c && !t) return null; if (!c) return t; if (!t || t <= c) return c; return c + (t - c) * coef; }
   function km(a, b) { if (!a || !b || a.lat == null || b.lat == null) return null; var R = 6371, dLa = (b.lat - a.lat) * Math.PI / 180, dLo = (b.lng - a.lng) * Math.PI / 180, x = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLo / 2) * Math.sin(dLo / 2); return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)); }
+  ICONS.poly = '<path d="M5 7l7-4 8 5-2 10-11 2z"/><circle cx="5" cy="7" r="1.6"/><circle cx="12" cy="3" r="1.6"/><circle cx="20" cy="8" r="1.6"/><circle cx="18" cy="18" r="1.6"/><circle cx="7" cy="20" r="1.6"/>';
+  function inPoly(p, poly) { if (!p || p.lat == null || !poly || poly.length < 3) return false; var x = p.lng, y = p.lat, ins = false; for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) { var xi = poly[i][1], yi = poly[i][0], xj = poly[j][1], yj = poly[j][0]; if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) ins = !ins; } return ins; }
+  function zonaOf(t) { var z = (t.cfg || {}).zona; return z && z.length >= 3 ? z : null; }
+  function polyArea(z) { var a = 0, la = z[0][0] * Math.PI / 180, kx = 111.32 * Math.cos(la), ky = 110.57; for (var i = 0, j = z.length - 1; i < z.length; j = i++) a += (z[j][1] * kx) * (z[i][0] * ky) - (z[i][1] * kx) * (z[j][0] * ky); return Math.abs(a / 2); }
   function median(a) { if (!a.length) return null; var s = a.slice().sort(function (x, y) { return x - y; }), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
   function quant(a, q) { if (!a.length) return null; var s = a.slice().sort(function (x, y) { return x - y; }), p = (s.length - 1) * q, lo = Math.floor(p), hi = Math.ceil(p); return s[lo] + (s[hi] - s[lo]) * (p - lo); }
   function compUSD(c) { return +c.precio ? toUSD(+c.precio, c.mon || 'U$S', c.cot) : null; }
@@ -7464,8 +7473,8 @@ body.side-mini .side-foot { flex-direction: column; }
     return leafP;
   }
   function dot(L, color, big) { return L.divIcon({ className: 'tas-pin', html: '<span style="background:' + color + ';width:' + (big ? 18 : 12) + 'px;height:' + (big ? 18 : 12) + 'px"></span>', iconSize: [big ? 18 : 12, big ? 18 : 12] }); }
-  function tasMap(box, t, cands, onPick) {
-    var s = t.s || {}, cf = tasConf(t);
+  function tasMap(box, t, cands, onPick, ctl) {
+    var s = t.s || {}, cf = tasConf(t), zona = zonaOf(t);
     loadLeaflet().then(function (L) {
       if (!box.isConnected) return;
       var center = s.lat != null ? [s.lat, s.lng] : [-34.51, -58.49];
@@ -7474,7 +7483,28 @@ body.side-mini .side-foot { flex-direction: column; }
       if (s.lat != null) {
         var mk = L.marker(center, { draggable: true, icon: dot(L, '#E5484D', true), title: 'El inmueble' }).addTo(m);
         mk.on('dragend', function () { var p = mk.getLatLng(); gUpd('tasaciones', t.id, { s: Object.assign({}, t.s, { lat: p.lat, lng: p.lng }) }); toast('Ubicación actualizada.'); });
-        if (cands) L.circle(center, { radius: cf.radio * 1000, color: '#1F69FF', weight: 1, fillOpacity: 0.05 }).addTo(m);
+        if (cands && !zona) L.circle(center, { radius: cf.radio * 1000, color: '#1F69FF', weight: 1, fillOpacity: 0.05 }).addTo(m);
+      }
+      var zl = null;
+      if (zona) { zl = L.polygon(zona, { color: '#1F69FF', weight: 2, fillOpacity: 0.08 }).addTo(m); var bb = zl.getBounds(); if (s.lat != null) bb.extend(center); m.fitBounds(bb, { padding: [24, 24] }); }
+      if (ctl) {
+        var pts = [], line = null, guide = null, vx = [], drawing = false;
+        function clear() { if (line) m.removeLayer(line); if (guide) m.removeLayer(guide); vx.forEach(function (v) { m.removeLayer(v); }); line = guide = null; vx = []; pts = []; }
+        function stop() { drawing = false; m.off('click', onClk); m.off('mousemove', onMv); m.doubleClickZoom.enable(); box.classList.remove('drawing'); clear(); if (ctl.onState) ctl.onState(false, 0); }
+        function finish() { if (pts.length < 3) { toast('Marcá al menos 3 puntos para cerrar la zona.', { kind: 'error' }); return; } var z = pts.map(function (p) { return [Math.round(p[0] * 1e6) / 1e6, Math.round(p[1] * 1e6) / 1e6]; }); stop(); ctl.onZona(z); }
+        function onClk(e) {
+          var p = [e.latlng.lat, e.latlng.lng];
+          if (pts.length >= 3) { var f = m.latLngToContainerPoint(pts[0]), c = m.latLngToContainerPoint(e.latlng); if (Math.abs(f.x - c.x) < 12 && Math.abs(f.y - c.y) < 12) return finish(); }
+          pts.push(p);
+          vx.push(L.circleMarker(p, { radius: pts.length === 1 ? 7 : 4, color: '#1F69FF', weight: 2, fillColor: '#fff', fillOpacity: 1 }).addTo(m));
+          if (line) line.setLatLngs(pts); else line = L.polyline(pts, { color: '#1F69FF', weight: 2 }).addTo(m);
+          if (ctl.onState) ctl.onState(true, pts.length);
+        }
+        function onMv(e) { if (!pts.length) return; var ll = [pts[pts.length - 1], [e.latlng.lat, e.latlng.lng]]; if (guide) guide.setLatLngs(ll); else guide = L.polyline(ll, { color: '#1F69FF', weight: 1.5, dashArray: '5 6' }).addTo(m); }
+        ctl.start = function () { if (drawing) return; drawing = true; if (zl) { m.removeLayer(zl); zl = null; } m.doubleClickZoom.disable(); box.classList.add('drawing'); m.on('click', onClk); m.on('mousemove', onMv); m.on('dblclick', function h() { m.off('dblclick', h); if (drawing) finish(); }); if (ctl.onState) ctl.onState(true, 0); };
+        ctl.undo = function () { if (!pts.length) return; pts.pop(); var v = vx.pop(); if (v) m.removeLayer(v); if (line) line.setLatLngs(pts); if (guide && !pts.length) { m.removeLayer(guide); guide = null; } if (ctl.onState) ctl.onState(true, pts.length); };
+        ctl.finish = finish; ctl.cancel = function () { stop(); gFill(); };
+        ctl.ready = true; if (ctl.onReady) ctl.onReady();
       }
       (t.comps || []).forEach(function (c) { if (c.lat != null) L.marker([c.lat, c.lng], { icon: dot(L, '#012169'), title: c.dir }).addTo(m).bindPopup('<b>' + esc(c.dir || 'Comparable') + '</b><br>' + (compUSD(c) ? usd(compUSD(c)) : '') + (c.m2c ? ' · ' + c.m2c + ' m²' : '')); });
       (cands || []).forEach(function (c) {
@@ -7490,7 +7520,7 @@ body.side-mini .side-foot { flex-direction: column; }
   function esc(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
   /* ----- candidatos de nuestra base ----- */
   function tasCands(t) {
-    var s = t.s || {}, cf = tasConf(t), out = [], have = {};
+    var s = t.s || {}, cf = tasConf(t), out = [], have = {}, zona = zonaOf(t);
     (t.comps || []).forEach(function (c) { if (c.key) have[c.key] = 1; });
     var sm2 = +s.m2c || +s.m2t || null, sl = norm(s.loc || '');
     function ok(c) {
@@ -7499,6 +7529,7 @@ body.side-mini .side-foot { flex-direction: column; }
       var cm = +c.m2c || +c.m2t || null; if (sm2 && cm && Math.abs(cm / sm2 - 1) > cf.m2p) return false;
       if (+s.amb && +c.amb && Math.abs(+c.amb - +s.amb) > cf.amb) return false;
       var d = km(s, c); c.km = d;
+      if (zona) { if (c.lat != null) return inPoly(c, zona); return !!sl && norm(c.loc || '') === sl; }
       if (d != null) return d <= cf.radio;
       return !sl || norm(c.loc || '') === sl;
     }
@@ -7518,7 +7549,7 @@ body.side-mini .side-foot { flex-direction: column; }
     var cur = gGet('tasaciones', t.id) || t, comps = (cur.comps || []).slice();
     list.forEach(function (c) { var x = Object.assign({ id: uid(), incl: true, aj: 0 }, c); delete x.km; comps.push(x); });
     gUpd('tasaciones', t.id, { comps: comps }); gFill();
-    list.forEach(function (c, i) { if (c.lat == null && c.dir) { var cid = comps[comps.length - list.length + i].id; geocode(c.dir, c.loc).then(function (g) { if (!g) return; var cc = gGet('tasaciones', t.id); if (!cc) return; var cs = (cc.comps || []).map(function (x) { return x.id === cid ? Object.assign({}, x, g) : x; }); gUpd('tasaciones', t.id, { comps: cs }); }); } });
+    list.forEach(function (c, i) { if (c.lat == null && c.dir) { var cid = comps[comps.length - list.length + i].id; geocode(c.dir, c.loc).then(function (g) { if (!g) return; var cc = gGet('tasaciones', t.id); if (!cc) return; var zz = zonaOf(cc), fuera = zz && !inPoly(g, zz); var cs = (cc.comps || []).map(function (x) { return x.id === cid ? Object.assign({}, x, g, fuera ? { incl: false, fuera: true } : {}) : x; }); if (fuera) toast('Un comparable quedó fuera de la zona dibujada: lo dejé sin usar.'); gUpd('tasaciones', t.id, { comps: cs }); }); } });
   }
   function tasUpdComp(t, id, f) { var cur = gGet('tasaciones', t.id); if (!cur) return; gUpd('tasaciones', t.id, { comps: (cur.comps || []).map(function (x) { return x.id === id ? Object.assign({}, x, f) : x; }) }); }
   /* ----- IA: portales, links, PDF y texto ----- */
@@ -7541,6 +7572,18 @@ body.side-mini .side-foot { flex-direction: column; }
     return (j.content || []).filter(function (b) { return b.type === 'text'; }).map(function (b) { return b.text; }).join('\n');
   }
   function sujetoTxt(s) { return [s.tipo || 'propiedad', s.amb ? s.amb + ' ambientes' : '', s.m2c ? s.m2c + ' m² cubiertos' : '', s.m2t ? s.m2t + ' m² totales' : '', s.antig ? s.antig + ' años de antigüedad' : '', s.estado ? 'estado ' + s.estado : '', s.cochera ? 'con cochera' : '', s.dir ? 'en ' + s.dir : '', s.loc ? s.loc : ''].filter(Boolean).join(', '); }
+  function revGeo(p) {
+    geoQ = geoQ.then(function () { return new Promise(function (r) { setTimeout(r, 1100); }); });
+    return geoQ.then(function () { return fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=17&lat=' + p[0] + '&lon=' + p[1], { headers: { 'Accept-Language': 'es' } }); })
+      .then(function (r) { return r.json(); }).then(function (j) { var a = (j && j.address) || {}; return { calle: a.road || '', barrio: a.suburb || a.neighbourhood || a.quarter || '', loc: a.city || a.town || a.village || a.city_district || '' }; }, function () { return {}; });
+  }
+  async function zonaDesc(z) {
+    var c = z.reduce(function (a, p) { return [a[0] + p[0] / z.length, a[1] + p[1] / z.length]; }, [0, 0]);
+    var pts = [c].concat(z.slice(0, 6)), info = [];
+    for (var i = 0; i < pts.length; i++) info.push(await revGeo(pts[i]));
+    var bar = {}, calles = {}; info.forEach(function (x) { [x.barrio, x.loc].filter(Boolean).forEach(function (b) { bar[b] = 1; }); if (x.calle) calles[x.calle] = 1; });
+    return 'polígono con vértices (lat,lng) ' + z.map(function (p) { return p[0].toFixed(5) + ',' + p[1].toFixed(5); }).join(' ; ') + (Object.keys(bar).length ? '; barrios/localidades: ' + Object.keys(bar).join(', ') : '') + (Object.keys(calles).length ? '; calles de referencia en sus esquinas: ' + Object.keys(calles).join(', ') : '');
+  }
   function tasBusy(txt) { var m = el('div', { class: 'tas-busy' }, el('span', { class: 'spin' }), el('p', { text: txt })); showModal('Trabajando…', m, [el('button', { type: 'button', class: 'btn ghost', text: 'Cerrar', onclick: function () { closeModal(null); } })]); return function () { closeModal(null); }; }
   async function pickComps(t, list, title) {
     if (!list.length) { toast('No encontré comparables con datos suficientes. Probá con otro link, un PDF o cargalo a mano.', { kind: 'error' }); return; }
@@ -7557,11 +7600,13 @@ body.side-mini .side-foot { flex-direction: column; }
   }
   async function tasPortales(t) {
     if (!aiOK()) return aiNeed();
-    var s = t.s || {}; if (!s.loc && !s.dir) { toast('Primero cargá la dirección o la localidad del inmueble.', { kind: 'error' }); return; }
+    var s = t.s || {}, zona = zonaOf(t); if (!s.loc && !s.dir && !zona) { toast('Primero cargá la dirección o la localidad del inmueble, o dibujá una zona en el mapa.', { kind: 'error' }); return; }
+    var zTxt = '';
+    if (zona) { var dz = tasBusy('Leyendo los barrios y calles de la zona dibujada…'); try { zTxt = await zonaDesc(zona); } catch (e) {} dz(); }
     var done = tasBusy('Buscando avisos comparables en Zonaprop, Argenprop y Mercado Libre. Puede tardar un minuto…');
     try {
       var doms = ['zonaprop.com.ar', 'argenprop.com', 'mercadolibre.com.ar', 'inmuebles.mercadolibre.com.ar'];
-      var txt = await aiRun('Sos tasador inmobiliario en Argentina. Buscá avisos de VENTA actuales comparables a esta propiedad: ' + sujetoTxt(s) + '. Priorizá la misma localidad o barrio (y lo más cerca posible de la dirección), el mismo tipo y superficie y ambientes parecidos. Buscá en Zonaprop, Argenprop y Mercado Libre Inmuebles; abrí los avisos que haga falta para confirmar precio y superficie. Traé hasta 10 avisos individuales (no listados), cada uno con su URL. ' + COMP_SCHEMA,
+      var txt = await aiRun('Sos tasador inmobiliario en Argentina. Buscá avisos de VENTA actuales comparables a esta propiedad: ' + sujetoTxt(s) + '. ' + (zona ? 'IMPORTANTE: solo sirven propiedades DENTRO de esta zona: ' + zTxt + '. Descartá las que estén fuera. ' : 'Priorizá la misma localidad o barrio (y lo más cerca posible de la dirección), ') + 'el mismo tipo y superficie y ambientes parecidos. Buscá en Zonaprop, Argenprop y Mercado Libre Inmuebles; abrí los avisos que haga falta para confirmar precio y superficie. Traé hasta 10 avisos individuales (no listados), cada uno con su URL. ' + COMP_SCHEMA,
         [{ type: 'web_search_20250305', name: 'web_search', max_uses: 6, allowed_domains: doms }, { type: 'web_fetch_20250910', name: 'web_fetch', max_uses: 10, allowed_domains: doms }]);
       done(); pickComps(t, parseComps(txt, 'portal'), 'Comparables encontrados en portales');
     } catch (e) { done(); toast('No se pudo buscar: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
@@ -7692,11 +7737,29 @@ body.side-mini .side-foot { flex-direction: column; }
     function setCfg(f) { var cur = gGet('tasaciones', t.id) || t; gUpd('tasaciones', t.id, { cfg: Object.assign({}, cur.cfg || {}, f) }); gFill(); }
     function ninp(v, k, sc, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: v != null ? String(Math.round(v * sc * 100) / 100).replace('.', ',') : '', placeholder: ph || '', style: 'max-width:90px' }); i.addEventListener('change', function () { var n = numIn(i.value), o = {}; o[k] = n == null ? null : n / sc; setCfg(o); }); return i; }
     function chk(k, lbl) { var c = el('input', { type: 'checkbox' }); c.checked = !!cf[k]; c.addEventListener('change', function () { var o = {}; o[k] = c.checked; setCfg(o); }); return el('label', { class: 'check sm' }, c, lbl); }
-    var filt = el('div', { class: 'tas-filt' }, fld('Radio (km)', ninp(cf.radio, 'radio', 1)), fld('Superficie ±%', ninp(cf.m2p, 'm2p', 100)), fld('Ambientes ±', ninp(cf.amb, 'amb', 1)), chk('vend', 'Vendidas'), chk('pub', 'Publicadas nuestras'));
+    var zona = zonaOf(t), ctl = {};
+    var zbar = el('div', { class: 'tas-zbar' });
+    function zIdle() {
+      zbar.replaceChildren(
+        el('button', { type: 'button', class: 'btn sm-btn' + (zona ? '' : ' primary'), onclick: function () { ctl.start && ctl.start(); } }, icon('poly', 15), zona ? 'Redibujar zona' : 'Dibujar zona en el mapa'),
+        zona ? el('button', { type: 'button', class: 'btn sm-btn ghost', text: 'Borrar zona', onclick: function () { setCfg({ zona: null }); } }) : null,
+        el('span', { class: 'sm', text: zona ? 'Buscando dentro de la zona dibujada (' + zona.length + ' lados · ' + polyArea(zona).toFixed(2).replace('.', ',') + ' km²).' : 'O marcá una zona con líneas rectas en vez de usar el radio.' }));
+    }
+    ctl.onState = function (on, n) {
+      if (!on) return zIdle();
+      zbar.replaceChildren(
+        el('span', { class: 'tas-zhint', text: n ? n + (n === 1 ? ' punto' : ' puntos') + '. Seguí marcando esquinas; para cerrar tocá el primer punto o «Terminar».' : 'Tocá el mapa en cada esquina de la zona.' }),
+        el('button', { type: 'button', class: 'btn sm-btn ghost', text: 'Deshacer punto', disabled: !n, onclick: function () { ctl.undo(); } }),
+        el('button', { type: 'button', class: 'btn sm-btn primary', text: 'Terminar', disabled: n < 3, onclick: function () { ctl.finish(); } }),
+        el('button', { type: 'button', class: 'btn sm-btn ghost', text: 'Cancelar', onclick: function () { ctl.cancel(); } }));
+    };
+    ctl.onZona = function (z) { setCfg({ zona: z }); toast('Zona guardada. Los comparables se filtran por ella.'); };
+    zIdle();
+    var filt = el('div', { class: 'tas-filt' }, zona ? null : fld('Radio (km)', ninp(cf.radio, 'radio', 1)), fld('Superficie ±%', ninp(cf.m2p, 'm2p', 100)), fld('Ambientes ±', ninp(cf.amb, 'amb', 1)), chk('vend', 'Vendidas'), chk('pub', 'Publicadas nuestras'));
     var mapBox = el('div', { class: 'tas-map' });
     var candSec = sect('Sugeridos de nuestra base (' + cands.length + ')', [filt,
-      el('p', { class: 'sm', text: (t.s || {}).lat != null ? 'Mismo tipo, superficie y ambientes parecidos, dentro del radio (las que no tienen ubicación se toman si son de la misma localidad). En el mapa: verde vendidas, celeste publicadas.' : 'Ubicá el inmueble en el mapa para filtrar por cercanía. Mientras tanto se usan los de la misma localidad.' }),
-      mapBox,
+      el('p', { class: 'sm', text: zona ? 'Mismo tipo, superficie y ambientes parecidos, dentro de la zona dibujada (las que no tienen ubicación se toman si son de la misma localidad del inmueble). En el mapa: verde vendidas, celeste publicadas.' : (t.s || {}).lat != null ? 'Mismo tipo, superficie y ambientes parecidos, dentro del radio (las que no tienen ubicación se toman si son de la misma localidad). En el mapa: verde vendidas, celeste publicadas.' : 'Ubicá el inmueble en el mapa para filtrar por cercanía. Mientras tanto se usan los de la misma localidad.' }),
+      zbar, mapBox,
       cands.length ? el('div', { class: 'tas-cands' }, cands.slice(0, 40).map(function (c) {
         var u = compUSD(c), h = m2Hom(c.m2c, c.m2t, cf.coef);
         return el('div', { class: 'tas-cand' }, el('span', { class: 'tag ' + (c.src === 'base-v' ? 'ok' : 'soon'), text: c.src === 'base-v' ? 'Vendida' : 'Publicada' }),
@@ -7722,7 +7785,7 @@ body.side-mini .side-foot { flex-direction: column; }
         var es = el('select', {}, [['publicada', 'Publicada'], ['vendida', 'Vendida']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); es.value = c.estado || 'publicada'; es.addEventListener('change', function () { tasUpdComp(t, c.id, { estado: es.value }); gFill(); });
         var v = compM2(c, cf), u = compUSD(c);
         return el('tr', { class: c.incl === false ? 'off' : '' }, el('td', {}, inc),
-          el('th', { scope: 'row' }, el('div', { class: 'tas-cn' }, c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', text: c.dir || c.titulo || 'Ver aviso' }) : el('b', { text: c.dir || '–' }), el('span', { class: 'sm', text: [SRC_LBL[c.src] || c.src, c.portal, c.loc, c.tipo, c.amb ? c.amb + ' amb.' : '', c.nota].filter(Boolean).join(' · ') }))),
+          el('th', { scope: 'row' }, el('div', { class: 'tas-cn' }, c.url ? el('a', { href: c.url, target: '_blank', rel: 'noopener', text: c.dir || c.titulo || 'Ver aviso' }) : el('b', { text: c.dir || '–' }), c.fuera ? el('span', { class: 'tag warn', text: 'Fuera de la zona' }) : null, el('span', { class: 'sm', text: [SRC_LBL[c.src] || c.src, c.portal, c.loc, c.tipo, c.amb ? c.amb + ' amb.' : '', c.nota].filter(Boolean).join(' · ') }))),
           el('td', {}, n('m2c')), el('td', {}, n('m2t')), el('td', {}, c.mon === '$' ? el('span', {}, n('precio'), el('span', { class: 'sm', text: ' $ → ' + (u ? usdK(u) : '') })) : n('precio')), el('td', {}, es),
           el('td', {}, n('aj', 100)), el('td', { class: 'num' }, el('b', { text: v ? usd(v) : '–' }), c.estado === 'publicada' && v ? el('span', { class: 'sm', text: ' incl. ' + pctTxt(cf.neg, 1) + ' negoc.' }) : null),
           el('td', {}, el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Quitar', text: '×', onclick: function () { var cur = gGet('tasaciones', t.id); gUpd('tasaciones', t.id, { comps: (cur.comps || []).filter(function (x) { return x.id !== c.id; }) }); gFill(); } })));
@@ -7732,7 +7795,7 @@ body.side-mini .side-foot { flex-direction: column; }
       el('p', { class: 'sm', text: 'Ajuste %: corregí por ubicación, estado, antigüedad, cochera, piso, etc. (ej.: −5 si el comparable es mejor que el inmueble). U$S/m² ajustado = precio × (1 + negociación si está publicada) × (1 + ajuste) ÷ m² homogeneizados.' }),
       tbl, comps.length ? el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn primary', text: 'Ver el resultado', onclick: function () { gOpen.tab = 'res'; gFill(); } })) : null]);
     gBody([el('div', { class: 'g-pane' }, sel, ext, candSec)]);
-    tasMap(mapBox, t, cands, function (c) { tasAdd(t, [c]); });
+    tasMap(mapBox, t, cands, function (c) { tasAdd(t, [c]); }, ctl);
   }
   function tasRes(t) {
     var r = tasCalc(t), cf = r.cf, s = t.s || {};
@@ -7778,7 +7841,7 @@ body.side-mini .side-foot { flex-direction: column; }
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(70); doc.text(r.lo && r.hi ? 'Rango: ' + usd(r.lo) + ' – ' + usd(r.hi) : '', M + 5, y + 25); doc.text('Negociación estimada: ' + pctTxt(-cf.neg, 1), M + 98, y + 25);
     y += 38;
     line('Metodología', 11, true);
-    line('Se comparó el inmueble con ' + r.n + ' propiedades similares (vendidas y publicadas) de la zona. A los precios publicados se les aplicó un descuento de negociación de ' + pctTxt(-cf.neg, 1) + ' y a cada comparable un ajuste por sus diferencias (ubicación, estado, antigüedad, etc.). La superficie se homogeneizó contando los m² descubiertos o semicubiertos al ' + Math.round(cf.coef * 100) + '%. Valor aplicado: ' + (r.base ? usd(r.base) : '–') + ' por m² (' + (cf.base === 'promedio' ? 'promedio' : cf.base === 'manual' ? 'definido por el tasador' : 'mediana') + ') sobre ' + (r.sh ? Math.round(r.sh) : '–') + ' m² homogeneizados.', 9.5, false, 60);
+    line('Se comparó el inmueble con ' + r.n + ' propiedades similares (vendidas y publicadas) ' + (zonaOf(t) ? 'ubicadas dentro de la zona delimitada en el mapa' : 'de la zona') + '. A los precios publicados se les aplicó un descuento de negociación de ' + pctTxt(-cf.neg, 1) + ' y a cada comparable un ajuste por sus diferencias (ubicación, estado, antigüedad, etc.). La superficie se homogeneizó contando los m² descubiertos o semicubiertos al ' + Math.round(cf.coef * 100) + '%. Valor aplicado: ' + (r.base ? usd(r.base) : '–') + ' por m² (' + (cf.base === 'promedio' ? 'promedio' : cf.base === 'manual' ? 'definido por el tasador' : 'mediana') + ') sobre ' + (r.sh ? Math.round(r.sh) : '–') + ' m² homogeneizados.', 9.5, false, 60);
     y += 2; line('Comparables', 11, true);
     var cols = [M, M + 70, M + 92, M + 112, M + 137, M + 157], hd = ['Dirección', 'm² cub/tot', 'Estado', 'Precio U$S', 'Ajuste', 'U$S/m² aj.'];
     doc.setFontSize(8.5); doc.setFont('helvetica', 'bold'); doc.setTextColor(1, 33, 105); hd.forEach(function (h, i) { doc.text(h, cols[i], y); }); y += 2; doc.setDrawColor(200); doc.line(M, y, W - M, y); y += 4;
