@@ -899,6 +899,80 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   #gp.page .head-title h2 { font-size: 22px; }
 }
 .v-g > .app .legend, body.v-g .legend { display: none !important; }
+/* reservas v2 */
+.g-lados { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g-lado { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; background: var(--surface-2); }
+.g-lado.nos { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 25%, var(--line)); }
+.g-lado h4 { margin: 0; font: 700 14px/1.2 var(--f-display); color: var(--ink); }
+.g-lado .field { margin: 0; }
+.g-pctsel { display: inline-flex; gap: 6px; align-items: center; }
+.g-combox { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; background: var(--surface); }
+.g-combox .calc td.num { text-align: right; white-space: nowrap; }
+.g-combox tr.tot td { font-weight: 700; border-top: 1px solid var(--line); padding-top: 6px; color: var(--accent); }
+.g-elist { display: flex; flex-direction: column; gap: 6px; max-height: 50vh; overflow: auto; margin-top: 8px; }
+.g-elrow { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; }
+.g-steps5 li.skip i { opacity: .35; }
+.g-steps5 li.skip span { opacity: .55; text-decoration: line-through; }
+.g-plog { list-style: none; margin: 6px 0 2px; padding: 0 0 0 10px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 3px; font-size: 13px; }
+.g-plog time { font-variant-numeric: tabular-nums; color: var(--ink-2); margin-right: 8px; font-weight: 600; }
+.g-mailpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.g-mchip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 6px; border-radius: 999px; background: var(--accent-soft); font-size: 13px; }
+.g-mchip.bad { background: color-mix(in srgb, #E5484D 14%, transparent); }
+.g-proj-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.g-proj-col { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface); }
+.g-proj-col:hover { border-color: var(--accent); }
+.g-proj-m { font-weight: 600; color: var(--ink-2); }
+.g-proj-v { font: 800 24px/1.1 var(--f-display); color: var(--ink); }
+.g-proj-bar { display: flex; width: 100%; height: 10px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+.g-proj-bar i, .g-proj-leg i { display: block; height: 100%; }
+.g-proj-bar i.a, .g-proj-leg i.a { background: var(--accent); }
+.g-proj-bar i.p, .g-proj-leg i.p { background: repeating-linear-gradient(45deg, #8FA9E0 0 4px, #C9D6F2 4px 8px); }
+.g-proj-leg { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 8px; }
+.g-proj-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.g-proj-leg i { width: 12px; height: 10px; border-radius: 3px; }
+@media (max-width: 700px) { .g-lados { grid-template-columns: 1fr; } .g-proj-cols { gap: 6px; } .g-proj-col { padding: 8px; } .g-proj-v { font-size: 18px; } }
+.g-steps.g-steps5 { grid-template-columns: repeat(5, 1fr); }
+/* camino al objetivo */
+.g-road-bar { position: relative; display: flex; height: 22px; border-radius: 8px; background: var(--surface-2); margin: 22px 0 10px; }
+.g-road-bar > i { display: block; height: 100%; }
+.g-road-bar > i:first-child { border-radius: 8px 0 0 8px; }
+.g-road-bar i.r, .g-road-leg i.r, .bstack i.r { background: var(--accent); }
+.bstack i.r.hit { background: var(--c-se-suma); }
+.g-road-bar i.a, .g-road-leg i.a, .bstack i.a { background: #5C8DF0; }
+.g-road-bar i.p, .g-road-leg i.p, .bstack i.p { background: repeating-linear-gradient(45deg, #9DB7EE 0 4px, #D3DEF6 4px 8px); }
+.g-road-hoy, .g-road-obj { position: absolute; top: -18px; bottom: -4px; width: 0; border-left: 2px dashed var(--ink-2); font: 600 11px/1 var(--f-body); }
+.g-road-obj { border-left: 3px solid var(--ink); }
+.g-road-hoy span, .g-road-obj span { position: absolute; top: 0; left: 4px; white-space: nowrap; color: var(--ink-2); }
+.g-road-obj span { color: var(--ink); left: auto; right: 4px; }
+.g-road-leg { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13.5px; }
+.g-road-leg > div { display: inline-flex; align-items: center; gap: 7px; }
+.g-road-leg i { width: 14px; height: 12px; border-radius: 3px; display: inline-block; }
+.g-road-leg i.o { background: none; border-left: 3px solid var(--ink); border-radius: 0; width: 6px; }
+.g-road-leg i.line { height: 2px; background: var(--ink); opacity: .6; }
+.bstack { display: flex; flex-direction: column; width: 60%; max-width: 26px; border-radius: 4px 4px 0 0; overflow: hidden; }
+.bstack i { display: block; width: 100% !important; max-width: none !important; border-radius: 0 !important; min-height: 2px; }
+.bchart.small .bc-bars .bstack i { width: 100%; }
+/* portal del asesor */
+.ase-bar { display: flex; align-items: center; gap: 10px; padding: 10px max(28px, calc((100% - 1240px) / 2)); background: var(--brand); color: #fff; }
+.ase-bar .side-logo { width: 30px; height: 30px; }
+.ase-bar b { font: 700 16px/1 var(--f-display); }
+.ase-bar .sm { color: rgba(255,255,255,.75); }
+.ase-bar .btn { margin-left: auto; background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.3); }
+body.ase-mode { --side-w: 0px; }
+body.ase-mode .side, body.ase-mode .side-scrim { display: none !important; }
+body.ase-mode #gp.page { left: 0; }
+body.ase-mode #gpPageBack, body.ase-mode #gpFoot, body.ase-mode #gpBody .cc-acts, body.ase-mode #gpBody [aria-label^="Más opciones"], body.ase-mode .head-actions { display: none !important; }
+body.ase-mode #gpBody .linkish { pointer-events: none; color: inherit; text-decoration: none; }
+.g-onbl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.g-onbl li { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; }
+.g-onbl li.done { opacity: .7; }
+.g-onbl li.done .g-onb-ic { color: var(--c-se-suma); }
+.g-onbl li.late { border-color: color-mix(in srgb, #E5484D 45%, var(--line)); }
+.g-onbl li.late .g-onb-ic { color: #E5484D; }
+.g-onb-bar { margin: 6px 0 12px; height: 14px; }
+body.ase-mode #gp #gpPageBack { display: none !important; }
+.g-road-hoy span { top: auto; bottom: -18px; }
+.g-road-bar { margin-bottom: 26px; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -963,10 +1037,21 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
         var done = false;
         fb.onAuthStateChanged(auth, function (u) {
           if (!u) { curUser = null; if (!done) setLogin('signin'); return; }
-          curUser = u; setLogin('hidden');
+          curUser = u; setLogin('loading');
           fb.setDoc(fb.doc(dbi, 'perfiles', u.uid), { name: u.displayName || u.email || '', email: u.email || '' }, { merge: true }).catch(function () {});
-          fb.getDoc(fb.doc(dbi, 'ajustes', 'ia')).then(function (s) { if (s.exists()) sharedAi = s.data(); }).catch(function () {});
-          if (!done) { done = true; resolve(u); }
+          var em = String(u.email || '').toLowerCase();
+          fb.getDoc(fb.doc(dbi, 'ajustes', 'ia')).then(function (s) { if (s.exists()) sharedAi = s.data(); return 'staff'; }, function () {
+            return fb.getDoc(fb.doc(dbi, 'accesos', em)).then(function (s) { if (s.exists()) { window.ASE_MODE = { asesorId: (s.data() || {}).asesorId, email: em }; return window.ASE_MODE.asesorId ? 'ase' : 'none'; } return 'none'; }, function () { return 'none'; });
+          }).then(function (role) {
+            if (role === 'none') {
+              setLogin('error', 'El mail ' + (u.email || '') + ' no tiene acceso. Pedile a la oficina que te habilite, o entrá con otra cuenta.');
+              btnEl.hidden = false; btnEl.textContent = 'Entrar con otra cuenta';
+              btnEl.onclick = function (e) { e.stopImmediatePropagation(); fb.signOut(auth).then(function () { location.reload(); }); };
+              return;
+            }
+            setLogin('hidden');
+            if (!done) { done = true; resolve(u); }
+          });
         });
       });
     }).catch(function (e) {
@@ -997,6 +1082,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       update: function (d) { return fb.updateDoc(r, d); },
       delete: function () { return fb.deleteDoc(r); },
       get: function () { return fb.getDoc(r); },
+      onSnapshot: function (cb, err) { return fb.onSnapshot(r, cb, err); },
       collection: function (n) { return mkColl(r.path + '/' + n); }
     };
   }
@@ -1258,6 +1344,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
 </aside>
 
 <aside id="gp" class="panel g-panel" role="dialog" aria-modal="false" aria-labelledby="gpTitle" hidden>
+  <div id="aseBar" class="ase-bar" hidden><span class="side-logo" aria-hidden="true"><svg viewBox="0 0 64 64" width="100%" height="100%"><rect width="64" height="64" rx="14" fill="#1F69FF"/><path d="M14 50V28L32 14l18 14v22z" fill="#fff"/><path d="M26 50V37a6 6 0 0 1 12 0v13z" fill="#012169"/></svg></span><b>Juntos Gestión</b><span id="aseBarTxt" class="sm">Mi perfil</span><button id="aseBarOut" type="button" class="btn sm-btn">Cerrar sesión</button></div>
   <div class="panel-head">
     <button id="gpBack" class="btn ghost icon mob-only" type="button" aria-label="Volver"><span data-icon="back"></span></button>
     <button id="gpPageBack" class="btn ghost page-back" type="button"><span data-icon="back" data-size="16"></span><span id="gpBackTxt">Volver</span></button>
@@ -3960,6 +4047,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   $('#sideScrim').addEventListener('click', sideClose);
   document.querySelectorAll('#side .vbtn').forEach(function (b) { b.addEventListener('click', function () { sideClose(); if (document.body.classList.contains('gp-page')) closePanels(); }); });
   $('#gpPageBack').addEventListener('click', function () { closePanels(); });
+  $('#aseBarOut').addEventListener('click', function () { if (window.ASE_MODE && window.ASE_MODE.preview) { asePreviewEnd(); return; } if (window.claude && window.claude.standalone) window.claude.standalone.signOut(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') sideClose(); });
   try { if (lsGet('juntos-side-mini') === '1') document.body.classList.add('side-mini'); } catch (e) {}
   $('#sideMini').addEventListener('click', function () { var on = !document.body.classList.contains('side-mini'); document.body.classList.toggle('side-mini', on); lsSet('juntos-side-mini', on ? '1' : '0'); $('#sideMini').setAttribute('aria-label', on ? 'Agrandar el menú' : 'Achicar el menú'); });
@@ -4000,6 +4088,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     razon: 'Coldwell Banker Juntos',
     domicilio: 'Olivos, Buenos Aires',
     legal: 'La presente reserva queda sujeta a la aceptación del propietario. Si no es aceptada, el importe se devuelve al oferente sin intereses ni actualización.',
+    ccComprobantes: ['erica.cano@coldwellbanker.com.ar', 'andrea.budassi@coldwellbanker.com.ar'],
     pie: 'Corredores responsables: Ramiro El Kadi (CUCICBA 6534) - Erica Cano (CMCPSI 6880)'
   };
   var gConf = JSON.parse(JSON.stringify(GCONF_DEF));
@@ -4014,6 +4103,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     asesor: { name: 'En poder del asesor', cls: 'late', ico: 'alert' },
     oficina: { name: 'En la oficina', cls: 'today' },
     banco: { name: 'En el banco', cls: 'soon' },
+    retirado: { name: 'De vuelta en la oficina', cls: 'today' },
     entregado: { name: 'Entregado', cls: 'ok', ico: 'check' },
     sin: { name: 'Sin dinero cargado', cls: 'muted' }
   };
@@ -4052,6 +4142,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   function gRefresh() {
     if (G_VIEWS[view]) gRenderView();
     gCountBadges();
+    if (typeof portalSync === 'function') portalSync();
     if (gOpen && !$('#gp').hidden) {
       var a = document.activeElement;
       if (a && $('#gp').contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) { gDirty = true; return; }
@@ -4207,7 +4298,9 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     var mon = c.moneda || 'U$S', cot = +c.cot || +gConf.cot || 1, valor = +c.valor || 0;
     var pv = (c.puntas === 'ambas' || c.puntas === 'vendedor') ? (+c.pctVend || 0) : 0;
     var pc = (c.puntas === 'ambas' || c.puntas === 'comprador') ? (+c.pctComp || 0) : 0;
-    var bruto = c.brutoManual != null && c.brutoManual !== '' ? +c.brutoManual : valor * (pv + pc);
+    if (c.pctOtra && c.compartida === 'fuera') pc = Math.max(0, pc - (+c.pctOtra || 0));
+    var base = c.redCB ? valor * ((+c.pctVend || 0) + (+c.pctComp || 0)) / 2 : valor * (pv + pc);
+    var bruto = c.brutoManual != null && c.brutoManual !== '' ? +c.brutoManual : base;
     var ag = 0;
     cParts(c).forEach(function (x) { ag += bruto * (x.parte != null ? +x.parte : 1 / cParts(c).length) * (+x.split || 0); });
     var mart = bruto * (+gConf.mart || 0), fran = bruto * (+gConf.fran || 0);
@@ -4252,6 +4345,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     if (!ps.length) return 'sin';
     if (ps.some(function (p) { return p.estado === 'asesor'; })) return 'asesor';
     if (ps.some(function (p) { return p.estado === 'oficina'; })) return 'oficina';
+    if (ps.some(function (p) { return p.estado === 'retirado'; })) return 'retirado';
     if (ps.some(function (p) { return p.estado === 'banco'; })) return 'banco';
     return 'entregado';
   }
@@ -4264,13 +4358,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   function rEst(r) { for (var i = 0; i < R_EST.length; i++) if (R_EST[i].id === r.estado) return R_EST[i]; return R_EST[0]; }
   function rPill(r) { var e = rEst(r); return tag(e.cls, e.name); }
   function custPill(k) { var c = CUST[k] || CUST.sin; return tag(c.cls, c.name, c.ico); }
-  function rComEst(r) {
-    if (r.comEst != null && r.comEst !== '') return +r.comEst;
-    if (!+r.precio) return null;
-    if (r.operacion !== 'venta' && (r.pctCom == null || r.pctCom === '')) return null;
-    var pct = r.pctCom != null && r.pctCom !== '' ? +r.pctCom : r.punta === 'ambas' ? (+gConf.pctVend + +gConf.pctComp) : r.punta === 'vendedor' ? +gConf.pctVend : +gConf.pctComp;
-    return toUSD(+r.precio * pct, r.precioMon || 'U$S');
-  }
+  function rComEst(r) { return rCom(r).total; }
   function rActive(r) { return r.estado === 'pendiente' || r.estado === 'aceptada'; }
   function rRecentClosed(r) { if (r.estado !== 'cerrada') return false; var d = r.cerradaEl || (r.cierreId && gGet('cierres', r.cierreId) && gGet('cierres', r.cierreId).fecha) || r.fechaFirma || r.fecha; return !d || dayDiff(String(d).slice(0, 10)) >= -90; }
   var JURIS_CABA = /\b(caba|capital|c\.a\.b\.a|palermo|belgrano|n[uú]ñez|saavedra|recoleta|caballito|villa urquiza|colegiales|almagro|flores|devoto|villa crespo|chacarita|coghlan|villa pueyrred[oó]n|barracas|san telmo|retiro|balvanera|boedo|puerto madero|villa del parque|agronom[ií]a|parque chas|villa ortuzar|liniers|mataderos)\b/i;
@@ -4294,7 +4382,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       if (r.estado === 'pendiente' && r.vence && dayDiff(r.vence) <= 1) out.vence.push(r);
       if ((r.estado === 'rechazada' || r.estado === 'caida') && ps.some(function (p) { return p.estado !== 'entregado' && +p.monto; })) out.devolver.push(r);
       if (r.estado === 'aceptada' && r.fechaFirma && dayDiff(r.fechaFirma) >= -3 && dayDiff(r.fechaFirma) <= 14) out.firma.push(r);
-      if (!r.importado && rActive(r) && ps.some(function (p) { return +p.monto && p.estado !== 'asesor' && !p.comprobante; })) out.comprobante.push(r);
+      if (!r.importado && ps.some(function (p) { return +p.monto && ((p.estado !== 'asesor' && !p.comprobante && rActive(r)) || (p.estado === 'entregado' && p.entregaMotivo && !p.comprobanteEnt)); })) out.comprobante.push(r);
     });
     return out;
   }
@@ -4316,18 +4404,19 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       var m = monthOf(c.fecha); if (m) byM[m - 1] += b;
       list.push(c);
     });
-    var pipeA = 0, pipeP = 0, resAct = [];
+    var pipeA = 0, pipeP = 0, ganA = 0, ganP = 0, resAct = [], gan = 0;
+    list.forEach(function (c) { cParts(c).forEach(function (x) { if (x.id === a.id) gan += cBruto(c) * (x.parte != null ? +x.parte : 1 / cParts(c).length) * (+x.split || 0); }); });
     G.reservas.forEach(function (r) {
       var ids = r.asesorIds || []; if (ids.indexOf(a.id) < 0) return;
       if (rActive(r)) resAct.push(r);
-      var ce = rComEst(r); if (ce == null) return;
-      var sh = 1 / ids.length;
-      if (r.estado === 'aceptada' && (!r.fechaFirma || yearOf(r.fechaFirma) === y)) pipeA += ce * sh;
-      if (r.estado === 'pendiente') pipeP += ce * sh;
+      var k = rCom(r); if (k.total == null) return;
+      var me = k.parts.filter(function (p) { return p.id === a.id; })[0]; if (!me) return;
+      if (r.estado === 'aceptada' && (!r.fechaFirma || yearOf(r.fechaFirma) === y)) { pipeA += me.usd; ganA += me.neto; }
+      if (r.estado === 'pendiente') { pipeP += me.usd; ganP += me.neto; }
     });
     var ef = expFrac(y), esper = obj * ef;
     var status = !obj ? 'none' : real >= obj ? 'done' : (ef === 0 ? 'ok' : (real / Math.max(esper, 1) >= 0.85 ? 'ok' : real / Math.max(esper, 1) >= 0.5 ? 'warn' : 'bad'));
-    return { obj: obj, real: real, neto: neto, ops: ops, puntas: puntas, ventas: ventas, ticket: ventas ? vol / ventas : null, byM: byM, list: list, pipeA: pipeA, pipeP: pipeP, proy: real + (y === new Date().getFullYear() ? pipeA : 0), esper: esper, ef: ef, pct: obj ? real / obj : null, status: status, resAct: resAct };
+    return { obj: obj, real: real, neto: neto, ops: ops, puntas: puntas, ventas: ventas, ticket: ventas ? vol / ventas : null, byM: byM, list: list, pipeA: pipeA, pipeP: pipeP, gan: gan, ganA: ganA, ganP: ganP, proy: real + (y === new Date().getFullYear() ? pipeA : 0), esper: esper, ef: ef, pct: obj ? real / obj : null, status: status, resAct: resAct };
   }
   var ASE_PILL = { ok: ['ok', 'check', 'En ritmo'], warn: ['muted', null, 'Por debajo'], bad: ['late', 'alert', 'Atrasado'], done: ['ok', 'check', 'Objetivo cumplido'], none: ['muted', null, 'Sin objetivo'] };
   function asePill(s) { var p = ASE_PILL[s.status]; return tag(p[0], p[2], p[1]); }
@@ -4393,6 +4482,8 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   ];
   function resList() {
     var f = RES_F.filter(function (x) { return x[0] === gF.res; })[0] || RES_F[0];
+    if (/^proj:/.test(gF.res || '')) { var pk = gF.res.slice(5); f = [gF.res, '', function (r) { return rActive(r) && String(r.fechaFirma || '').slice(0, 7) === pk; }]; }
+    if (gF.res === 'sinfirma') f = ['sinfirma', '', function (r) { return rActive(r) && !r.fechaFirma; }];
     var q = norm(gF.resQ);
     var list = G.reservas.filter(function (r) { return f[2](r) && rMatches(r, q) && (!gF.resA || (r.asesorIds || []).indexOf(gF.resA) >= 0); });
     var key = gF.resSort;
@@ -4431,7 +4522,6 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       }), list.length > 8 ? el('span', { class: 'sm', text: '+' + (list.length - 8) + ' más' }) : null));
     }
     arow('Plata en poder del asesor', al.asesor, function (r) { return tag('late', aseNames(r.asesorIds) || 'Sin asesor'); });
-    arow('Vence la aceptación', al.vence, function (r) { var d = relDue(r.vence); return tag(d.d < 0 ? 'late' : 'today', d.d < 0 ? 'Venció ' + d.text : 'Vence ' + d.text); });
     arow('A devolver', al.devolver, function (r) { return tag('late', rEst(r).name + ' · ' + totTxt(rTotals(r, true))); });
     arow('Firmas próximas', al.firma, function (r) { var d = relDue(r.fechaFirma); return tag(d.d <= 2 ? 'today' : 'soon', 'Firma ' + d.text); });
     arow('Comprobante sin enviar', al.comprobante, function () { return tag('muted', 'Enviar comprobante'); });
@@ -4444,7 +4534,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       searchBox(gF.resQ, 'Buscar dirección, oferente, asesor…', function (v) { gF.resQ = v; keepFocusRender(function () { renderRes(box); }); }),
       selectEl('Filtrar por asesor', [['', 'Todos los asesores']].concat(aseAll().map(function (a) { return [a.id, aseFull(a)]; })), gF.resA, function (v) { gF.resA = v; renderRes(box); }),
       selectEl('Ordenar', [['reciente', 'Más recientes primero'], ['firma', 'Fecha más próxima'], ['monto', 'Mayor comisión estimada']], gF.resSort, function (v) { gF.resSort = v; gF.resCol = null; gKeepF(); renderRes(box); }),
-      el('button', { type: 'button', class: 'btn', title: 'Exportar a Excel las reservas que se ven', onclick: function () { exportList('reservas', ['Fecha', 'Propiedad', 'Localidad', 'Operación', 'Asesores', 'Estado', 'Oferente', 'Precio', 'Dinero', 'Dónde está', 'Vence aceptación', 'Firma prevista'], resList().map(function (r) { return [dmy(r.fecha), r.propiedad, r.localidad, OPS[r.operacion] || '', aseNames(r.asesorIds), rEst(r).name, r.oferente && r.oferente.nombre || '', r.precio ? money(r.precio, r.precioMon) : '', totTxt(rTotals(r)), CUST[rCust(r)].name, dmy(r.vence), dmy(r.fechaFirma)]; })); } }, 'Exportar lo filtrado')));
+      el('button', { type: 'button', class: 'btn', title: 'Exportar a Excel las reservas que se ven', onclick: function () { exportList('reservas', ['Fecha', 'Propiedad', 'Localidad', 'Operación', 'Asesores', 'Estado', 'Precio', 'Comisión estimada (U$S)', 'Dinero', 'Dónde está', 'Firma prevista'], resList().map(function (r) { return [dmy(r.fecha), r.propiedad, r.localidad, OPS[r.operacion] || '', aseNames(r.asesorIds), rEst(r).name, r.precio ? money(r.precio, r.precioMon) : '', rComEst(r) != null ? Math.round(rComEst(r)) : '', totTxt(rTotals(r)), CUST[rCust(r)].name, dmy(r.fechaFirma)]; })); } }, 'Exportar lo filtrado')));
     var list = resList();
     var nRev = all.filter(function (r) { return r.revisar; });
     var revBar = nRev.length ? el('div', { class: 'banner-lite' }, el('span', { text: nRev.length + (nRev.length === 1 ? ' reserva importada' : ' reservas importadas') + ' con la marca “Revisar”.' }), el('button', { type: 'button', class: 'btn sm-btn', text: 'Marcar todas como revisadas', onclick: function () { var ids = nRev.map(function (r) { return r.id; }); ids.forEach(function (id) { gUpd('reservas', id, { revisar: false }); }); renderRes(box); toast('Listo: ' + ids.length + ' marcadas como revisadas.', { action: { label: 'Deshacer', fn: function () { ids.forEach(function (id) { gUpd('reservas', id, { revisar: true }); }); renderRes(box); } } }); } })) : null;
@@ -4452,16 +4542,13 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       sortHead([['Propiedad', 'prop'], ['Asesor', 'ase'], ['Fecha', 'fecha', -1], ['Dinero', 'dinero', -1], ['Estado', 'estado'], ['Próximo', 'prox']], gF.resCol || {}, function (k, d) { gF.resCol = { k: k, d: d }; renderRes(box); }),
       list.length ? list.slice(0, gF.resAll ? list.length : 50).map(resRow) : el('p', { class: 'hint pad', text: 'No hay reservas con este filtro.' }),
       list.length > 50 && !gF.resAll ? el('button', { type: 'button', class: 'btn ghost g-more', text: 'Ver las ' + list.length + ' reservas', onclick: function () { gF.resAll = true; renderRes(box); } }) : null);
-    box.replaceChildren.apply(box, [head, kp, alerts, tools, revBar, tbl].filter(Boolean));
+    var pf = /^proj:/.test(gF.res || '') || gF.res === 'sinfirma' ? el('div', { class: 'banner-lite' }, el('span', { text: gF.res === 'sinfirma' ? 'Reservas activas sin fecha de firma: cargala para que entren en el proyectado.' : 'Reservas con firma prevista en ' + (function () { var p = gF.res.slice(5).split('-'); return cap(MESES[+p[1] - 1]) + ' ' + p[0]; })() + '.' }), el('button', { type: 'button', class: 'btn sm-btn', text: 'Ver todas', onclick: function () { gF.res = 'vigentes'; gKeepF(); renderRes(box); } })) : null;
+    box.replaceChildren.apply(box, [head, kp, resProjection(), alerts, tools, pf, revBar, tbl].filter(Boolean));
   }
   function resRow(r) {
     var next = null;
-    if (r.estado === 'pendiente' && r.vence) { var d = relDue(r.vence); next = el('span', { class: 'due' + (d.d < 0 ? ' late' : d.d <= 1 ? ' soon' : '') }, 'Acepta ' + (d.d < 0 ? 'venció ' : '') + d.text); }
-    else if (r.estado === 'aceptada' && r.fechaFirma) { var d2 = relDue(r.fechaFirma); next = el('span', { class: 'due' + (d2.d < 0 ? ' late' : d2.d <= 3 ? ' soon' : '') }, 'Firma ' + d2.text); }
+    if (rActive(r) && r.fechaFirma) { var d2 = relDue(r.fechaFirma); next = el('span', { class: 'due' + (d2.d < 0 ? ' late' : d2.d <= 3 ? ' soon' : '') }, 'Firma ' + d2.text); }
     else if (r.estado === 'cerrada') { var cc = r.cierreId && gGet('cierres', r.cierreId); next = el('span', { class: 'sm ok-t', text: cc ? 'Cierre ' + dmy(cc.fecha) + ' · ' + usdK(cBruto(cc)) : 'Cerrada' }); }
-    var dp = rActive(r) ? docsPend(r) : null;
-    if (dp && next) next = el('span', {}, next, el('span', { class: 'sm', text: dp + ' docs pendientes' }));
-    else if (dp) next = el('span', { class: 'sm', text: dp + ' docs pendientes' });
     return el('button', { type: 'button', role: 'row', class: 'g-tr' + (r.estado === 'cerrada' ? ' g-closed' : r.estado === 'rechazada' || r.estado === 'caida' ? ' g-down' : ''), 'data-focus': 'res:' + r.id, onclick: function () { openRes(r.id); } },
       el('span', { role: 'cell', class: 'g-prop' }, el('b', { text: r.propiedad || 'Sin dirección' }), el('span', { class: 'sm', text: [OPS[r.operacion] || '', r.localidad].filter(Boolean).join(' · ') })),
       el('span', { role: 'cell', class: 'g-ase' }, (r.asesorIds || []).slice(0, 2).map(function (id) { return aseAv(id); }), el('span', { text: aseNames(r.asesorIds) || 'Sin asesor' })),
@@ -4757,51 +4844,47 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
 
   /* ===== RESERVA: panel ===== */
   function openRes(id, draft) {
-    gPanelOpen({ t: 'res', id: id, draft: draft || { estado: 'pendiente', operacion: 'venta', punta: 'comprador', precioMon: 'U$S', asesorIds: gF.resA ? [gF.resA] : [], vence: addDays(2), pago: { monto: null, moneda: 'U$S', fecha: todayStr(), medio: 'efectivo', estado: 'oficina', recibio: '' } } });
+    gPanelOpen({ t: 'res', id: id, draft: draft || (function () { var L = { v: { nos: false, ase: '', pct: null, inmob: '' }, c: { nos: true, ase: gF.resA || '', pct: +gConf.pctComp, inmob: '', pctOtra: null } }; return { estado: 'pendiente', operacion: 'venta', pago: 'Escritura', punta: 'comprador', precioMon: 'U$S', lados: L, asesorIds: rAseIds(L), pago_: { monto: null, moneda: 'U$S', fecha: todayStr(), medio: 'efectivo', estado: 'oficina', recibio: '' } }; })() });
   }
   function fillRes() {
     var r = gRec(), isNew = !r, d = isNew ? gOpen.draft : r;
     var set = gSetter('reservas', function (f) {
-      if (isNew) { if ('operacion' in f || 'punta' in f || 'precio' in f || 'precioMon' in f) gFill(); return; }
-      if ('operacion' in f || 'punta' in f || 'precio' in f || 'precioMon' in f || 'comEst' in f || 'propiedad' in f || 'pctCom' in f || 'juris' in f) gFill();
+      if (isNew) { if (['operacion', 'precio', 'precioMon', 'lados', 'cot', 'localidad', 'comEst'].some(function (k) { return k in f; })) gFill(); return; }
+      if (['operacion', 'precio', 'precioMon', 'comEst', 'propiedad', 'juris', 'lados', 'cot', 'localidad', 'fechaFirma'].some(function (k) { return k in f; })) gFill();
     });
+    var L = rLados(d);
+    function setL(nl) { set({ lados: nl, asesorIds: rAseIds(nl), punta: puntaDe(nl) }); }
     gHeadSet(isNew ? 'Nueva reserva' : (d.propiedad || 'Reserva sin dirección'), isNew ? [] : [rPill(d), custPill(rCust(d)), d.revisar ? el('button', { type: 'button', class: 'tag muted g-rev', title: 'Importada del Excel: revisá estado y datos', onclick: function () { gUpd('reservas', r.id, { revisar: false }); toast('Marcada como revisada.'); }, text: 'Importada · marcar revisada' }) : null]);
-    var est = isNew ? null : sect('Estado', [
-      el('div', { class: 'seg g-seg5', role: 'group', 'aria-label': 'Estado de la reserva' }, R_EST.map(function (e) {
-        return el('button', { type: 'button', class: 'st' + (d.estado === e.id ? ' on' : ''), 'aria-pressed': String(d.estado === e.id), title: e.long, onclick: function () { resEstado(r, e.id); } }, e.name);
-      })),
-      el('div', { class: 'grid' },
-        d.estado === 'pendiente' || !d.estado ? fld('Vence la aceptación', inDate(d.vence, set, 'vence'), d.vence ? (function () { var x = relDue(d.vence); return x.d < 0 ? 'Venció ' + x.text : 'Vence ' + x.text; })() : 'Plazo que tiene el propietario para responder') : null,
-        fld('Firma prevista', inDate(d.fechaFirma, set, 'fechaFirma'), 'Boleto, escritura o contrato'))]);
-    var ce = rComEst(d);
-    var pctDef = d.punta === 'ambas' ? +gConf.pctVend + +gConf.pctComp : d.punta === 'vendedor' ? +gConf.pctVend : +gConf.pctComp;
+    var est = null;
+    if (!isNew) {
+      var allowed = d.estado === 'cerrada' ? [] : d.estado === 'aceptada' ? ['pendiente', 'aceptada', 'caida'] : d.estado === 'caida' ? ['aceptada', 'caida'] : ['pendiente', 'aceptada', 'rechazada'];
+      var cc = d.cierreId && gGet('cierres', d.cierreId);
+      est = sect('Estado', [
+        allowed.length ? el('div', { class: 'seg g-seg5', role: 'group', 'aria-label': 'Estado de la reserva' }, R_EST.filter(function (e) { return allowed.indexOf(e.id) >= 0; }).map(function (e) {
+          return el('button', { type: 'button', class: 'st' + (d.estado === e.id ? ' on' : ''), 'aria-pressed': String(d.estado === e.id), title: e.long, onclick: function () { resEstado(r, e.id); } }, e.name);
+        })) : el('p', { class: 'ok-t' }, icon('check', 16), 'Cerrada: la operación pasó a Cierres' + (cc ? ' (firma ' + dmy(cc.fecha) + ')' : '') + '. ', cc ? el('button', { type: 'button', class: 'g-link-btn', text: 'Ver el cierre', onclick: function () { openCie(cc.id); } }) : null),
+        d.estado === 'caida' && d.motivoBaja ? el('p', { class: 'sm', text: 'Motivo: ' + d.motivoBaja }) : null,
+        el('div', { class: 'grid' }, fld('Firma prevista', inDate(d.fechaFirma, set, 'fechaFirma'), 'Boleto, escritura o contrato. Se usa para el proyectado.')),
+        d.estado !== 'cerrada' ? el('p', { class: 'sm', text: 'Pasa a Cerrada sola cuando cargás el cierre.' }) : null]);
+    }
+    var venta = (d.operacion || 'venta') === 'venta';
+    var locItem = listFind('localidades', d.localidad);
     var opSec = sect('Operación', [
       fld('Propiedad', inText(d.propiedad, set, 'propiedad', { placeholder: 'Calle y número, piso, depto.', autocomplete: 'off', id: 'gResProp' })),
       el('div', { class: 'grid' },
-        fld('Localidad o barrio', inText(d.localidad, set, 'localidad', { placeholder: 'Olivos, CABA…' })),
+        fld('Localidad o barrio', listSel('localidades', d.localidad, function (v, it) { set({ localidad: v, juris: (it && it.juris) || jurisDe(v) }); }, 'Elegí la localidad')),
+        fld('Jurisdicción', inSel(d.juris || (locItem && locItem.juris) || jurisDe(d.localidad), [['PBA', 'Provincia (PBA)'], ['CABA', 'CABA']], set, 'juris')),
         fld('Operación', inSel(d.operacion || 'venta', Object.keys(OPS).map(function (k) { return [k, OPS[k]]; }), set, 'operacion')),
-        fld('Qué punta tenemos', inSel(d.punta || 'comprador', Object.keys(PUNTAS).map(function (k) { return [k, (d.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ)[k]]; }), set, 'punta'))),
+        venta ? fld('Forma de pago', (function () { var s = el('select', {}, (d.pago ? [] : [el('option', { value: '', text: 'Elegí…', disabled: true })]).concat(['Escritura', 'Crédito', 'Boleto'].map(function (x) { return el('option', { value: x, text: x }); }))); s.value = d.pago || ''; s.addEventListener('change', function () { set({ pago: s.value }); }); return s; })()) : null),
       el('div', { class: 'grid' },
-        fld('Jurisdicción', inSel(d.juris || jurisDe(d.localidad), [['PBA', 'Provincia (PBA)'], ['CABA', 'CABA']], set, 'juris')),
-        d.operacion === 'venta' ? fld('Forma de pago', inSel(d.pago || '', [['', 'Sin definir'], ['Escritura', 'Escritura'], ['Crédito', 'Crédito'], ['Boleto', 'Boleto']], set, 'pago')) : null,
-        fld('% comisión total', inNum(d.pctCom, set, 'pctCom', { placeholder: pctTxt(pctDef, 1).replace('%', '') }, 100), 'Suma de nuestras puntas')),
-      el('div', { class: 'grid' },
-        fld(d.operacion === 'venta' ? 'Precio ofrecido' : 'Valor del contrato o alquiler', el('span', { class: 'g-money-in' }, inSel(d.precioMon || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'precioMon', { 'aria-label': 'Moneda del precio' }), inNum(d.precio, set, 'precio', { 'aria-label': 'Precio' }))),
-        fld('Comisión estimada (U$S)', inNum(d.comEst, set, 'comEst', { placeholder: ce != null ? fmtN(ce) : '' }), d.comEst != null && d.comEst !== '' ? 'Cargada a mano. Borrala para calcularla sola.' : (d.operacion === 'venta' || d.pctCom ? (ce != null ? 'Calculada: ' + pctTxt(d.pctCom != null && d.pctCom !== '' ? +d.pctCom : pctDef, 2) + ' del precio = ' + usd(ce) : 'Cargá el precio y se calcula sola') : 'En alquileres, cargala a mano o poné el %. Suma al proyectado del asesor.'))),
-      el('div', { class: 'field' }, el('span', { text: 'Asesor que intervino' }), aseSelect(d.asesorIds, function (ids) { set({ asesorIds: ids }); }, { label: 'Asesores de la reserva' }), !aseAll().length ? el('span', { class: 'sm', text: 'Primero cargá la nómina en Asesores.' }) : null)]);
-    var of = d.oferente || {}, pr = d.propietario || {};
-    function setObj(key, obj) { return function (f) { var o = {}; o[key] = Object.assign({}, obj, f); set(o); }; }
-    var partes = sect(d.operacion === 'venta' ? 'Partes' : 'Partes', [
-      el('div', { class: 'grid' },
-        fld(d.operacion === 'venta' ? 'Oferente (comprador)' : 'Oferente (inquilino)', inText(of.nombre, setObj('oferente', of), 'nombre', { placeholder: 'Nombre y apellido' })),
-        fld('Mail del oferente', inText(of.mail, setObj('oferente', of), 'mail', { type: 'email', placeholder: 'para enviarle el comprobante' })),
-        fld('Teléfono del oferente', inText(of.tel, setObj('oferente', of), 'tel', { type: 'tel' }))),
-      el('div', { class: 'grid' },
-        fld(d.operacion === 'venta' ? 'Propietario (vendedor)' : 'Propietario (locador)', inText(pr.nombre, setObj('propietario', pr), 'nombre')),
-        fld('Contacto del propietario', inText(pr.contacto, setObj('propietario', pr), 'contacto', { placeholder: 'Mail o teléfono' })))]);
+        fld(venta ? 'Precio ofrecido' : 'Valor del contrato', el('span', { class: 'g-money-in' }, inSel(d.precioMon || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'precioMon', { 'aria-label': 'Moneda del precio' }), inNum(d.precio, set, 'precio', { 'aria-label': 'Precio' })), venta ? null : 'Total del contrato: la comisión se calcula como % de este valor.'),
+        d.precioMon === '$' ? fld('Cotización del dólar', inNum(d.cot, set, 'cot', { placeholder: gConf.cot ? fmtN(+gConf.cot) : '' }), 'Para pasar la comisión a dólares. Vacío: usa la de Ajustes.') : null),
+      el('div', { class: 'g-lados' }, ladoCard(d, L, 'v', setL), ladoCard(d, L, 'c', setL)),
+      comBox(d),
+      fld('Comisión total a mano (U$S, opcional)', inNum(d.comEst, set, 'comEst', { placeholder: 'Solo si difiere del cálculo' }), d.comEst != null && d.comEst !== '' ? 'Cargada a mano: se reparte entre los asesores según sus puntas. Borrala para volver al cálculo.' : null)]);
     var dinero;
     if (isNew) {
-      var p = d.pago || (d.pago = {});
+      var p = d.pago_ || (d.pago_ = { moneda: 'U$S', fecha: todayStr(), medio: 'efectivo', estado: 'oficina' });
       var setP = function (f) { Object.assign(p, f); if ('estado' in f) gFill(); };
       dinero = sect('Dinero de la reserva', [
         el('div', { class: 'grid' },
@@ -4817,12 +4900,8 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
         el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', onclick: function () { pagoForm(r, null); } }, icon('plus', 16), rPagos(d).length ? 'Agregar refuerzo' : 'Cargar pago'))],
         { right: el('span', { class: 'sm', text: 'Total ' + totTxt(rTotals(d)) }) });
     }
-    var notas = sect('Notas', [d.notasLiq ? el('p', { class: 'sm', text: d.notasLiq }) : null, fld('Notas internas', inArea(d.notas, set, 'notas', { rows: d.notas && d.notas.length > 120 ? 5 : 3, placeholder: 'Condiciones, contraoferta, documentación pendiente…' })), isNew ? null : histList(d.historial)]);
-    var dd = d.docs || {};
-    var docsSec = isNew || d.operacion !== 'venta' ? null : sect('Documentación', [el('div', { class: 'grid' }, DOCS.map(function (x) {
-      return fld(x[1], inSel(dd[x[0]] || '', [['', '—']].concat(x[2].map(function (o) { return [o, o]; })), function (f) { var o = Object.assign({}, (gRec() || {}).docs || {}); o[x[0]] = f.v; set({ docs: o }); }, 'v'));
-    }))], { right: docsPend(d) != null ? el('span', { class: 'sm', text: docsPend(d) ? docsPend(d) + ' pendientes' : 'Todo listo' }) : null });
-    gBody([est, opSec, dinero, docsSec, partes, notas]);
+    var notas = sect('Notas', [d.notasLiq ? el('p', { class: 'sm', text: d.notasLiq }) : null, fld('Notas internas', inArea(d.notas, set, 'notas', { rows: d.notas && d.notas.length > 120 ? 5 : 3, placeholder: 'Condiciones, contraoferta, pendientes…' })), isNew ? null : histList(d.historial)]);
+    gBody([est, opSec, dinero, notas]);
     if (isNew) {
       gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }),
         el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }),
@@ -4830,7 +4909,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     } else {
       var acts = [];
       if (d.cierreId && gGet('cierres', d.cierreId)) acts.push(el('button', { type: 'button', class: 'btn', text: 'Ver el cierre', onclick: function () { openCie(d.cierreId); } }));
-      else if (d.estado !== 'rechazada' && d.estado !== 'caida') acts.push(el('button', { type: 'button', class: 'btn primary', text: 'Pasar a cierre', onclick: function () { cierreDesdeReserva(r); } }));
+      else if (d.estado !== 'rechazada' && d.estado !== 'caida') acts.push(el('button', { type: 'button', class: 'btn primary', text: 'Cargar el cierre', onclick: function () { cierreDesdeReserva(r); } }));
       acts.unshift(el('span', { class: 'foot-note', text: d.actualizado ? 'Guardado ' + ago(d.actualizado) + (d.editorNombre ? ' por ' + d.editorNombre : '') : '' }));
       acts.splice(1, 0, moreBtn([
         { label: 'Copiar resumen', fn: function () { copyText(resResumen(r)); } },
@@ -4854,13 +4933,13 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     var d = gOpen.draft, msg = $('#gMsg');
     function err(t, focus) { msg.hidden = false; msg.textContent = t; if (focus) { var n = $(focus); if (n) n.focus(); } }
     if (!str(d.propiedad)) return err('Falta la dirección de la propiedad.', '#gResProp');
-    if (!(d.asesorIds || []).length) return err('Elegí el asesor que intervino.');
-    var p = d.pago || {};
-    var o = clone(d); delete o.pago;
+    if (!(d.asesorIds || []).length) return err('Elegí el asesor de nuestra punta.');
+    var p = d.pago_ || {};
+    var o = clone(d); delete o.pago_;
     o.creado = new Date().toISOString(); o.creadoPor = meName();
     o.pagos = [];
     if (+p.monto) {
-      o.pagos.push({ id: uid(), tipo: 'reserva', monto: +p.monto, moneda: p.moneda || 'U$S', fecha: p.fecha || todayStr(), medio: p.medio || 'efectivo', estado: p.estado || 'oficina', recibio: p.estado === 'oficina' ? (p.recibio || '') : '', fechaOficina: p.estado === 'oficina' ? (p.fecha || todayStr()) : '', cuenta: p.estado === 'banco' ? (p.cuenta || '') : '', fechaBanco: p.estado === 'banco' ? (p.fecha || todayStr()) : '' });
+      o.pagos.push({ id: uid(), tipo: 'reserva', monto: +p.monto, moneda: p.moneda || 'U$S', fecha: p.fecha || todayStr(), medio: p.medio || 'efectivo', estado: p.estado || 'oficina', recibio: p.estado === 'oficina' ? (p.recibio || '') : '', fechaOficina: p.estado === 'oficina' ? (p.fecha || todayStr()) : '', cuenta: p.estado === 'banco' ? (p.cuenta || '') : '', fechaBanco: p.estado === 'banco' ? (p.fecha || todayStr()) : '', log: [{ paso: p.estado || 'oficina', t: new Date().toISOString(), por: meName(), det: p.estado === 'asesor' ? 'Cargado: lo tiene el asesor' : p.estado === 'banco' ? 'Cargado: depositado' + (p.cuenta ? ' en ' + p.cuenta : '') : 'Recibido en la oficina' + (p.recibio ? ' por ' + p.recibio : '') }] });
     }
     o.fecha = (o.pagos[0] && o.pagos[0].fecha) || todayStr();
     o.historial = gLog({}, 'Reserva cargada' + (o.pagos.length ? ' con ' + money(o.pagos[0].monto, o.pagos[0].moneda) : ''));
@@ -4868,15 +4947,21 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     gSet('reservas', id, o);
     gOpen = { t: 'res', id: id, draft: {} };
     gFill(); render();
-    toast('Reserva guardada.' + (o.pagos.length && o.pagos[0].estado !== 'asesor' ? ' Ya podés enviar el comprobante.' : ''));
+    toast('Reserva guardada.');
+    if (o.pagos.length && o.pagos[0].estado !== 'asesor') setTimeout(function () { var nr = gGet('reservas', id); if (nr) sendReceipt(nr, 0, 'recepcion'); }, 60);
   }
   async function resEstado(r, to) {
     if (r.estado === to) return;
     var from = r.estado, f = { estado: to }, extra = '';
-    if (to === 'rechazada' || to === 'caida') {
-      var mot = await askText(to === 'rechazada' ? 'Reserva rechazada' : 'Reserva caída', 'Motivo (opcional)', r.motivoBaja || '', 'Ej.: el propietario pidió más, no salió el crédito…');
+    if (to === 'rechazada') {
+      var mot = await askText('Reserva rechazada', 'Motivo (opcional)', r.motivoBaja || '', 'Ej.: el propietario pidió más…');
       if (mot === null) { gFill(); return; }
       f.motivoBaja = mot; extra = mot ? ': ' + mot : '';
+    }
+    if (to === 'caida') {
+      var mc = await askCaida(r);
+      if (mc === null) { gFill(); return; }
+      f.motivoBaja = mc; extra = mc ? ': ' + mc : '';
     }
     if (to === 'aceptada') f.aceptadaEl = todayStr();
     f.historial = gLog(r, 'Estado: ' + rEst({ estado: from }).name + ' → ' + rEst({ estado: to }).name + extra);
@@ -4893,76 +4978,122 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     setTimeout(function () { t.focus(); }, 30);
     return p;
   }
-  var STEPS = ['asesor', 'oficina', 'banco', 'entregado'];
+  var STEPS = ['asesor', 'oficina', 'banco', 'retirado', 'entregado'];
+  var STEP_LBL = { asesor: 'Asesor', oficina: 'Oficina', banco: 'Banco', retirado: 'Vuelve a la ofi', entregado: 'Entregado' };
+  function pagoLog(p) {
+    if (Array.isArray(p.log) && p.log.length) return p.log;
+    var out = [];
+    if (p.fechaOficina || p.recibio) out.push({ paso: 'oficina', t: p.fechaOficina || p.fecha, por: '', det: 'Recibido en la oficina' + (p.recibio ? ' por ' + p.recibio : '') });
+    if (p.fechaBanco || p.cuenta) out.push({ paso: 'banco', t: p.fechaBanco, por: '', det: 'Depositado' + (p.cuenta ? ' en cuenta ' + p.cuenta : '') });
+    if (p.estado === 'entregado') out.push({ paso: 'entregado', t: p.fechaEntrega, por: '', det: 'Entregado' + (p.entregadoA ? ' a ' + p.entregadoA : '') });
+    return out;
+  }
   function pagoCard(r, p, i) {
     var cur = STEPS.indexOf(p.estado || 'oficina');
-    var lines = [];
-    if (p.recibio || p.fechaOficina) lines.push('Recibida en la oficina' + (p.recibio ? ' por ' + p.recibio : '') + (p.fechaOficina ? ' el ' + dmy(p.fechaOficina) : ''));
-    if (p.cuenta || p.fechaBanco) lines.push('Banco' + (p.cuenta ? ' (cuenta ' + p.cuenta + ')' : '') + (p.fechaBanco ? ' el ' + dmy(p.fechaBanco) : ''));
-    if (p.estado === 'entregado') lines.push('Entregada' + (p.entregadoA ? ' a ' + p.entregadoA : '') + (p.fechaEntrega ? ' el ' + dmy(p.fechaEntrega) : ''));
+    var dev = r.estado === 'rechazada' || r.estado === 'caida';
     var acts = [];
     if (p.estado === 'asesor') acts.push(el('button', { type: 'button', class: 'btn sm-btn primary', text: 'Recibido en la oficina', onclick: function () { pagoStep(r, i, 'oficina'); } }));
     if (p.estado === 'oficina' || !p.estado) acts.push(el('button', { type: 'button', class: 'btn sm-btn', text: 'Depositar', onclick: function () { pagoStep(r, i, 'banco'); } }));
-    if (p.estado !== 'entregado') acts.push(el('button', { type: 'button', class: 'btn sm-btn', text: r.estado === 'rechazada' || r.estado === 'caida' ? 'Devolver' : 'Entregar', onclick: function () { pagoStep(r, i, 'entregado'); } }));
-    if (p.estado !== 'asesor') acts.push(el('button', { type: 'button', class: 'btn sm-btn', onclick: function () { sendReceipt(r, i); } }, 'Comprobante'));
+    if (p.estado === 'banco') acts.push(el('button', { type: 'button', class: 'btn sm-btn primary', text: 'Retirado del banco', onclick: function () { pagoStep(r, i, 'retirado'); } }));
+    if (p.estado === 'oficina' || p.estado === 'retirado' || !p.estado) acts.push(el('button', { type: 'button', class: 'btn sm-btn' + (p.estado === 'retirado' ? ' primary' : ''), text: dev ? 'Entregar para devolver' : 'Entregar al asesor', onclick: function () { pagoStep(r, i, 'entregado'); } }));
+    if (p.estado !== 'asesor') acts.push(el('button', { type: 'button', class: 'btn sm-btn', onclick: function () { sendReceipt(r, i, 'recepcion'); } }, p.comprobante ? 'Recepción: reenviar' : 'Comprobante de recepción'));
+    if (p.estado === 'entregado') acts.push(el('button', { type: 'button', class: 'btn sm-btn' + (p.entregaMotivo && !p.comprobanteEnt ? ' primary' : ''), onclick: function () { sendReceipt(r, i, 'entrega'); } }, p.comprobanteEnt ? 'Entrega: reenviar' : 'Comprobante de entrega'));
     acts.push(moreBtn([
       { label: 'Editar el pago', fn: function () { pagoForm(r, i); } },
       cur > 0 ? { label: 'Volver al paso anterior', fn: function () { pagoBack(r, i); } } : null,
-      { label: 'Descargar comprobante (PDF)', fn: function () { downloadReceipt(r, i); } },
+      { label: 'Descargar comprobante de recepción (PDF)', fn: function () { downloadReceipt(r, i, 'recepcion'); } },
+      p.estado === 'entregado' ? { label: 'Descargar comprobante de entrega (PDF)', fn: function () { downloadReceipt(r, i, 'entrega'); } } : null,
       { sep: true },
       { label: 'Quitar este pago', danger: true, fn: function () { pagoRemove(r, i); } }].filter(Boolean)));
+    var log = pagoLog(p);
     return el('div', { class: 'g-pago' + (p.estado === 'asesor' ? ' alert' : '') },
       el('div', { class: 'g-pago-h' }, el('b', { text: cap(p.tipo || 'pago') + ' · ' + money(p.monto, p.moneda) }), el('span', { class: 'sm', text: [p.fecha ? dmy(p.fecha) : '', p.medio ? cap(p.medio) : ''].filter(Boolean).join(' · ') })),
-      el('ol', { class: 'g-steps', 'aria-label': 'Dónde está el dinero' }, STEPS.map(function (s, k) {
-        return el('li', { class: k < cur ? 'done' : k === cur ? 'cur' : '', 'aria-current': k === cur ? 'step' : null }, el('i'), el('span', { text: s === 'asesor' ? 'Asesor' : s === 'oficina' ? 'Oficina' : s === 'banco' ? 'Banco' : (r.estado === 'rechazada' || r.estado === 'caida' ? 'Devuelto' : 'Entregado') }));
+      el('ol', { class: 'g-steps g-steps5', 'aria-label': 'Dónde está el dinero' }, STEPS.map(function (s, k) {
+        var skip = k < cur && s === 'retirado' && !p.fechaRetiro && !log.some(function (x) { return x.paso === 'retirado'; });
+        var skipB = k < cur && s === 'banco' && !p.fechaBanco && !p.cuenta && !log.some(function (x) { return x.paso === 'banco'; });
+        return el('li', { class: (skip || skipB) ? 'skip' : k < cur ? 'done' : k === cur ? 'cur' : '', 'aria-current': k === cur ? 'step' : null }, el('i'), el('span', { text: s === 'entregado' && dev ? 'Devuelto' : STEP_LBL[s] }));
       })),
-      lines.length ? el('p', { class: 'sm g-pago-l', text: lines.join(' · ') }) : null,
-      p.comprobante ? el('p', { class: 'sm ok-t' }, icon('check', 14), 'Comprobante enviado ' + (p.comprobante.a ? 'a ' + p.comprobante.a + ' ' : '') + 'el ' + dmy(String(p.comprobante.t).slice(0, 10))) : null,
+      log.length ? el('ol', { class: 'g-plog', 'aria-label': 'Historial del dinero' }, log.map(function (x) {
+        return el('li', {}, el('time', { text: x.t ? dmy(String(x.t).slice(0, 10)) + (String(x.t).length > 10 ? ' ' + String(x.t).slice(11, 16) : '') : '–' }), el('span', { text: x.det || STEP_LBL[x.paso] || '' }), x.por ? el('span', { class: 'sm', text: ' · cargó ' + x.por }) : null);
+      })) : null,
+      p.comprobante ? el('p', { class: 'sm ok-t' }, icon('check', 14), 'Comprobante de recepción enviado el ' + dmy(String(p.comprobante.t).slice(0, 10)) + (p.comprobante.a ? ' a ' + p.comprobante.a : '')) : null,
+      p.comprobanteEnt ? el('p', { class: 'sm ok-t' }, icon('check', 14), 'Comprobante de entrega enviado el ' + dmy(String(p.comprobanteEnt.t).slice(0, 10)) + (p.comprobanteEnt.a ? ' a ' + p.comprobanteEnt.a : '')) : null,
       el('div', { class: 'row-wrap g-pago-a' }, acts));
   }
   function pagosCopy(r) { return rPagos(r).map(function (x) { return clone(x); }); }
+  function askCaida(r) {
+    var s = el('select', {}, CAIDA_MOT.map(function (m) { return el('option', { value: m, text: m }); }));
+    var cur = String(r.motivoBaja || ''); var base = CAIDA_MOT.filter(function (m) { return cur.indexOf(m) === 0; })[0]; if (base) s.value = base;
+    var det = el('input', { type: 'text', placeholder: 'Detalle (opcional)', value: base ? cur.slice(base.length).replace(/^\s*·\s*/, '') : '' });
+    return showModal('Operación caída', el('div', { class: 'field' }, fld('Motivo', s), fld('Detalle', det)), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Confirmar', onclick: function () { closeModal(s.value + (det.value.trim() ? ' · ' + det.value.trim() : '')); } })]);
+  }
   async function pagoStep(r, i, to) {
     var ps = pagosCopy(r), p = ps[i], prev = clone(p), body, getv;
     var date = el('input', { type: 'date', value: todayStr() });
+    var dev = r.estado === 'rechazada' || r.estado === 'caida';
     if (to === 'oficina') {
       var who = staffSel('', function () {});
       body = el('div', { class: 'grid' }, fld('La recibió', who), fld('Fecha', date));
-      getv = function () { return { estado: 'oficina', recibio: who.value === '__otro' ? '' : who.value, fechaOficina: validDate(date.value) || todayStr() }; };
+      getv = function () { return { estado: 'oficina', recibio: who.value, fechaOficina: validDate(date.value) || todayStr(), _det: 'Recibido en la oficina' + (who.value ? ' por ' + who.value : '') }; };
     } else if (to === 'banco') {
       var cta = staffSel(p.cuenta || '', function () {}, gConf.cuentas);
       body = el('div', { class: 'grid' }, fld('Cuenta', cta), fld('Fecha del depósito', date));
-      getv = function () { return { estado: 'banco', cuenta: cta.value === '__otro' ? '' : cta.value, fechaBanco: validDate(date.value) || todayStr() }; };
+      getv = function () { return { estado: 'banco', cuenta: cta.value, fechaBanco: validDate(date.value) || todayStr(), _det: 'Depositado' + (cta.value ? ' en cuenta ' + cta.value : '') }; };
+    } else if (to === 'retirado') {
+      var ret = staffSel('', function () {});
+      body = el('div', { class: 'grid' }, fld('Lo retiró', ret), fld('Fecha', date));
+      getv = function () { return { estado: 'retirado', retiro: ret.value, fechaRetiro: validDate(date.value) || todayStr(), _det: 'Retirado del banco y de vuelta en la oficina' + (ret.value ? ' (' + ret.value + ')' : '') }; };
     } else {
-      var dev = r.estado === 'rechazada' || r.estado === 'caida';
-      var quien = el('select', {}, (dev ? ['Devuelto al oferente', 'Otro'] : ['Propietario / vendedor', 'Escribanía', 'Asesor (para la firma)', 'Devuelto al oferente', 'Otro']).map(function (x) { return el('option', { value: x, text: x }); }));
-      var det = el('input', { type: 'text', placeholder: 'Nombre o detalle (opcional)' });
-      body = el('div', { class: 'grid' }, fld(dev ? 'Se devolvió a' : 'Se entregó a', quien), fld('Detalle', det), fld('Fecha', date));
-      getv = function () { return { estado: 'entregado', entregadoA: quien.value + (det.value.trim() ? ' (' + det.value.trim() + ')' : ''), fechaEntrega: validDate(date.value) || todayStr() }; };
+      var mot = el('select', {}, Object.keys(ENTREGA).map(function (k) { return el('option', { value: k, text: r.estado === 'rechazada' && k === 'devolucion' ? 'Al asesor, para devolver al oferente (reserva rechazada)' : ENTREGA[k] }); }));
+      if (dev) mot.value = 'devolucion';
+      var ids = (r.asesorIds || []).slice();
+      var aSel = aseSimpleSel(ids[0] || '', function () {});
+      var ent = staffSel('', function () {});
+      var warn = el('p', { class: 'sm warn', hidden: true, text: 'La reserva va a pasar a Caída y te vamos a pedir el motivo.' });
+      function upW() { warn.hidden = !((mot.value === 'devolucion' || mot.value === 'punitorio') && rActive(r)); }
+      mot.addEventListener('change', upW); upW();
+      body = el('div', { class: 'field' }, fld('Motivo de la entrega', mot), el('div', { class: 'grid' }, fld('Asesor que lo recibe', aSel), fld('Lo entregó', ent), fld('Fecha', date)), warn);
+      getv = function () { var an = aSel.value ? aseName(aSel.value) : ''; return { estado: 'entregado', entregaMotivo: mot.value, entregadoAse: aSel.value, entregadoA: an + ' (' + ENTREGA_SHORT[mot.value] + ')', entrego: ent.value, fechaEntrega: validDate(date.value) || todayStr(), _det: 'Entregado a ' + (an || 'el asesor') + ' ' + ENTREGA_SHORT[mot.value] + (ent.value ? ' · entregó ' + ent.value : '') }; };
     }
-    var title = to === 'oficina' ? 'Recibido en la oficina' : to === 'banco' ? 'Depósito en el banco' : (r.estado === 'rechazada' || r.estado === 'caida' ? 'Devolución' : 'Entrega del dinero');
+    var title = to === 'oficina' ? 'Recibido en la oficina' : to === 'banco' ? 'Depósito en el banco' : to === 'retirado' ? 'Retiro del banco' : 'Entrega del dinero';
     var ok = await showModal(title + ' · ' + money(p.monto, p.moneda), body, [
       el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
       el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () { closeModal(getv()); } })]);
     if (!ok) return;
+    var det = ok._det; delete ok._det;
     Object.assign(p, ok);
-    var txt = cap(p.tipo || 'pago') + ' ' + money(p.monto, p.moneda) + ': ' + (to === 'oficina' ? 'recibido en la oficina' + (ok.recibio ? ' por ' + ok.recibio : '') : to === 'banco' ? 'depositado' + (ok.cuenta ? ' en cuenta ' + ok.cuenta : '') : 'entregado a ' + ok.entregadoA);
+    p.log = pagoLog(prev).slice(); p.log.push({ paso: to, t: new Date().toISOString(), por: meName(), det: det + (function () { var fx = ok.fechaOficina || ok.fechaBanco || ok.fechaRetiro || ok.fechaEntrega; return fx && fx !== todayStr() ? ' (fecha ' + dmy(fx) + ')' : ''; })() });
+    var txt = cap(p.tipo || 'pago') + ' ' + money(p.monto, p.moneda) + ': ' + det.charAt(0).toLowerCase() + det.slice(1);
     var f = { pagos: ps, historial: gLog(r, txt) };
     var allOut = ps.every(function (x) { return x.estado === 'entregado' || !+x.monto; });
+    var toCaida = to === 'entregado' && (ok.entregaMotivo === 'devolucion' || ok.entregaMotivo === 'punitorio') && rActive(r);
+    if (toCaida) {
+      var mc = await askCaida(r);
+      f.estado = 'caida'; f.motivoBaja = mc || (ok.entregaMotivo === 'punitorio' ? 'Punitorio al vendedor' : '');
+      f.historial = gLog({ historial: f.historial }, 'Estado: ' + rEst(r).name + ' → Caída' + (f.motivoBaja ? ': ' + f.motivoBaja : ''));
+    }
     gUpd('reservas', r.id, f); gFill(); render();
-    toast(cap(txt) + '.', { action: { label: 'Deshacer', fn: function () { var cur = gGet('reservas', r.id); if (!cur) return; var ps2 = pagosCopy(cur); ps2[i] = prev; gUpd('reservas', r.id, { pagos: ps2, historial: gLog(cur, 'Se deshizo: ' + txt) }); gFill(); render(); } } });
-    if (to === 'entregado' && allOut && r.estado === 'aceptada') {
-      var c = await confirmBox('¿Se firmó la operación?', 'Se entregó todo el dinero de esta reserva. Si ya se firmó, marcala como cerrada y registrá el cierre.', 'Registrar el cierre', false);
-      if (c) { var cur2 = gGet('reservas', r.id); gUpd('reservas', r.id, { estado: 'cerrada', historial: gLog(cur2, 'Estado: Aceptada → Cerrada') }); cierreDesdeReserva(gGet('reservas', r.id)); }
+    toast(cap(txt) + '.' + (toCaida ? ' La reserva pasó a Caída.' : ''), { action: { label: 'Deshacer', fn: function () { var cur = gGet('reservas', r.id); if (!cur) return; var ps2 = pagosCopy(cur); ps2[i] = prev; var u = { pagos: ps2, historial: gLog(cur, 'Se deshizo: ' + txt) }; if (toCaida) { u.estado = r.estado; u.motivoBaja = r.motivoBaja || ''; } gUpd('reservas', r.id, u); gFill(); render(); } } });
+    var nr = gGet('reservas', r.id);
+    if (to === 'oficina' && nr) await sendReceipt(nr, i, 'recepcion');
+    if (to === 'entregado' && nr) await sendReceipt(nr, i, 'entrega');
+    if (to === 'entregado' && allOut && ok.entregaMotivo === 'cierre' && r.estado === 'aceptada' && !r.cierreId) {
+      var c = await confirmBox('¿Cargamos el cierre?', 'Se entregó todo el dinero de esta reserva para la firma. Cuando cargues el cierre, la reserva pasa a Cerrada sola.', 'Cargar el cierre', false);
+      if (c) cierreDesdeReserva(gGet('reservas', r.id));
     }
   }
   function pagoBack(r, i) {
     var ps = pagosCopy(r), p = ps[i], k = STEPS.indexOf(p.estado || 'oficina');
     if (k <= 0) return;
     var to = STEPS[k - 1];
-    if (p.estado === 'entregado') { p.entregadoA = ''; p.fechaEntrega = ''; }
+    if (p.estado === 'entregado') { p.entregadoA = ''; p.fechaEntrega = ''; p.entregaMotivo = ''; p.entregadoAse = ''; to = p.fechaRetiro ? 'retirado' : p.fechaBanco ? 'banco' : 'oficina'; }
+    else if (p.estado === 'retirado') { p.retiro = ''; p.fechaRetiro = ''; }
     else if (p.estado === 'banco') { p.cuenta = ''; p.fechaBanco = ''; }
     p.estado = to;
-    gUpd('reservas', r.id, { pagos: ps, historial: gLog(r, cap(p.tipo || 'pago') + ' volvió a: ' + to) }); gFill(); render();
+    p.log = pagoLog(p).slice(); p.log.push({ paso: to, t: new Date().toISOString(), por: meName(), det: 'Se volvió al paso: ' + STEP_LBL[to] });
+    gUpd('reservas', r.id, { pagos: ps, historial: gLog(r, cap(p.tipo || 'pago') + ' volvió a: ' + STEP_LBL[to]) }); gFill(); render();
   }
   async function pagoRemove(r, i) {
     var ps = pagosCopy(r), p = ps[i];
@@ -4977,7 +5108,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     var monto = el('input', { type: 'text', inputmode: 'decimal', value: p.monto != null ? String(p.monto).replace('.', ',') : '', 'aria-label': 'Monto' });
     var fecha = el('input', { type: 'date', value: p.fecha || todayStr() });
     var medio = el('select', {}, [['efectivo', 'Efectivo'], ['transferencia', 'Transferencia'], ['cheque', 'Cheque']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); medio.value = p.medio || 'efectivo';
-    var est = el('select', {}, [['asesor', 'La tiene el asesor'], ['oficina', 'En la oficina'], ['banco', 'En el banco'], ['entregado', 'Ya entregado']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); est.value = p.estado || 'oficina';
+    var est = el('select', {}, [['asesor', 'La tiene el asesor'], ['oficina', 'En la oficina'], ['banco', 'En el banco'], ['retirado', 'De vuelta en la oficina'], ['entregado', 'Ya entregado']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); est.value = p.estado || 'oficina';
     var rec = staffSel(p.recibio || '', function () {});
     var body = el('div', { class: 'field' }, el('div', { class: 'grid' }, fld('Tipo', tipo), fld('Monto', el('span', { class: 'g-money-in' }, mon, monto)), fld('Fecha', fecha), fld('Medio', medio), fld('Dónde está', est), fld('La recibió', rec)), isNew ? null : el('p', { class: 'sm', text: 'Para mover el dinero de paso usá los botones de la tarjeta: quedan registrados con fecha.' }));
     var ok = await showModal(isNew ? 'Cargar pago' : 'Editar pago', body, [
@@ -4986,10 +5117,11 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     if (!ok) return;
     Object.assign(p, { tipo: tipo.value, moneda: mon.value, monto: numIn(monto.value), fecha: validDate(fecha.value) || todayStr(), medio: medio.value, estado: est.value, recibio: rec.value === '__otro' ? '' : rec.value });
     if (p.estado === 'oficina' && !p.fechaOficina) p.fechaOficina = p.fecha;
-    if (isNew) { p.id = uid(); ps.push(p); } else ps[i] = p;
+    if (isNew) { p.id = uid(); p.log = [{ paso: p.estado, t: new Date().toISOString(), por: meName(), det: 'Cargado: ' + ({ asesor: 'lo tiene el asesor', oficina: 'en la oficina' + (p.recibio ? ', lo recibió ' + p.recibio : ''), banco: 'en el banco', retirado: 'de vuelta en la oficina', entregado: 'ya entregado' }[p.estado] || '') }]; ps.push(p); } else ps[i] = p;
     var f = { pagos: ps, historial: gLog(r, (isNew ? 'Se cargó ' : 'Se editó ') + p.tipo + ' de ' + money(p.monto, p.moneda)) };
     if (isNew && p.tipo === 'refuerzo' && r.estado === 'pendiente') { f.estado = 'aceptada'; f.aceptadaEl = todayStr(); toast('Con el refuerzo, la reserva pasó a Aceptada.'); }
     gUpd('reservas', r.id, f); gFill(); render();
+    if (isNew && p.estado !== 'asesor' && p.estado !== 'entregado') { var nr = gGet('reservas', r.id); if (nr) sendReceipt(nr, ps.length - 1, 'recepcion'); }
   }
   function resResumen(r) {
     return [r.propiedad + (r.localidad ? ', ' + r.localidad : ''), (OPS[r.operacion] || '') + ' · ' + ((r.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ)[r.punta] || ''), 'Asesor: ' + (aseNames(r.asesorIds) || '-'), 'Estado: ' + rEst(r).long,
@@ -5041,57 +5173,84 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     return parts.join(' ').replace(/\s+/g, ' ').trim();
   }
   function monLetras(m) { return m === '$' ? 'pesos' : m === '€' ? 'euros' : 'dólares estadounidenses'; }
-  function receiptNro(r, i) { return 'R-' + String((r.pagos[i] && r.pagos[i].fecha) || todayStr()).slice(0, 4) + '-' + String(r.id).slice(-5).toUpperCase() + '-' + (i + 1); }
-  async function receiptBlob(r, i) {
-    var JsPDF = await loadJsPDF();
+  function receiptNro(r, i, kind) { return (kind === 'entrega' ? 'E-' : 'R-') + String((r.pagos[i] && r.pagos[i].fecha) || todayStr()).slice(0, 4) + '-' + String(r.id).slice(-5).toUpperCase() + '-' + (i + 1); }
+  async function receiptBlob(r, i, kind) {
+    var JsPDF = await loadJsPDF(), ent = kind === 'entrega';
     var p = rPagos(r)[i], doc = new JsPDF({ unit: 'mm', format: 'a4' });
     var W = 210, M = 20, y = 22;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.text(String(gConf.razon || ''), M, y);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(90); doc.text(String(gConf.domicilio || ''), M, y + 6);
-    doc.text('Comprobante ' + receiptNro(r, i), W - M, y, { align: 'right' }); doc.text('Fecha: ' + dmy(p.fechaOficina || p.fecha || todayStr()), W - M, y + 6, { align: 'right' });
+    doc.text('Comprobante ' + receiptNro(r, i, kind), W - M, y, { align: 'right' }); doc.text('Fecha: ' + dmy(ent ? (p.fechaEntrega || todayStr()) : (p.fechaOficina || p.fecha || todayStr())), W - M, y + 6, { align: 'right' });
     doc.setDrawColor(200); doc.line(M, y + 11, W - M, y + 11);
     y += 24; doc.setTextColor(20); doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-    doc.text('Constancia de recepción de ' + (p.tipo === 'refuerzo' ? 'refuerzo de reserva' : 'reserva'), M, y);
+    var concepto = p.tipo === 'refuerzo' ? 'refuerzo de reserva' : 'reserva';
+    doc.text(ent ? 'Constancia de entrega de ' + concepto : 'Constancia de recepción de ' + concepto, M, y);
     y += 10; doc.setFont('helvetica', 'normal'); doc.setFontSize(11);
-    var of = (r.oferente && r.oferente.nombre) || '..........................................';
-    var txt = 'Recibimos de ' + of + ' la suma de ' + money(p.monto, p.moneda) + ' (' + monLetras(p.moneda) + ' ' + numLetras(p.monto) + ') en concepto de ' + (p.tipo === 'refuerzo' ? 'refuerzo de la reserva' : 'reserva') + ' sobre el inmueble ubicado en ' + (r.propiedad || '') + (r.localidad ? ', ' + r.localidad : '') + ', para su ' + (r.operacion === 'venta' ? 'compra' : 'alquiler') + '.';
+    var ases = (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); return a ? aseFull(a) : ''; }).filter(Boolean).join(' y ') || '..........................................';
+    var sum = money(p.monto, p.moneda) + ' (' + monLetras(p.moneda) + ' ' + numLetras(p.monto) + ')';
+    var inm = (r.propiedad || '') + (r.localidad ? ', ' + r.localidad : '');
+    var txt;
+    if (ent) {
+      var aEnt = p.entregadoAse ? aseName(p.entregadoAse) : ases;
+      var para = p.entregaMotivo === 'devolucion' ? 'su devolución al ' + (r.estado === 'rechazada' ? 'oferente, por no haber sido aceptada la reserva' : 'comprador, por haberse caído la operación') : p.entregaMotivo === 'punitorio' ? 'su entrega al vendedor en concepto de punitorio, por haberse caído la operación' : 'ser presentada en el acto de firma de la operación';
+      txt = 'Entregamos a ' + aEnt + ', asesor/a de la oficina, la suma de ' + sum + ' correspondiente a la ' + concepto + ' sobre el inmueble ubicado en ' + inm + ', para ' + para + '.';
+    } else {
+      txt = 'Recibimos de ' + ases + ', asesor/a de la oficina, la suma de ' + sum + ' en concepto de ' + (p.tipo === 'refuerzo' ? 'refuerzo de la reserva' : 'reserva') + ' sobre el inmueble ubicado en ' + inm + ', para su ' + (r.operacion === 'venta' ? 'compra' : 'alquiler') + '.';
+    }
     var lines = doc.splitTextToSize(txt, W - 2 * M); doc.text(lines, M, y); y += lines.length * 6 + 4;
     var rows = [];
-    if (r.precio) rows.push([r.operacion === 'venta' ? 'Precio ofrecido' : 'Valor ofrecido', money(r.precio, r.precioMon)]);
+    if (r.precio) rows.push([r.operacion === 'venta' ? 'Precio ofrecido' : 'Valor del contrato', money(r.precio, r.precioMon)]);
     rows.push(['Medio de pago', cap(p.medio || 'efectivo')]);
-    var prev = rPagos(r).slice(0, i).filter(function (x) { return +x.monto; });
-    if (prev.length) rows.push(['Pagos anteriores', prev.map(function (x) { return money(x.monto, x.moneda); }).join(' + ')]);
-    rows.push(['Asesor interviniente', (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); return a ? aseFull(a) : ''; }).filter(Boolean).join(' y ') || '-']);
-    if (p.recibio) rows.push(['Recibido por', p.recibio]);
+    var prevP = rPagos(r).slice(0, i).filter(function (x) { return +x.monto; });
+    if (prevP.length && !ent) rows.push(['Pagos anteriores', prevP.map(function (x) { return money(x.monto, x.moneda); }).join(' + ')]);
+    if (!ent && p.recibio) rows.push(['Recibido por', p.recibio]);
+    if (ent && p.entrego) rows.push(['Entregado por', p.entrego]);
     rows.forEach(function (rw) { doc.setFont('helvetica', 'bold'); doc.text(rw[0] + ':', M, y); doc.setFont('helvetica', 'normal'); doc.text(String(rw[1]), M + 50, y); y += 7; });
     y += 4;
-    if (gConf.legal) { doc.setFontSize(9.5); doc.setTextColor(70); var lg = doc.splitTextToSize(String(gConf.legal), W - 2 * M); doc.text(lg, M, y); y += lg.length * 5 + 4; }
+    if (!ent && gConf.legal) { doc.setFontSize(9.5); doc.setTextColor(70); var lg = doc.splitTextToSize(String(gConf.legal), W - 2 * M); doc.text(lg, M, y); y += lg.length * 5 + 4; }
     y = Math.max(y + 24, 200);
     doc.setDrawColor(120); doc.line(M, y, M + 70, y); doc.line(W - M - 70, y, W - M, y);
     doc.setFontSize(9.5); doc.setTextColor(60); doc.text('Firma y aclaración (recibe)', M, y + 5); doc.text('Firma y aclaración (entrega)', W - M - 70, y + 5);
     if (gConf.pie) { doc.setFontSize(8.5); doc.setTextColor(110); doc.text(doc.splitTextToSize(String(gConf.pie), W - 2 * M), M, 284); }
     return doc.output('blob');
   }
-  function receiptName(r, i) { return 'Comprobante ' + receiptNro(r, i) + ' ' + String(r.propiedad || '').replace(/[\\/:*?"<>|]/g, '').slice(0, 40) + '.pdf'; }
-  async function downloadReceipt(r, i) {
-    try { var b = await receiptBlob(r, i); await saveFile(receiptName(r, i), b); return true; }
+  function receiptName(r, i, kind) { return 'Comprobante ' + receiptNro(r, i, kind) + ' ' + String(r.propiedad || '').replace(/[\\/:*?"<>|]/g, '').slice(0, 40) + '.pdf'; }
+  async function downloadReceipt(r, i, kind) {
+    try { var b = await receiptBlob(r, i, kind); await saveFile(receiptName(r, i, kind), b); return true; }
     catch (e) { toast('No se pudo generar el PDF. Revisá la conexión e intentá de nuevo.', { kind: 'error' }); return false; }
   }
-  function markSent(r, i, to) {
+  function markSent(r, i, to, kind) {
     var cur = gGet('reservas', r.id); if (!cur) return;
     var ps = pagosCopy(cur); if (!ps[i]) return;
-    ps[i].comprobante = { t: new Date().toISOString(), a: to || '' };
-    gUpd('reservas', r.id, { pagos: ps, historial: gLog(cur, 'Comprobante de ' + (ps[i].tipo || 'pago') + ' enviado' + (to ? ' a ' + to : '')) });
+    ps[i][kind === 'entrega' ? 'comprobanteEnt' : 'comprobante'] = { t: new Date().toISOString(), a: to || '' };
+    gUpd('reservas', r.id, { pagos: ps, historial: gLog(cur, 'Comprobante de ' + (kind === 'entrega' ? 'entrega' : 'recepción') + ' de ' + (ps[i].tipo || 'pago') + ' enviado' + (to ? ' a ' + to : '')) });
     gFill(); render();
   }
-  async function sendReceipt(r, i) {
-    var p = rPagos(r)[i];
-    var aMails = (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); return a && a.mail; }).filter(Boolean);
-    var to = el('input', { type: 'email', value: (r.oferente && r.oferente.mail) || '', placeholder: 'mail@ejemplo.com', multiple: true });
-    var cc = el('input', { type: 'email', value: aMails.join(', '), multiple: true });
-    var subj = el('input', { type: 'text', value: 'Comprobante de ' + (p.tipo === 'refuerzo' ? 'refuerzo de reserva' : 'reserva') + ' · ' + (r.propiedad || '') });
+  function aseMailPicker(ids) {
+    var sel = ids.slice(), box = el('div', { class: 'g-mailpick' });
+    function draw() {
+      var add = el('select', { 'aria-label': 'Agregar asesor' }, [el('option', { value: '', text: '+ Agregar asesor' })].concat(aseActive().filter(function (a) { return sel.indexOf(a.id) < 0; }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) + (a.mail ? '' : ' (sin mail)') }); })));
+      add.addEventListener('change', function () { if (add.value) { sel.push(add.value); draw(); } });
+      box.replaceChildren.apply(box, sel.map(function (id, k) {
+        var a = gGet('asesores', id);
+        return el('span', { class: 'g-mchip' + (a && a.mail ? '' : ' bad') }, aseAv(id), el('span', { text: aseName(id) + ' · ' + (a && a.mail ? a.mail : 'sin mail: cargalo en su ficha') }), el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Quitar a ' + aseName(id), text: '×', onclick: function () { sel.splice(k, 1); draw(); } }));
+      }).concat([add]));
+    }
+    draw();
+    Object.defineProperty(box, 'value', { get: function () { return sel.map(function (id) { var a = gGet('asesores', id); return a && a.mail; }).filter(Boolean).join(', '); } });
+    return box;
+  }
+  async function sendReceipt(r, i, kind) {
+    kind = kind || 'recepcion';
+    var p = rPagos(r)[i], ent = kind === 'entrega';
+    var ids = ent && p.entregadoAse ? [p.entregadoAse] : (r.asesorIds || []).slice();
+    var to = aseMailPicker(ids);
+    var cc = el('input', { type: 'email', value: (gConf.ccComprobantes || GCONF_DEF.ccComprobantes || []).join(', '), multiple: true });
+    var concepto = p.tipo === 'refuerzo' ? 'refuerzo de reserva' : 'reserva';
+    var subj = el('input', { type: 'text', value: 'Comprobante de ' + (ent ? 'entrega' : 'recepción') + ' de ' + concepto + ' · ' + (r.propiedad || '') });
     var body = el('textarea', { rows: 6 });
-    body.value = 'Hola' + (r.oferente && r.oferente.nombre ? ' ' + r.oferente.nombre.split(' ')[0] : '') + ':\n\nTe adjuntamos el comprobante por ' + money(p.monto, p.moneda) + ' en concepto de ' + (p.tipo === 'refuerzo' ? 'refuerzo de la reserva' : 'reserva') + ' sobre ' + (r.propiedad || 'la propiedad') + (r.localidad ? ', ' + r.localidad : '') + '.\n\nCualquier consulta, quedamos a disposición.\n' + (gConf.razon || '');
+    var nom = ids.map(function (id) { return aseName(id).split(' ')[0]; }).join(' y ');
+    body.value = 'Hola' + (nom ? ' ' + nom : '') + ':\n\n' + (ent ? 'Te adjuntamos el comprobante de entrega de ' + money(p.monto, p.moneda) + ' de la ' + concepto + ' sobre ' + (r.propiedad || 'la propiedad') + ', ' + (ENTREGA_SHORT[p.entregaMotivo] || 'según lo conversado') + '.' : 'Te adjuntamos el comprobante de recepción en la oficina de ' + money(p.monto, p.moneda) + ' en concepto de ' + concepto + ' sobre ' + (r.propiedad || 'la propiedad') + (r.localidad ? ', ' + r.localidad : '') + '.') + '\n\nSaludos,\n' + (gConf.razon || '');
     var canShare = false;
     try { canShare = !!(navigator.canShare && navigator.canShare({ files: [new File([new Blob(['x'])], 'x.pdf', { type: 'application/pdf' })] })); } catch (e) {}
     function mailUrl(gmail) {
@@ -5100,21 +5259,22 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
       return 'mailto:' + q(to.value).replace(/%40/g, '@').replace(/%2C/g, ',') + '?' + (cc.value ? 'cc=' + q(cc.value) + '&' : '') + 'subject=' + q(subj.value) + '&body=' + q(body.value);
     }
     var wrap = el('div', { class: 'field' },
-      el('p', { class: 'hint', text: 'Se genera el PDF del comprobante. ' + (canShare ? 'Con “Compartir” lo mandás adjunto por mail o WhatsApp.' : 'Gmail no deja adjuntarlo solo: se descarga el PDF y lo arrastrás al mail que se abre.') }),
-      fld('Para', to), fld('Con copia', cc, aMails.length ? 'El mail del asesor sale de su ficha en Asesores.' : 'Si cargás el mail del asesor en su ficha, va en copia.'), fld('Asunto', subj), fld('Mensaje', body));
-    var acts = [el('button', { type: 'button', class: 'btn ghost', text: 'Cerrar', onclick: function () { closeModal(null); } }),
-      el('button', { type: 'button', class: 'btn', text: 'Solo descargar PDF', onclick: async function () { if (await downloadReceipt(r, i)) closeModal(null); } })];
+      el('p', { class: 'hint', text: 'Se genera el PDF del comprobante. ' + (canShare ? 'Con “Compartir” lo mandás adjunto.' : 'Gmail no deja adjuntarlo solo: se descarga el PDF y lo arrastrás al mail que se abre.') }),
+      el('div', { class: 'field' }, el('span', { text: 'Para (mail de la ficha del asesor)' }), to), fld('Con copia', cc), fld('Asunto', subj), fld('Mensaje', body));
+    function noTo(e) { if (to.value) return false; if (e) e.preventDefault(); toast('Elegí un asesor con mail cargado en su ficha.', { kind: 'error' }); return true; }
+    var acts = [el('button', { type: 'button', class: 'btn ghost', text: 'Ahora no', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn', text: 'Solo descargar PDF', onclick: async function () { if (await downloadReceipt(r, i, kind)) closeModal(null); } })];
     if (canShare) acts.push(el('button', { type: 'button', class: 'btn primary', text: 'Compartir', onclick: async function () {
-      try { var b = await receiptBlob(r, i); await navigator.share({ files: [new File([b], receiptName(r, i), { type: 'application/pdf' })], title: subj.value, text: body.value }); closeModal(null); markSent(r, i, to.value); }
+      try { var b = await receiptBlob(r, i, kind); await navigator.share({ files: [new File([b], receiptName(r, i, kind), { type: 'application/pdf' })], title: subj.value, text: body.value }); closeModal(null); markSent(r, i, to.value, kind); }
       catch (e) { if (e && e.name === 'AbortError') return; toast('No se pudo compartir. Probá descargando el PDF.', { kind: 'error' }); }
     } }));
-    acts.push(el('a', { class: 'btn' + (canShare ? '' : ' primary'), href: '#', target: '_blank', rel: 'noopener', text: 'Abrir en Gmail', onclick: async function (e) {
-      if (!to.value.trim()) { e.preventDefault(); to.focus(); to.setAttribute('aria-invalid', 'true'); return; }
+    acts.push(el('a', { class: 'btn' + (canShare ? '' : ' primary'), href: '#', target: '_blank', rel: 'noopener', text: 'Abrir en Gmail', onclick: function (e) {
+      if (noTo(e)) return;
       e.currentTarget.href = mailUrl(true);
-      downloadReceipt(r, i); markSent(r, i, to.value); setTimeout(function () { closeModal(null); }, 50);
+      downloadReceipt(r, i, kind); markSent(r, i, to.value, kind); setTimeout(function () { closeModal(null); }, 50);
     } }));
-    acts.push(el('a', { class: 'btn ghost', href: '#', text: 'Otra app de correo', onclick: function (e) { e.currentTarget.href = mailUrl(false); downloadReceipt(r, i); markSent(r, i, to.value); setTimeout(function () { closeModal(null); }, 50); } }));
-    showModal('Enviar comprobante · ' + money(p.monto, p.moneda), wrap, acts);
+    acts.push(el('a', { class: 'btn ghost', href: '#', text: 'Otra app de correo', onclick: function (e) { if (noTo(e)) return; e.currentTarget.href = mailUrl(false); downloadReceipt(r, i, kind); markSent(r, i, to.value, kind); setTimeout(function () { closeModal(null); }, 50); } }));
+    return showModal('Comprobante de ' + (ent ? 'entrega' : 'recepción') + ' · ' + money(p.monto, p.moneda), wrap, acts);
   }
 
   /* ===== CIERRE: panel ===== */
@@ -5124,16 +5284,18 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   }
   function cierreDesdeReserva(r) {
     if (!r) return;
-    var pv = +gConf.pctVend, pc = +gConf.pctComp, pt = r.pctCom != null && r.pctCom !== '' ? +r.pctCom : null;
-    if (pt != null) { if (r.punta === 'vendedor') pv = pt; else if (r.punta === 'comprador') pc = pt; else { var tt = pv + pc || 1; pv = pt * pv / tt; pc = pt - pv; } }
-    var d = { fecha: r.fechaFirma && dayDiff(r.fechaFirma) <= 0 ? r.fechaFirma : todayStr(), operacion: r.operacion || 'venta', puntas: r.punta || 'ambas', compartida: r.punta === 'ambas' ? 'no' : 'fuera', direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +gConf.cot, pctVend: pv, pctComp: pc, reservaId: r.id, fechaReserva: r.fecha || '', facturado: false, liquidado: false,
-      asesores: (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id); var sp = splitAt(a, r.fechaFirma || todayStr()); return { id: id, parte: 1 / (r.asesorIds.length || 1), split: sp != null ? sp : 0.5 }; }) };
+    var k = rCom(r), L = k.L, ff = r.fechaFirma && dayDiff(r.fechaFirma) <= 0 ? r.fechaFirma : todayStr();
+    var otra = !L.v.nos ? L.v : !L.c.nos ? L.c : null;
+    var d = { fecha: ff, operacion: r.operacion || 'venta', puntas: otra && !k.red && L.v.nos && (+L.c.pct || 0) > 0 ? 'ambas' : puntaDe(L), compartida: !otra ? 'no' : k.red ? 'red' : 'fuera', otraParte: otra ? otra.inmob || '' : '', redCB: !!k.red, pctOtra: otra && !k.red && L.v.nos ? (+L.c.pctOtra || null) : null,
+      direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +r.cot || +gConf.cot, pctVend: +L.v.pct || 0, pctComp: +L.c.pct || 0, reservaId: r.id, fechaReserva: r.fecha || '', facturado: false, liquidado: false,
+      asesores: k.parts.length ? k.parts.map(function (p) { var a = gGet('asesores', p.id), sp = splitAt(a, ff); return { id: p.id, parte: Math.round(p.parte * 10000) / 10000, split: sp != null ? sp : 0.5 }; }) : (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id), sp = splitAt(a, ff); return { id: id, parte: 1 / r.asesorIds.length, split: sp != null ? sp : 0.5 }; }) };
+    if (k.manual && k.total != null) d.brutoManual = d.moneda === '$' ? Math.round(k.total * (d.cot || 1)) : Math.round(k.total);
     openCie(null, d);
   }
   function fillCie() {
     var c = gRec(), isNew = !c, d = isNew ? gOpen.draft : c;
     var set = gSetter('cierres', function (f) {
-      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad'].some(function (k) { return k in f; });
+      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad', 'redCB', 'pctOtra'].some(function (k) { return k in f; });
       if (structural) gFill(); else updCalcBox();
     });
     var opLbl = d.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ;
@@ -5146,12 +5308,14 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
         fld('Puntas de la oficina', inSel(d.puntas || 'ambas', Object.keys(opLbl).map(function (k) { return [k, opLbl[k]]; }), set, 'puntas'))),
       fld('Dirección', inText(d.direccion, set, 'direccion', { id: 'gCieDir', placeholder: 'Calle y número' })),
       el('div', { class: 'grid' },
-        fld('Localidad', inText(d.localidad, set, 'localidad')),
+        fld('Localidad', listSel('localidades', d.localidad, function (v, it) { set({ localidad: v, juris: (it && it.juris) || jurisDe(v) }); }, 'Elegí la localidad')),
         fld('Jurisdicción', inSel(d.juris || jurisDe(d.localidad), [['PBA', 'Provincia (PBA)'], ['CABA', 'CABA']], set, 'juris'), (d.juris || jurisDe(d.localidad)) === 'PBA' ? 'Paga ABAO sobre lo facturado por la oficina' : 'No paga ABAO'),
         fld('Cómo llegó el cliente', inSel(d.origen || '', [['', 'Sin especificar']].concat(ORIG_CLI.concat(d.origen && ORIG_CLI.indexOf(d.origen) < 0 ? [d.origen] : []).map(function (o) { return [o, o]; })), set, 'origen'))),
-      d.puntas === 'ambas' ? null : el('div', { class: 'grid' },
-        fld('La otra punta', inSel(d.compartida === 'no' ? 'fuera' : (d.compartida || 'fuera'), [['red', 'Otra oficina de la red'], ['fuera', 'Inmobiliaria fuera de la red'], ['directo', 'Sin inmobiliaria (parte directa)']], set, 'compartida')),
-        d.compartida === 'directo' ? null : fld('Inmobiliaria de la otra punta', inText(d.otraParte, set, 'otraParte', { placeholder: 'Nombre de la oficina' })))]);
+      d.puntas === 'ambas' && !d.pctOtra ? null : el('div', { class: 'grid' },
+        fld('La otra punta', inSel(d.compartida === 'no' ? 'fuera' : (d.compartida || 'fuera'), [['red', 'Otra oficina de la Red CB'], ['fuera', 'Inmobiliaria fuera de la red'], ['directo', 'Sin inmobiliaria (parte directa)']], set, 'compartida')),
+        d.compartida === 'directo' ? null : fld('Inmobiliaria de la otra punta', listSel('inmobiliarias', d.otraParte, function (v, it) { var o = { otraParte: v }; if (it && it.red) { o.compartida = 'red'; } set(o); }, 'Elegí la inmobiliaria')),
+        d.compartida === 'red' ? el('label', { class: 'check' }, (function () { var cb = el('input', { type: 'checkbox' }); cb.checked = !!d.redCB; cb.addEventListener('change', function () { set({ redCB: cb.checked }); }); return cb; })(), 'Sumar las dos puntas y dividir 50/50') : null,
+        d.compartida === 'fuera' && d.puntas === 'ambas' ? fld('De la punta compradora, para la otra inmobiliaria', inNum(d.pctOtra, set, 'pctOtra', null, 100), '% del valor que se lleva la otra oficina') : null)]);
     var parts = (d.asesores || []).map(function (x) { return clone(x); });
     function setParts(np) { set({ asesores: np }); }
     var aseRows = parts.map(function (x, k) {
@@ -5167,8 +5331,8 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     var valSec = sect('Valores', [
       el('div', { class: 'grid' },
         fld('Valor de cierre', el('span', { class: 'g-money-in' }, inSel(d.moneda || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'moneda', { 'aria-label': 'Moneda' }), inNum(d.valor, set, 'valor', { 'aria-label': 'Valor de cierre' })), d.operacion === 'venta' ? null : 'En alquileres, el total del contrato.'),
-        d.puntas !== 'comprador' ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), inNum(d.pctVend, set, 'pctVend', null, 100)) : null,
-        d.puntas !== 'vendedor' ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), inNum(d.pctComp, set, 'pctComp', null, 100)) : null,
+        d.puntas !== 'comprador' || d.redCB ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), inNum(d.pctVend, set, 'pctVend', null, 100)) : null,
+        d.puntas !== 'vendedor' || d.redCB ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), inNum(d.pctComp, set, 'pctComp', null, 100)) : null,
         d.moneda === '$' ? fld('Dólar del día', inNum(d.cot, set, 'cot'), 'Para pasar a U$S en las métricas') : null),
       d.calc === 'excel' ? null : fld('Comisión bruta cobrada (opcional)', inNum(d.brutoManual, set, 'brutoManual', { placeholder: 'Si difiere del cálculo' }), 'Dejalo vacío para usar valor × porcentaje.'),
       el('div', { id: 'gCalc', class: 'g-calc' })]);
@@ -5226,7 +5390,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     if (!+d.valor && !+d.brutoManual) return err('Cargá el valor de cierre.');
     var o = applyCalc(clone(d));
     o.anio = yearOf(o.fecha); o.mes = monthOf(o.fecha); o.creado = new Date().toISOString(); o.creadoPor = meName();
-    if (o.puntas === 'ambas') o.compartida = 'no';
+    if (o.puntas === 'ambas' && !o.pctOtra) o.compartida = 'no';
     var id = gNewId('cierres');
     gSet('cierres', id, o);
     if (o.reservaId) { var r = gGet('reservas', o.reservaId); if (r) gUpd('reservas', r.id, { cierreId: id, estado: 'cerrada', cerradaEl: o.fecha, historial: gLog(r, 'Pasó a cierre (firma ' + dmy(o.fecha) + ')') }); }
@@ -5245,36 +5409,69 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     $('#gp').classList.toggle('wide', !isNew && (gOpen.tab === 'ops' || gOpen.tab === 'cc'));
     var s = isNew ? null : aseStats(a, y);
     gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
-      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], ['cc', 'Cuenta corriente'], ['datos', 'Datos']]);
+      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], aseOnbData(a) ? ['onb', 'Onboarding'] : null, ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
+    if (window.ASE_MODE && gOpen.tab === 'datos') gOpen.tab = 'resumen';
     if (isNew || gOpen.tab === 'datos') aseDatos(a, d, isNew);
+    else if (gOpen.tab === 'onb') aseOnb(a);
     else if (gOpen.tab === 'ops') aseOps(a, s, y);
     else if (gOpen.tab === 'cc') aseCuenta(a);
     else aseResumen(a, s, y);
-    if (isNew) gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }), el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }), el('button', { type: 'button', class: 'btn primary', text: 'Guardar asesor', onclick: saveNewAse })]);
+    if (window.ASE_MODE) gFoot([]);
+    else if (isNew) gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }), el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }), el('button', { type: 'button', class: 'btn primary', text: 'Guardar asesor', onclick: saveNewAse })]);
     else gFoot([el('span', { class: 'foot-note', text: d.actualizado ? 'Guardado ' + ago(d.actualizado) + (d.editorNombre ? ' por ' + d.editorNombre : '') : '' }),
       d.activo === false ? el('button', { type: 'button', class: 'btn', text: 'Reincorporar', onclick: function () { aseReincorporar(a); } }) : el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja…', onclick: function () { aseBaja(a); } })]);
   }
   function aseResumen(a, s, y) {
-    var now = new Date().getFullYear();
+    var now = new Date().getFullYear(), cur = y === now, ro = !!window.ASE_MODE;
+    var pa = cur ? s.pipeA : 0, pp = cur ? s.pipeP : 0;
+    function pob(v) { return s.obj ? pctTxt(v / s.obj, 0) + ' del objetivo' : ''; }
     var kp = el('div', { class: 'kpis two' },
-      kpi('Facturado ' + y, usdK(s.real), s.obj ? pctTxt(s.pct, 0) + ' de ' + usdK(s.obj) : 'Sin objetivo cargado para ' + y),
-      kpi('Debería ir en', s.obj ? usdK(s.esper) : '–', s.obj ? pctTxt(s.ef, 0) + ' del objetivo a hoy (según la estacionalidad)' : 'Cargalo en Datos'),
-      kpi('Proyectado', usdK(s.proy), y === now ? 'Incluye ' + usdK(s.pipeA) + ' de reservas aceptadas' + (s.pipeP ? '. Además hay ' + usdK(s.pipeP) + ' esperando aceptación.' : '') : null),
-      kpi('Le dejó a la oficina', usdK(s.neto), 'Neto de sus operaciones'),
+      kpi('Facturado ' + y, usdK(s.real), s.obj ? pob(s.real) + ' (' + usdK(s.obj) + ')' : 'Sin objetivo cargado para ' + y),
+      kpi('Proyectado', usdK(s.real + pa), cur ? (s.obj ? 'Si se firman las reservas aceptadas llegaría al ' + pob(s.real + pa) : 'Facturado + reservas aceptadas') + (pp ? '. Con las pendientes: ' + usdK(s.real + pa + pp) + (s.obj ? ' (' + pctTxt((s.real + pa + pp) / s.obj, 0) + ')' : '') : '') : null),
+      kpi('Debería ir en', s.obj ? usdK(s.esper) : '–', s.obj ? pctTxt(s.ef, 0) + ' del objetivo a hoy, según la estacionalidad' : (ro ? '' : 'Cargá el objetivo en Datos')),
+      kpi('Comisión del asesor', usdK(s.gan), (cur && s.ganA ? '+ ' + usdK(s.ganA) + ' de reservas aceptadas' : 'Lo que le corresponde según su split') + (cur && s.ganP ? ' · ' + usdK(s.ganP) + ' más si se aceptan las pendientes' : '')),
+      ro ? null : kpi('Le dejó a la oficina', usdK(s.neto), 'Neto de sus operaciones'),
       kpi('Operaciones', String(s.ops), s.puntas + ' puntas · ' + s.ventas + ' ventas'),
       kpi('Ticket promedio de venta', s.ticket != null ? usdK(s.ticket) : '–'));
+    /* camino al objetivo */
+    var road = null;
+    if (cur || s.obj) {
+      var top = Math.max(s.obj || 0, s.real + pa + pp, 1) * 1.04;
+      function w(v) { return Math.max(0, v * 100 / top) + '%'; }
+      road = el('section', { class: 'g-sec g-card g-road' }, el('h3', { class: 'g-sec-h', text: 'Camino al objetivo ' + y }),
+        el('div', { class: 'g-road-bar', role: 'img', 'aria-label': 'Facturado ' + usd(s.real) + ', aceptadas ' + usd(pa) + ', pendientes ' + usd(pp) + (s.obj ? ', objetivo ' + usd(s.obj) : '') },
+          el('i', { class: 'r', style: 'width:' + w(s.real) }), el('i', { class: 'a', style: 'width:' + w(pa) }), el('i', { class: 'p', style: 'width:' + w(pp) }),
+          s.obj && cur ? el('b', { class: 'g-road-hoy', style: 'left:' + w(s.esper), title: 'Hoy debería ir en ' + usd(s.esper) }, el('span', { text: 'Hoy' })) : null,
+          s.obj ? el('b', { class: 'g-road-obj', style: 'left:' + w(s.obj) }, el('span', { text: 'Objetivo' })) : null),
+        el('div', { class: 'g-road-leg' },
+          el('div', {}, el('i', { class: 'r' }), el('span', {}, 'Facturado ', el('b', { text: usdK(s.real) }), s.obj ? el('span', { class: 'sm', text: ' · ' + pctTxt(s.real / s.obj, 0) }) : null)),
+          cur ? el('div', {}, el('i', { class: 'a' }), el('span', {}, 'Reservas aceptadas ', el('b', { text: '+' + usdK(pa) }), s.obj ? el('span', { class: 'sm', text: ' → ' + pctTxt((s.real + pa) / s.obj, 0) }) : null)) : null,
+          cur ? el('div', {}, el('i', { class: 'p' }), el('span', {}, 'Esperando aceptación ', el('b', { text: '+' + usdK(pp) }), s.obj ? el('span', { class: 'sm', text: ' → ' + pctTxt((s.real + pa + pp) / s.obj, 0) }) : null)) : null,
+          s.obj ? el('div', {}, el('i', { class: 'o' }), el('span', {}, 'Objetivo ', el('b', { text: usdK(s.obj) }), s.real < s.obj ? el('span', { class: 'sm', text: ' · faltan ' + usdK(s.obj - s.real) }) : el('span', { class: 'sm ok-t', text: ' · cumplido' }))) : null));
+    }
+    /* mes a mes con lo proyectado por fecha de firma */
+    var pA = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], pP = pA.slice(), sinF = 0;
+    if (cur) G.reservas.forEach(function (r) {
+      if (!rActive(r) || (r.asesorIds || []).indexOf(a.id) < 0) return;
+      var me = rCom(r).parts.filter(function (p) { return p.id === a.id; })[0]; if (!me || !me.usd) return;
+      if (!r.fechaFirma || yearOf(r.fechaFirma) !== y) { if (!r.fechaFirma) sinF += me.usd; return; }
+      var m = monthOf(r.fechaFirma) - 1; if (r.estado === 'aceptada') pA[m] += me.usd; else pP[m] += me.usd;
+    });
     var mx = 0, objM = [];
-    for (var i = 0; i < 12; i++) { objM.push(s.obj * monthShare(i)); mx = Math.max(mx, s.byM[i], objM[i]); }
-    var curM = y === now ? new Date().getMonth() : (y < now ? 11 : -1), acc = 0;
+    for (var i = 0; i < 12; i++) { objM.push(s.obj * monthShare(i)); mx = Math.max(mx, s.byM[i] + pA[i] + pP[i], objM[i]); }
+    var curM = cur ? new Date().getMonth() : (y < now ? 11 : -1);
     var chart = el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Mes a mes · ' + y }),
       el('div', { class: 'bchart small' }, s.byM.map(function (v, k) {
-        acc += v;
-        return el('div', { class: 'bc' + (k > curM ? ' fut' : ''), title: cap(MESES[k]) + ': ' + usd(v) + (s.obj ? ' · objetivo del mes ' + usd(objM[k]) : ''), role: 'img', 'aria-label': cap(MESES[k]) + ': ' + usd(v) + (s.obj ? ', objetivo ' + usd(objM[k]) : '') },
-          el('span', { class: 'bc-v', text: v ? usdK(v).replace('U$S ', '') : '' }),
-          el('span', { class: 'bc-bars' }, el('i', { class: 'bb' + (s.obj && v >= objM[k] ? ' hit' : ''), style: 'height:' + (mx ? Math.round(v * 100 / mx) : 0) + '%' }), s.obj ? el('i', { class: 'bo', style: 'bottom:' + (mx ? Math.round(objM[k] * 100 / mx) : 0) + '%' }) : null),
+        var tot = v + pA[k] + pP[k];
+        return el('div', { class: 'bc' + (k > curM && !tot ? ' fut' : ''), title: cap(MESES[k]) + ': facturado ' + usd(v) + (pA[k] ? ' · aceptadas ' + usd(pA[k]) : '') + (pP[k] ? ' · pendientes ' + usd(pP[k]) : '') + (s.obj ? ' · objetivo del mes ' + usd(objM[k]) : ''), role: 'img', 'aria-label': cap(MESES[k]) + ': ' + usd(v) + (pA[k] + pP[k] ? ', proyectado ' + usd(pA[k] + pP[k]) : '') },
+          el('span', { class: 'bc-v', text: tot ? usdK(tot).replace('U$S ', '') : '' }),
+          el('span', { class: 'bc-bars' }, el('span', { class: 'bstack', style: 'height:' + (mx ? Math.round(tot * 100 / mx) : 0) + '%' },
+            pP[k] ? el('i', { class: 'p', style: 'flex:' + pP[k] }) : null, pA[k] ? el('i', { class: 'a', style: 'flex:' + pA[k] }) : null, v ? el('i', { class: 'r' + (s.obj && v >= objM[k] ? ' hit' : ''), style: 'flex:' + v }) : null),
+            s.obj ? el('i', { class: 'bo', style: 'bottom:' + (mx ? Math.round(objM[k] * 100 / mx) : 0) + '%' }) : null),
           el('span', { class: 'bc-m', text: MES3[k] }));
       })),
-      s.obj ? el('p', { class: 'sm', text: 'La línea marca el objetivo de cada mes, repartido según la estacionalidad de la oficina.' }) : null);
+      el('div', { class: 'g-road-leg sm' }, el('div', {}, el('i', { class: 'r' }), 'Facturado'), cur ? el('div', {}, el('i', { class: 'a' }), 'Aceptadas (por fecha de firma)') : null, cur ? el('div', {}, el('i', { class: 'p' }), 'Pendientes') : null, s.obj ? el('div', {}, el('i', { class: 'line' }), 'Objetivo del mes') : null),
+      sinF ? el('p', { class: 'sm', text: usdK(sinF) + ' de reservas sin fecha de firma no aparecen en el gráfico.' }) : null);
     var hist = a.historico || {}, ys = {};
     Object.keys(hist).forEach(function (k) { ys[k] = +hist[k] || 0; });
     G.cierres.forEach(function (c) { var yy = yearOf(c.fecha); var sh = cShare(c, a.id); if (sh && yy) { if (!(String(yy) in hist)) ys[yy] = (ys[yy] || 0) + cBruto(c) * sh; } });
@@ -5285,8 +5482,8 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
         return el('tr', {}, el('td', { text: k + (+k === now ? ' (en curso)' : '') }), el('td', { text: usd(v) + (prev ? ' · ' + (v >= prev ? '+' : '') + pctTxt(v / prev - 1, 0) : '') }), el('td', { text: a.objetivos && a.objetivos[k] ? 'Obj. ' + usdK(+a.objetivos[k]) : '' }));
       })))) : null;
     var resSec = el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Reservas activas (' + s.resAct.length + ')' }),
-      s.resAct.length ? el('div', { class: 'g-links' }, s.resAct.map(function (r) { return el('button', { type: 'button', class: 'g-link', onclick: function () { openRes(r.id); } }, el('b', { text: r.propiedad || 'Sin dirección' }), el('span', {}, rPill(r), el('span', { class: 'sm', text: (rComEst(r) != null ? ' Comisión est. ' + usdK(rComEst(r)) : '') }))); })) : el('p', { class: 'hint', text: 'No tiene reservas activas.' }));
-    gBody([el('div', { class: 'g-pane' }, kp, chart, resSec, histSec)]);
+      s.resAct.length ? el('div', { class: 'g-links' }, s.resAct.map(function (r) { var me = rCom(r).parts.filter(function (p) { return p.id === a.id; })[0]; return el(ro ? 'div' : 'button', { type: ro ? null : 'button', class: 'g-link', onclick: ro ? null : function () { openRes(r.id); } }, el('b', { text: r.propiedad || 'Sin dirección' }), el('span', {}, rPill(r), el('span', { class: 'sm', text: (me ? ' Comisión est. ' + usdK(me.usd) + ' · neto ' + usdK(me.neto) : '') + (r.fechaFirma ? ' · firma ' + dmy(r.fechaFirma) : '') }))); })) : el('p', { class: 'hint', text: 'No tiene reservas activas.' }));
+    gBody([el('div', { class: 'g-pane' }, kp, road, chart, resSec, histSec)]);
   }
   function aseOps(a, s, y) {
     var rows = [];
@@ -5698,7 +5895,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
               m.cierreId && gGet('cierres', m.cierreId) ? { label: 'Ver el cierre', fn: function () { openCie(m.cierreId); } } : null,
               { sep: true },
               { label: 'Eliminar el movimiento', danger: true, fn: function () { var cp = clone(m), id = m.id; delete cp.id; gDel('movimientos', id); gFill(); render(); toast('Movimiento eliminado.', { action: { label: 'Deshacer', fn: function () { gSet('movimientos', id, cp); gFill(); render(); } } }); } }].filter(Boolean))));
-        })))) : el('p', { class: 'hint', text: 'Todavía no hay movimientos. Cargá fotografías, destacados o liquidaciones con los botones de arriba.' }),
+        })))) : el('p', { class: 'hint', text: window.ASE_MODE ? 'Todavía no hay movimientos.' : 'Todavía no hay movimientos. Cargá fotografías, destacados o liquidaciones con los botones de arriba.' }),
       el('p', { class: 'sm', text: 'Debe: lo que se le cobra al asesor o lo que la oficina ya le pagó. Haber: liquidaciones a favor del asesor o pagos que hizo.' }));
     gBody([el('div', { class: 'g-pane' }, cards, el('div', { class: 'g-sec' }, acts), chart, tbl)]);
   }
@@ -6167,6 +6364,339 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
   }
   var PT_BACK = { hoy: 'Inicio', ase: 'Asesores', cc: 'Cuentas corrientes', cie: 'Cierres', res: 'Reservas', tablero: 'Tablero', cal: 'Calendario', onb: 'Onboarding' };
 
+  /* ===== Reservas v2: puntas, inmobiliarias, localidades ===== */
+  var PCT_OPTS = [0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.0415, 0.045, 0.05, 0.06];
+  var CAIDA_MOT = ['No salió el crédito', 'El comprador desistió', 'El vendedor desistió', 'Problemas de títulos o documentación', 'Informes con inhibición o embargo', 'Tasación por debajo del precio', 'Otro'];
+  var ENTREGA = { cierre: 'Al asesor, para llevar al cierre', devolucion: 'Al asesor, para devolver al comprador (operación caída)', punitorio: 'Al asesor, para entregar al vendedor como punitorio (operación caída)' };
+  var ENTREGA_SHORT = { cierre: 'para llevar al cierre', devolucion: 'para devolver al comprador', punitorio: 'para entregar al vendedor como punitorio' };
+  var LOC_DEF = ['Olivos', 'Vicente López', 'Florida', 'Florida Oeste', 'La Lucila', 'Munro', 'Carapachay', 'Villa Martelli', 'Villa Adelina', 'Martínez', 'Acassuso', 'San Isidro', 'Beccar', 'Boulogne', 'Victoria', 'San Fernando', 'Tigre', 'Nordelta', 'Benavídez', 'Núñez', 'Saavedra', 'Belgrano', 'Coghlan', 'Villa Urquiza', 'Colegiales', 'Palermo'];
+  function listItems(k) {
+    var cur = Array.isArray(gConf[k]) ? gConf[k] : [];
+    if (cur.length) return cur.map(function (x) { return typeof x === 'string' ? { n: x } : x; });
+    var seen = {}, out = [];
+    function add(n, extra) { n = str(n).trim(); if (!n || seen[norm(n)]) return; seen[norm(n)] = 1; out.push(Object.assign({ n: n }, extra || {})); }
+    if (k === 'localidades') {
+      LOC_DEF.forEach(function (n) { add(n, { juris: jurisDe(n) }); });
+      G.reservas.concat(G.cierres).forEach(function (x) { if (x.localidad) add(x.localidad, { juris: jurisDe(x.localidad) }); });
+    } else {
+      G.cierres.forEach(function (c) { var n = str(c.otraParte); if (!n || /^(directo|dueño directo|dic)$/i.test(n)) return; add(n, { red: /^coldwell/i.test(n) }); });
+    }
+    return out.sort(function (a, b) { return a.n.localeCompare(b.n, 'es'); });
+  }
+  function listFind(k, n) { var q = norm(n || ''); return listItems(k).filter(function (x) { return norm(x.n) === q; })[0] || null; }
+  function inmobRed(n) { var x = listFind('inmobiliarias', n); return !!(x && x.red); }
+  function listSel(k, cur, onPick, ph) {
+    var items = listItems(k), s = el('select', {});
+    s.append(el('option', { value: '', text: ph || 'Elegí…' }));
+    var has = false;
+    items.forEach(function (x) { if (norm(x.n) === norm(cur || '')) has = true; s.append(el('option', { value: x.n, text: x.n + (x.red ? ' · Red CB' : '') })); });
+    if (cur && !has) s.append(el('option', { value: cur, text: cur }));
+    s.append(el('option', { value: '__edit', text: '✎ Agregar, cambiar o borrar…' }));
+    s.value = cur || '';
+    s.addEventListener('change', function () {
+      if (s.value === '__edit') { s.value = cur || ''; editList(k).then(function () { gFill(); }); return; }
+      onPick(s.value, listFind(k, s.value));
+    });
+    return s;
+  }
+  async function editList(k) {
+    var isLoc = k === 'localidades';
+    var rows = listItems(k).map(function (x) { return { orig: x.n, n: x.n, juris: x.juris || jurisDe(x.n), red: !!x.red }; });
+    var box = el('div', { class: 'g-elist' });
+    function draw() {
+      box.replaceChildren.apply(box, rows.map(function (r, i) {
+        var inp = el('input', { type: 'text', value: r.n, 'aria-label': 'Nombre' }); inp.addEventListener('input', function () { r.n = inp.value; });
+        var extra;
+        if (isLoc) { extra = el('select', { 'aria-label': 'Jurisdicción de ' + r.n }, [['PBA', 'PBA'], ['CABA', 'CABA']].map(function (o) { return el('option', { value: o[0], text: o[1] }); })); extra.value = r.juris; extra.addEventListener('change', function () { r.juris = extra.value; }); }
+        else { var cb = el('input', { type: 'checkbox' }); cb.checked = r.red; cb.addEventListener('change', function () { r.red = cb.checked; }); extra = el('label', { class: 'check sm' }, cb, 'Red Coldwell Banker'); }
+        return el('div', { class: 'g-elrow' }, inp, extra, el('button', { type: 'button', class: 'btn ghost icon', 'aria-label': 'Borrar ' + r.n, text: '×', onclick: function () { rows.splice(i, 1); draw(); } }));
+      }));
+    }
+    draw();
+    var add = el('button', { type: 'button', class: 'btn sm-btn', onclick: function () { rows.unshift({ orig: '', n: '', juris: 'PBA', red: false }); draw(); var f = box.querySelector('input'); if (f) f.focus(); } }, icon('plus', 14), isLoc ? 'Agregar localidad' : 'Agregar inmobiliaria');
+    var ok = await showModal(isLoc ? 'Localidades y barrios' : 'Inmobiliarias', el('div', { class: 'field' }, add, box, el('p', { class: 'sm', text: isLoc ? 'Si cambiás un nombre, se actualiza en las reservas que lo usan.' : 'Marcá las oficinas de la Red Coldwell Banker: con ellas la comisión de las dos puntas se suma y se divide 50/50.' })), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () { closeModal(true); } })]);
+    if (!ok) return;
+    var clean = [], seen = {};
+    rows.forEach(function (r) { var n = str(r.n).trim(); if (!n || seen[norm(n)]) return; seen[norm(n)] = 1; clean.push(isLoc ? { n: n, juris: r.juris } : { n: n, red: !!r.red }); });
+    clean.sort(function (a, b) { return a.n.localeCompare(b.n, 'es'); });
+    var o = {}; o[k] = clean; gSaveConf(o);
+    rows.forEach(function (r) {
+      var n = str(r.n).trim(); if (!r.orig || !n || r.orig === n) return;
+      G.reservas.forEach(function (x) {
+        if (isLoc && x.localidad === r.orig) gUpd('reservas', x.id, { localidad: n });
+        if (!isLoc && x.lados) { var L = JSON.parse(JSON.stringify(x.lados)), ch = false; ['v', 'c'].forEach(function (s) { if (L[s] && L[s].inmob === r.orig) { L[s].inmob = n; ch = true; } }); if (ch) gUpd('reservas', x.id, { lados: L }); }
+      });
+    });
+    toast('Lista guardada.');
+  }
+  function pctSel(val, onSet, label) {
+    var v = val != null && val !== '' ? +val : null, inList = v == null || PCT_OPTS.some(function (p) { return Math.abs(p - v) < 1e-6; });
+    var s = el('select', { 'aria-label': label || 'Comisión' }, [el('option', { value: '', text: 'Elegí %' })].concat(PCT_OPTS.map(function (p) { return el('option', { value: String(p), text: pctTxt(p, 2) }); }), [el('option', { value: '__otro', text: 'Otro…' })]));
+    var other = el('input', { type: 'text', inputmode: 'decimal', placeholder: '%', 'aria-label': (label || 'Comisión') + ' (otro %)', style: 'max-width:90px', value: !inList ? String(Math.round(v * 10000) / 100).replace('.', ',') : '' });
+    other.hidden = inList;
+    s.value = v == null ? '' : inList ? String(PCT_OPTS.filter(function (p) { return Math.abs(p - v) < 1e-6; })[0]) : '__otro';
+    s.addEventListener('change', function () { if (s.value === '__otro') { other.hidden = false; other.focus(); return; } other.hidden = true; onSet(s.value === '' ? null : +s.value); });
+    other.addEventListener('change', function () { var n = numIn(other.value); onSet(n == null ? null : n / 100); });
+    return el('span', { class: 'g-pctsel' }, s, other);
+  }
+  /* lados de la operación: v = vendedora/locadora, c = compradora/locataria */
+  function rLados(r) {
+    if (r.lados && r.lados.v && r.lados.c) return r.lados;
+    var ids = r.asesorIds || [], pt = r.pctCom != null && r.pctCom !== '' ? +r.pctCom : null;
+    var pv = +gConf.pctVend, pc = +gConf.pctComp, punta = r.punta || 'comprador';
+    if (pt != null) { if (punta === 'vendedor') pv = pt; else if (punta === 'comprador') pc = pt; else { var tt = pv + pc || 1; pv = pt * pv / tt; pc = pt - pv; } }
+    return {
+      v: { nos: punta !== 'comprador', ase: punta !== 'comprador' ? ids[0] || '' : '', pct: punta !== 'comprador' ? pv : null, inmob: '' },
+      c: { nos: punta !== 'vendedor', ase: punta !== 'vendedor' ? (punta === 'ambas' ? ids[1] || ids[0] || '' : ids[0] || '') : '', pct: punta !== 'vendedor' ? pc : null, inmob: '', pctOtra: null },
+      legacy: true
+    };
+  }
+  function puntaDe(L) { return L.v.nos && L.c.nos ? 'ambas' : L.v.nos ? 'vendedor' : 'comprador'; }
+  function rCom(r) {
+    var L = rLados(r), P = +r.precio || 0, mon = r.precioMon || 'U$S', cot = +r.cot || null;
+    var red = (!L.v.nos && inmobRed(L.v.inmob)) || (!L.c.nos && inmobRed(L.c.inmob));
+    var pv = +L.v.pct || 0, pc = +L.c.pct || 0, amt = {}, pct = 0, lines = [];
+    function add(id, m) { if (!id) id = '_'; amt[id] = (amt[id] || 0) + m; }
+    var lv = r.operacion === 'venta' ? 'vendedora' : 'locadora', lc = r.operacion === 'venta' ? 'compradora' : 'locataria';
+    if (L.v.nos && L.c.nos) { add(L.v.ase, P * pv); add(L.c.ase, P * pc); pct = pv + pc; lines.push(['Punta ' + lv, pv], ['Punta ' + lc, pc]); }
+    else if (red) { var me = L.v.nos ? L.v : L.c; add(me.ase, P * (pv + pc) / 2); pct = (pv + pc) / 2; lines.push(['Punta ' + lv + (L.v.nos ? '' : ' (' + (L.v.inmob || 'otra oficina') + ')'), pv], ['Punta ' + lc + (L.c.nos ? '' : ' (' + (L.c.inmob || 'otra oficina') + ')'), pc], ['Red CB: se suman y se dividen 50/50', pct]); }
+    else if (L.v.nos) { var oc = Math.max(0, pc - (+L.c.pctOtra || 0)); add(L.v.ase, P * (pv + oc)); pct = pv + oc; lines.push(['Punta ' + lv, pv]); if (pc) lines.push(['Punta ' + lc + ': nuestra parte', oc]); }
+    else if (L.c.nos) { add(L.c.ase, P * pc); pct = pc; lines.push(['Punta ' + lc, pc]); }
+    var tot = 0; Object.keys(amt).forEach(function (k) { tot += amt[k]; });
+    var totUSD = toUSD(tot, mon, cot);
+    if (L.legacy && r.operacion !== 'venta' && (r.pctCom == null || r.pctCom === '')) totUSD = null;
+    if (!P) totUSD = null;
+    var man = r.comEst != null && r.comEst !== '' ? +r.comEst : null;
+    var useUSD = man != null ? man : totUSD, k = totUSD ? (useUSD || 0) / totUSD : (useUSD != null ? 1 : 0);
+    var ids = Object.keys(amt);
+    var parts = ids.filter(function (id) { return id !== '_'; }).map(function (id) {
+      var a = gGet('asesores', id), sp = splitAt(a, r.fechaFirma || todayStr()); if (sp == null) sp = 0.5;
+      var u = totUSD ? toUSD(amt[id], mon, cot) * k : (useUSD != null ? useUSD / Math.max(1, ids.length) : 0);
+      return { id: id, usd: u, parte: tot ? amt[id] / tot : 1 / ids.length, split: sp, neto: u * sp };
+    });
+    if (!parts.length && useUSD != null) (r.asesorIds || []).forEach(function (id) { var a = gGet('asesores', id), sp = splitAt(a, r.fechaFirma || todayStr()); if (sp == null) sp = 0.5; var u = useUSD / r.asesorIds.length; parts.push({ id: id, usd: u, parte: 1 / r.asesorIds.length, split: sp, neto: u * sp }); });
+    var ag = parts.reduce(function (s, x) { return s + x.neto; }, 0);
+    var of = useUSD != null ? useUSD - ag - useUSD * (+gConf.mart || 0) - useUSD * (+gConf.fran || 0) : null;
+    return { L: L, red: red, pct: pct, total: useUSD, totalMon: tot * (man != null && totUSD ? k : 1), mon: mon, parts: parts, lines: lines, agentes: ag, netoOf: of, manual: man != null };
+  }
+  function rAseIds(L) { var o = []; ['v', 'c'].forEach(function (s) { if (L[s].nos && L[s].ase && o.indexOf(L[s].ase) < 0) o.push(L[s].ase); }); return o; }
+  function aseSimpleSel(val, onPick) {
+    var s = el('select', { 'aria-label': 'Asesor' }, [el('option', { value: '', text: 'Elegí el asesor' })].concat(aseActive().map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); })));
+    if (val && !aseActive().some(function (a) { return a.id === val; }) && gGet('asesores', val)) s.append(el('option', { value: val, text: aseName(val) + ' (dado de baja)' }));
+    s.value = val || ''; s.addEventListener('change', function () { onPick(s.value); }); return s;
+  }
+  function ladoCard(r, L, side, setL) {
+    var x = L[side], other = L[side === 'v' ? 'c' : 'v'], venta = r.operacion === 'venta';
+    var name = side === 'v' ? (venta ? 'Punta vendedora' : 'Punta locadora') : (venta ? 'Punta compradora' : 'Punta locataria');
+    function upd(f) { var nl = JSON.parse(JSON.stringify(L)); delete nl.legacy; Object.assign(nl[side], f); setL(nl); }
+    var who = el('select', { 'aria-label': 'Quién tiene la ' + name.toLowerCase() }, [['nos', 'Nuestra oficina'], ['otra', 'Otra inmobiliaria']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+    who.value = x.nos ? 'nos' : 'otra';
+    who.addEventListener('change', function () { var nos = who.value === 'nos'; if (!nos && !other.nos) { who.value = 'nos'; toast('Al menos una punta tiene que ser de la oficina.', { kind: 'error' }); return; } upd({ nos: nos, ase: nos ? (x.ase || other.ase || '') : '', pct: nos ? (x.pct != null ? x.pct : (side === 'v' ? +gConf.pctVend : +gConf.pctComp)) : x.pct }); });
+    var nodes = [fld('La tiene', who)];
+    var red = !x.nos && inmobRed(x.inmob), otherRed = !other.nos && inmobRed(other.inmob);
+    if (x.nos) {
+      nodes.push(fld('Asesor', aseSimpleSel(x.ase, function (v) { upd({ ase: v }); })));
+      nodes.push(fld('Comisión de esta punta', pctSel(x.pct, function (v) { upd({ pct: v }); }, 'Comisión ' + name.toLowerCase())));
+    } else {
+      nodes.push(fld('Inmobiliaria', listSel('inmobiliarias', x.inmob, function (v) { upd({ inmob: v }); }, 'Elegí la inmobiliaria')));
+      if (red) nodes.push(fld('Comisión de su punta', pctSel(x.pct, function (v) { upd({ pct: v }); }), 'Red CB: se suma a la nuestra y se divide 50/50'));
+      else if (side === 'v') nodes.push(el('p', { class: 'sm', text: 'Esta punta es de ellos: no se carga comisión.' }));
+      else {
+        nodes.push(fld('Comisión total de la punta', pctSel(x.pct, function (v) { upd({ pct: v }); })));
+        nodes.push(fld('De esa punta, para ' + (x.inmob || 'la otra inmobiliaria'), pctSel(x.pctOtra, function (v) { upd({ pctOtra: v }); }), 'El resto queda para nuestra oficina'));
+      }
+    }
+    if (x.nos && otherRed) nodes.push(el('p', { class: 'sm', text: 'La otra punta es de la Red CB: las comisiones se suman y se dividen 50/50.' }));
+    return el('div', { class: 'g-lado' + (x.nos ? ' nos' : '') }, el('h4', { text: name }), nodes);
+  }
+  function comBox(r) {
+    var k = rCom(r);
+    var rows = k.lines.map(function (l) { return el('tr', {}, el('td', { text: l[0] }), el('td', { class: 'num', text: pctTxt(l[1], 2) }), el('td', { class: 'num', text: +r.precio ? money(+r.precio * l[1], k.mon) : '' })); });
+    rows.push(el('tr', { class: 'tot' }, el('td', { text: 'Comisión total para la oficina' }), el('td', { class: 'num', text: pctTxt(k.pct, 2) }), el('td', { class: 'num', text: k.total != null ? (k.mon === '$' ? money(k.totalMon, '$') + ' · ' : '') + usd(k.total) + (k.manual ? ' (a mano)' : '') : 'Cargá el precio' })));
+    k.parts.forEach(function (p) { rows.push(el('tr', {}, el('td', { text: aseName(p.id) + ' · split ' + pctTxt(p.split, 0) }), el('td'), el('td', { class: 'num', text: usd(p.usd) + ' → neto ' + usd(p.neto) }))); });
+    if (k.netoOf != null) rows.push(el('tr', {}, el('td', { text: 'Neto estimado de la oficina' }), el('td'), el('td', { class: 'num', text: usd(k.netoOf) })));
+    return el('div', { class: 'g-combox' }, el('table', { class: 'g-mini calc' }, el('tbody', {}, rows)), el('p', { class: 'sm', text: 'El neto de la oficina descuenta asesores, martillero y franquicia. IIBB y ABAO se calculan al facturar, en el cierre.' }));
+  }
+
+  /* ----- proyectado de cierres: próximos 3 meses ----- */
+  function resProjection() {
+    var d0 = new Date(), ms = [];
+    for (var i = 0; i < 3; i++) { var d = new Date(d0.getFullYear(), d0.getMonth() + i, 1); ms.push({ k: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'), name: cap(MESES[d.getMonth()]), a: 0, p: 0, na: 0, np: 0, list: [] }); }
+    var sinF = { a: 0, n: 0 }, late = { a: 0, n: 0 };
+    G.reservas.forEach(function (r) {
+      if (!rActive(r)) return;
+      var c = rComEst(r) || 0, ff = r.fechaFirma ? String(r.fechaFirma).slice(0, 7) : '';
+      if (!ff) { sinF.a += c; sinF.n++; return; }
+      if (ff < ms[0].k) { late.a += c; late.n++; return; }
+      ms.forEach(function (m) { if (m.k === ff) { if (r.estado === 'aceptada') { m.a += c; m.na++; } else { m.p += c; m.np++; } m.list.push(r); } });
+    });
+    var mx = Math.max.apply(null, ms.map(function (m) { return m.a + m.p; }).concat([1]));
+    return el('section', { class: 'g-sec g-card g-proj', 'aria-label': 'Proyectado de cierres' },
+      el('div', { class: 'g-card-h' }, el('h3', { class: 'g-sec-h', text: 'Cierres proyectados · próximos 3 meses' }), el('span', { class: 'sm', text: 'Comisión estimada de las reservas activas, según la fecha de firma prevista' })),
+      el('div', { class: 'g-proj-cols' }, ms.map(function (m) {
+        return el('button', { type: 'button', class: 'g-proj-col', onclick: function () { gF.res = 'proj:' + m.k; gKeepF(); render(); } },
+          el('span', { class: 'g-proj-m', text: m.name }),
+          el('b', { class: 'g-proj-v', text: usdK(m.a + m.p) }),
+          el('span', { class: 'g-proj-bar', role: 'img', 'aria-label': usd(m.a) + ' aceptadas y ' + usd(m.p) + ' pendientes' }, el('i', { class: 'a', style: 'width:' + (m.a * 100 / mx) + '%' }), el('i', { class: 'p', style: 'width:' + (m.p * 100 / mx) + '%' })),
+          el('span', { class: 'sm', text: (m.na + m.np) ? (m.na + m.np) + (m.na + m.np === 1 ? ' operación' : ' operaciones') + (m.np ? ' · ' + m.np + ' sin aceptar' : '') : 'Sin firmas previstas' }));
+      })),
+      el('div', { class: 'g-proj-leg sm' }, el('span', {}, el('i', { class: 'a' }), 'Aceptadas'), el('span', {}, el('i', { class: 'p' }), 'Esperando aceptación'),
+        sinF.n ? el('button', { type: 'button', class: 'g-link-btn', text: sinF.n + ' sin fecha de firma (' + usdK(sinF.a) + ')', onclick: function () { gF.res = 'sinfirma'; gKeepF(); render(); } }) : null,
+        late.n ? el('span', { text: late.n + ' con la firma ya vencida (' + usdK(late.a) + ')' }) : null));
+  }
+  if (window.__FB_MOCK) window.__t = { rCom: rCom, calcCierre: calcCierre, listItems: listItems, G: function () { return G; }, gConf: function () { return gConf; }, aseStats: aseStats };
+
+  /* ===== Portal del asesor: acceso limitado a su propio perfil ===== */
+  function aseCand(a) {
+    if (!a) return null;
+    var c = a.candidatoId ? cands.filter(function (x) { return x.id === a.candidatoId; })[0] : null;
+    if (!c) { var n = norm(a.nombre || ''); c = n ? cands.filter(function (x) { return norm(x.nombre || '') === n; })[0] : null; }
+    return c && obStart(c) ? c : null;
+  }
+  function obSummary(c) {
+    var o = obInfo(c);
+    return { start: o.start, day: o.day, pct: o.pct, status: o.status, tot: o.tot, done: o.done, late: o.late, fin: !!c.obFin,
+      tasks: o.tasks.filter(function (t) { return !t.na; }).map(function (t) { return { texto: t.texto, due: t.due, done: t.done, late: t.late, tipo: t.tipo, w: t.w }; }) };
+  }
+  function aseOnbData(a) {
+    if (window.ASE_MODE && window.ASE_MODE.portal) return window.ASE_MODE.portal.onb || null;
+    var c = aseCand(a); return c ? obSummary(c) : null;
+  }
+  function aseOnb(a) {
+    var o = aseOnbData(a);
+    if (!o) { gBody([el('div', { class: 'g-pane' }, el('p', { class: 'hint', text: 'No hay un onboarding cargado para este asesor.' }))]); return; }
+    var p = OB_PILL[o.status] || OB_PILL.ok, weeks = {};
+    o.tasks.forEach(function (t) { (weeks[t.w] = weeks[t.w] || []).push(t); });
+    var next = o.tasks.filter(function (t) { return !t.done; }).sort(function (x, y) { return x.due < y.due ? -1 : 1; })[0];
+    gBody([el('div', { class: 'g-pane' },
+      el('div', { class: 'kpis two' },
+        kpi('Avance del onboarding', o.pct + '%', o.done + ' de ' + o.tot + ' objetivos cumplidos'),
+        kpi(o.fin ? 'Onboarding terminado' : 'Día ' + Math.max(1, o.day) + ' de 90', o.late ? o.late + (o.late === 1 ? ' vencido' : ' vencidos') : 'Al día', 'Empezó el ' + dmy(o.start))),
+      el('div', { class: 'g-road-bar g-onb-bar', role: 'img', 'aria-label': o.pct + '% completo' }, el('i', { class: 'r', style: 'width:' + o.pct + '%' })),
+      el('p', {}, el('span', { class: 'tag ' + p[0] }, icon(p[1], 14), p[2]), next ? el('span', { class: 'sm', text: '  Próximo: ' + next.texto + ' (' + dmy(next.due) + ')' }) : null),
+      Object.keys(weeks).sort(function (x, y) { return x - y; }).map(function (w) {
+        return el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Semana ' + w }),
+          el('ul', { class: 'g-onbl' }, weeks[w].map(function (t) {
+            return el('li', { class: t.done ? 'done' : t.late ? 'late' : '' }, el('span', { class: 'g-onb-ic' }, t.done ? icon('check', 14) : t.late ? icon('alert', 14) : null), el('span', { text: t.texto }), el('span', { class: 'sm', text: dmy(t.due) }));
+          })));
+      }))]);
+  }
+  /* datos que ve el asesor: solo lo suyo, sin netos de la oficina ni splits de otros */
+  function buildPortal(a) {
+    var cs = [], rs = [], ms;
+    G.cierres.forEach(function (c) {
+      var sh = cShare(c, a.id); if (!sh) return;
+      var me = cParts(c).filter(function (x) { return x.id === a.id; })[0] || {};
+      cs.push({ id: c.id, fecha: c.fecha || '', direccion: c.direccion || '', localidad: c.localidad || '', juris: c.juris || '', operacion: c.operacion || '', puntas: c.puntas || '', moneda: c.moneda || 'U$S', valor: c.valor || null, cot: c.cot || null, pctVend: c.pctVend || 0, pctComp: c.pctComp || 0, brutoUSD: Math.round(cBruto(c) * sh * 100) / 100, netoUSD: 0, calc: 'excel', asesores: [{ id: a.id, parte: 1, split: me.split != null ? +me.split : null }], liquidado: !!c.liquidado, facturado: !!c.facturado, fechaReserva: c.fechaReserva || '', sinFirma: !!c.sinFirma, reservaId: c.reservaId || '', compartida: c.compartida || '' });
+    });
+    G.reservas.forEach(function (r) {
+      if ((r.asesorIds || []).indexOf(a.id) < 0) return;
+      var me = rCom(r).parts.filter(function (p) { return p.id === a.id; })[0];
+      rs.push({ id: r.id, propiedad: r.propiedad || '', localidad: r.localidad || '', operacion: r.operacion || 'venta', estado: r.estado || 'pendiente', fecha: r.fecha || '', fechaFirma: r.fechaFirma || '', precio: r.precio || null, precioMon: r.precioMon || 'U$S', cot: r.cot || null, comEst: me ? Math.round(me.usd * 100) / 100 : null, asesorIds: [a.id], punta: r.punta || '', cierreId: r.cierreId || '', pagos: rPagos(r).map(function (p) { return { tipo: p.tipo || '', monto: p.monto, moneda: p.moneda, estado: p.estado, fecha: p.fecha || '' }; }) });
+    });
+    ms = G.movimientos.filter(function (m) { return m.asesorId === a.id; }).map(clone);
+    var ax = {}; ['nombre', 'apodo', 'team', 'ingreso', 'split', 'splits', 'objetivos', 'historico', 'mail', 'activo', 'iva', 'nacimiento'].forEach(function (k) { if (a[k] != null) ax[k] = JSON.parse(JSON.stringify(a[k])); });
+    ax.id = a.id;
+    return { v: 1, a: ax, cierres: cs, reservas: rs, movimientos: ms, onb: (function () { var c = aseCand(a); return c ? obSummary(c) : null; })(),
+      conf: { estac: gConf.estac, razon: gConf.razon, domicilio: gConf.domicilio, pie: gConf.pie, cot: gConf.cot, pctVend: gConf.pctVend, pctComp: gConf.pctComp, costos: gConf.costos } };
+  }
+  var portalLast = {}, portalT = null;
+  function portalSync() {
+    if (window.ASE_MODE || !gDb || !canGestion()) return;
+    if (!gReady.asesores || !gReady.cierres || !gReady.reservas || !gReady.movimientos) return;
+    clearTimeout(portalT);
+    portalT = setTimeout(function () {
+      G.asesores.forEach(function (a) {
+        if (!a.acceso) return;
+        var snap = buildPortal(a), js = JSON.stringify(snap);
+        if (portalLast[a.id] === js) return;
+        portalLast[a.id] = js; snap.t = new Date().toISOString();
+        try { gDb.collection('portal').doc(a.id).set(JSON.parse(JSON.stringify(snap))).catch(function () { portalLast[a.id] = ''; }); } catch (e) {}
+      });
+    }, 2500);
+  }
+  function accesoMail(a) { return String((a && a.mail) || '').trim().toLowerCase(); }
+  function syncAcceso(a, on) {
+    var mail = accesoMail(a), prev = a.accesoMail || '';
+    var f = { acceso: !!on, accesoMail: on ? mail : '' };
+    gUpd('asesores', a.id, f);
+    if (!gDb) return;
+    var col = gDb.collection('accesos');
+    if (prev && (prev !== mail || !on)) { try { col.doc(prev).delete(); } catch (e) {} }
+    if (on && mail) { try { col.doc(mail).set({ asesorId: a.id, nombre: aseFull(a), desde: new Date().toISOString() }); } catch (e) {} }
+    portalLast[a.id] = ''; portalSync();
+  }
+  function accesoSec(a) {
+    var mail = accesoMail(a), cb = el('input', { type: 'checkbox' });
+    cb.checked = !!a.acceso;
+    cb.addEventListener('change', function () { var cur = gGet('asesores', a.id) || a, m = accesoMail(cur); if (cb.checked && !m) { cb.checked = false; toast('Primero cargá su mail de Google.', { kind: 'error' }); return; } syncAcceso(cur, cb.checked); toast(cb.checked ? aseFull(a) + ' ya puede entrar con ' + m + '.' : 'Se quitó el acceso de ' + aseFull(a) + '.'); gFill(); });
+    return sect('Acceso a su perfil', [
+      el('label', { class: 'check' }, cb, 'Puede entrar a ver su perfil' + (mail ? ' con ' + mail : '')),
+      !mail ? el('p', { class: 'sm warn', text: 'Primero cargá su mail de Google arriba.' }) : null,
+      el('p', { class: 'sm', text: 'Ve solo lo suyo: facturación, objetivo, planilla, reservas, onboarding y cuenta corriente. No ve datos de la oficina ni de otros asesores, y no puede cambiar nada. Funciona en la versión de GitHub, con las reglas de Firebase actualizadas.' }),
+      el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', text: 'Ver como lo ve el asesor', onclick: function () { asePreview(a.id); } }), a.acceso && a.accesoMail && a.accesoMail !== mail ? el('button', { type: 'button', class: 'btn', text: 'Actualizar el mail de acceso', onclick: function () { syncAcceso(gGet('asesores', a.id), true); } }) : null)]);
+  }
+  aseDatos = (function (orig) { return function (a, d, isNew) { orig(a, d, isNew); if (!isNew && a && !window.ASE_MODE) $('#gpBody').append(accesoSec(a)); }; })(aseDatos);
+  /* modo asesor: lectura y sin acciones */
+  gSet = (function (o) { return function () { if (window.ASE_MODE) return Promise.resolve(); return o.apply(this, arguments); }; })(gSet);
+  gUpd = (function (o) { return function () { if (window.ASE_MODE) return Promise.resolve(); return o.apply(this, arguments); }; })(gUpd);
+  gDel = (function (o) { return function () { if (window.ASE_MODE) return Promise.resolve(); return o.apply(this, arguments); }; })(gDel);
+  gSaveConf = (function (o) { return function () { if (window.ASE_MODE) return Promise.resolve(); return o.apply(this, arguments); }; })(gSaveConf);
+  openRes = (function (o) { return function () { if (window.ASE_MODE) return; return o.apply(this, arguments); }; })(openRes);
+  openCie = (function (o) { return function () { if (window.ASE_MODE) return; return o.apply(this, arguments); }; })(openCie);
+  closePanels = (function (o) { return function () { if (window.ASE_MODE && !window.ASE_MODE.preview) return; if (window.ASE_MODE && window.ASE_MODE.preview) { asePreviewEnd(); return; } return o.apply(this, arguments); }; })(closePanels);
+  function portalToG(snap) {
+    return { asesores: snap.a ? [snap.a] : [], cierres: snap.cierres || [], reservas: snap.reservas || [], movimientos: snap.movimientos || [] };
+  }
+  function withPortal(fn) {
+    var P = window.ASE_MODE && window.ASE_MODE.portal; if (!P || !window.ASE_MODE.preview) return fn();
+    var keep = { asesores: G.asesores, cierres: G.cierres, reservas: G.reservas, movimientos: G.movimientos }, pg = portalToG(P);
+    Object.assign(G, pg);
+    try { return fn(); } finally { Object.assign(G, keep); }
+  }
+  fillAse = (function (o) { return function () { return withPortal(function () { return o(); }); }; })(fillAse);
+  function aseBarSet() {
+    var b = $('#aseBar'); if (!b) return;
+    var M = window.ASE_MODE;
+    b.hidden = !M;
+    if (!M) return;
+    $('#aseBarTxt').textContent = M.preview ? 'Vista previa: así ve su perfil' : 'Mi perfil';
+    $('#aseBarOut').textContent = M.preview ? 'Salir de la vista previa' : 'Cerrar sesión';
+  }
+  function asePreview(id) {
+    var a = gGet('asesores', id); if (!a) return;
+    window.ASE_MODE = { asesorId: id, preview: true, portal: buildPortal(a) };
+    document.body.classList.add('ase-mode');
+    aseBarSet();
+    gOpen = { t: 'ase', id: id, tab: 'resumen', draft: {} }; gFill(); gPageSync();
+  }
+  function asePreviewEnd() {
+    var id = window.ASE_MODE && window.ASE_MODE.asesorId;
+    window.ASE_MODE = null; document.body.classList.remove('ase-mode'); aseBarSet();
+    if (id) { gOpen = { t: 'ase', id: id, tab: 'datos', draft: {} }; gFill(); gPageSync(); }
+  }
+  function aseModeStart(db) {
+    var M = window.ASE_MODE; document.body.classList.add('ase-mode'); aseBarSet();
+    gDb = null;
+    var ref = db.collection('portal').doc(M.asesorId);
+    function apply(snap) {
+      if (!snap) { gBody([el('p', { class: 'hint pad', text: 'Todavía no hay datos publicados para tu perfil. Pedile a la oficina que entre a la plataforma para actualizarlos.' })]); return; }
+      M.portal = snap;
+      var pg = portalToG(snap); Object.keys(pg).forEach(function (k) { G[k] = pg[k]; gReady[k] = true; });
+      if (snap.conf) Object.keys(snap.conf).forEach(function (k) { if (snap.conf[k] != null) gConf[k] = snap.conf[k]; });
+      gConf.mart = 0; gConf.fran = 0;
+      if (!gOpen || gOpen.t !== 'ase') gOpen = { t: 'ase', id: M.asesorId, tab: 'resumen', draft: {} };
+      if ($('#gp').hidden) showPanel('gp'); gFill(); gPageSync();
+    }
+    gOpen = { t: 'ase', id: M.asesorId, tab: 'resumen', draft: {} }; showPanel('gp'); gPageSync();
+    gBody([el('p', { class: 'hint pad', text: 'Cargando tu perfil…' })]);
+    var on = function (d) { var ex = typeof d.exists === 'function' ? d.exists() : d.exists; apply(ex ? clone(d.data() || {}) : null); };
+    if (ref.onSnapshot) ref.onSnapshot(on, function () { apply(null); }); else ref.get().then(on, function () { apply(null); });
+  }
+  if (window.__FB_MOCK) window.__t2 = { buildPortal: function (id) { return buildPortal(gGet('asesores', id)); } };
+
   /* ---------- arranque ---------- */
   var gStarted = false;
   function fallbackLocal() {
@@ -6180,6 +6710,7 @@ body.gp-page, body.gp-page.docked, body.gp-page.docked.g-wide { padding-right: m
     var db = null;
     try { db = window.claude && await window.claude.use('db'); } catch (e) { db = null; }
     if (!db) { fallbackLocal(); return; }
+    if (window.ASE_MODE) { gStarted = true; aseModeStart(db); return; }
     if (!gStarted) { gStarted = true; gStart(db); }
     coll = db.collection('candidatos');
     eqColl = db.collection('equipo');
