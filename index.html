@@ -1088,6 +1088,9 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 .tas-iaase label.check { display: flex !important; align-items: flex-start; justify-content: flex-start; gap: 10px; text-align: left; width: 100%; }
 .tas-iaase label.check input { flex: none; margin-top: 3px; }
 .tas-cform label.check { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
+.bm-modal ol { margin: 8px 0 10px 20px; padding: 0; display: grid; gap: 8px; }
+.bm-btn { display: inline-block; padding: 6px 12px; border-radius: 8px; background: var(--brand, #012169); color: #fff !important; font-weight: 700; text-decoration: none; cursor: grab; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent, #1F69FF); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -8650,6 +8653,59 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   fillTas = (function (o) { return function () { document.body.classList.toggle('ase-tas', !!window.ASE_MODE); var r = o.apply(this, arguments); if (window.ASE_MODE) setTimeout(function () { var b = $('#gpBackTxt'); if (b) b.textContent = 'Mi perfil'; }, 0); return r; }; })(fillTas);
   fillAse = (function (o) { return function () { document.body.classList.remove('ase-tas'); return o.apply(this, arguments); }; })(fillAse);
   if (window.__FB_MOCK) window.__t5 = { items: function () { return tasBaseItems().length; }, st: function () { return [!!gDb, canGestion(), gReady.captaciones, gReady.cierres, gReady.asesores, G.asesores.filter(function (a) { return a.acceso; }).length, !!window.ASE_MODE]; } };
+  /* ----- botón de favoritos: copiar un aviso desde cualquier portal y pegarlo como comparable ----- */
+  var BOOKMARKLET = "javascript:(function(){try{var R=/https?:\\/\\/[^\"'\\s()<>\\\\,]+?\\.(?:jpe?g|webp|png)(?:\\?[^\"'\\s()<>\\\\,]*)?/gi,H=document.documentElement.outerHTML.replace(/\\\\u002F/gi,'/').replace(/\\\\\\//g,'/'),S={},F=[];function a(u){if(u&&!S[u]&&F.length<400){S[u]=1;F.push(u);}}(H.match(R)||[]).forEach(a);[].forEach.call(document.images,function(i){if(i.naturalWidth>=300)a(i.currentSrc||i.src);});var m=document.querySelector('meta[property=\"og:image\"]'),M=document.querySelector('main')||document.body,o={k:'juntos-comp',v:1,url:location.href,titulo:document.title,og:m?m.content:'',fotos:F,texto:(M.innerText||'').replace(/\\n{3,}/g,'\\n\\n').slice(0,14000)},s=JSON.stringify(o),d=document.createElement('div');d.style.cssText='position:fixed;z-index:2147483647;top:16px;right:16px;background:#012169;color:#fff;font:600 14px/1.4 Arial,sans-serif;padding:14px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:320px';d.innerHTML='Juntos Gesti\\u00f3n<br><span style=\"font-weight:400\">Aviso le\\u00eddo con '+F.length+' im\\u00e1genes.</span><br>';var b=document.createElement('button');b.textContent='Copiar comparable';b.style.cssText='margin-top:10px;background:#fff;color:#012169;border:0;border-radius:8px;padding:8px 12px;font:700 14px Arial;cursor:pointer';var x=document.createElement('button');x.textContent='\\u00d7';x.style.cssText='position:absolute;top:6px;right:8px;background:none;border:0;color:#fff;font-size:18px;cursor:pointer';x.onclick=function(){d.remove();};function ok(){b.textContent='\\u00a1Copiado! Peg\\u00e1lo en la tasaci\\u00f3n';setTimeout(function(){d.remove();},2500);}b.onclick=function(){var t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();var c=false;try{c=document.execCommand('copy');}catch(e){}t.remove();if(c)ok();else if(navigator.clipboard)navigator.clipboard.writeText(s).then(ok,function(){prompt('Copi\\u00e1 este texto (Ctrl+C):',s);});};d.appendChild(b);d.appendChild(x);document.body.appendChild(d);}catch(e){alert('No se pudo leer el aviso: '+e.message);}})();";
+  function compDeTexto(o) {
+    var tx = String(o.texto || ''), c = { src: 'link', url: o.url || '', titulo: o.titulo || '', dir: '', estado: 'publicada', mon: 'U$S' };
+    var p = /(U\$S|USD|US\$|u\$s)\s*([\d.]{4,})/.exec(tx); if (p) c.precio = +p[2].replace(/\./g, ''); else { var p2 = /\$\s*([\d.]{6,})/.exec(tx); if (p2) { c.precio = +p2[1].replace(/\./g, ''); c.mon = '$'; } }
+    var cu = /(\d{2,4})(?:[.,]\d+)?\s*m(?:²|2)\s*cub/i.exec(tx); if (cu) c.m2c = +cu[1];
+    var to = /(\d{2,5})(?:[.,]\d+)?\s*m(?:²|2)\s*(?:tot|terreno)/i.exec(tx); if (to) c.m2t = +to[1];
+    var am = /(\d{1,2})\s*amb/i.exec(tx); if (am) c.amb = +am[1];
+    var dm = /(\d{1,2})\s*dorm/i.exec(tx); if (dm) c.dorm = +dm[1];
+    var an = /(\d{1,3})\s*años/i.exec(tx); if (an) c.antig = +an[1];
+    var portal = /zonaprop/i.test(c.url) ? 'zonaprop' : /argenprop/i.test(c.url) ? 'argenprop' : /mercadolibre/i.test(c.url) ? 'mercadolibre' : '';
+    if (portal) c.portal = portal;
+    c.dir = String(o.titulo || '').split(/[|·\-–]/)[0].trim().slice(0, 80);
+    return c;
+  }
+  async function tasPegar(t) {
+    var ta = el('textarea', { rows: 4, placeholder: 'Se pega solo. Si no, tocá acá y apretá Ctrl+V.' });
+    try { if (navigator.clipboard && navigator.clipboard.readText) { var cb = await navigator.clipboard.readText(); if (/juntos-comp/.test(cb || '')) ta.value = cb; } } catch (e) {}
+    var v = ta.value ? ta.value : await showModal('Pegar comparable copiado', el('div', { class: 'field' },
+      el('p', { class: 'sm', text: 'Pegá lo que copiaste con el botón «Copiar comparable» en el aviso.' }), ta), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Cargar', onclick: function () { closeModal(ta.value); } })]);
+    if (!v) return;
+    var o; try { o = JSON.parse(String(v).trim()); } catch (e) { o = null; }
+    if (!o || o.k !== 'juntos-comp') { toast('Eso no parece un aviso copiado con el botón. Volvé al aviso y tocá «Copiar comparable».', { kind: 'error' }); return; }
+    var fotos = fotosDeHtml((o.og ? ['"' + o.og + '"'] : []).concat((o.fotos || []).map(function (u) { return '"' + u + '"'; })).join(' '), o.url).slice(0, 6);
+    if (!fotos.length && o.og) fotos = [o.og];
+    var c = compDeTexto(o);
+    if (aiOK()) {
+      var done = tasBusy('Leyendo los datos del aviso…');
+      try { var txt = await aiRun('Texto de un aviso inmobiliario (' + (o.url || '') + '), título: ' + (o.titulo || '') + '\n\n' + String(o.texto || '').slice(0, 14000) + '\n\nEs un solo inmueble. ' + COMP_SCHEMA, null); var cs = parseComps(txt, 'link'); if (cs[0]) { Object.keys(cs[0]).forEach(function (k) { var val = cs[0][k]; if (val != null && val !== '' && !(Array.isArray(val) && !val.length)) c[k] = val; }); } } catch (e) {}
+      done();
+    }
+    c.url = o.url || c.url; c.src = 'link';
+    c.fotos = fotos.concat((c.fotos || []).filter(function (u) { return fotos.indexOf(u) < 0; })).slice(0, 6); c.fotosTry = true;
+    compForm(t, c, null);
+  }
+  function bookmarkletModal() {
+    var a = el('a', { href: '#', class: 'bm-btn', text: '★ Copiar comparable', title: 'Arrastrame a la barra de favoritos' });
+    a.setAttribute('href', BOOKMARKLET);
+    a.addEventListener('click', function (e) { e.preventDefault(); toast('No lo toques acá: arrastralo a la barra de favoritos.'); });
+    showModal('Copiar avisos de Zonaprop y otros portales', el('div', { class: 'field bm-modal' },
+      el('p', { text: 'Sirve para Zonaprop, Argenprop, Mercado Libre, fichas de Tokko y cualquier página de avisos. Se instala una sola vez en la compu:' }),
+      el('ol', {}, el('li', { text: 'Mostrá la barra de favoritos de Chrome (Ctrl+Shift+B en Windows, Cmd+Shift+B en Mac).' }), el('li', {}, 'Arrastrá este botón hasta la barra: ', a), el('li', { text: 'Abrí un aviso, tocá el favorito «★ Copiar comparable» y después «Copiar comparable» en el recuadro azul.' }), el('li', { text: 'Volvé a la tasación y tocá «Pegar comparable copiado»: se carga con link, datos y fotos para que lo revises.' })),
+      el('p', { class: 'sm', text: 'Lo lee tu propio navegador, así que el portal no lo bloquea. Con la IA activa completa solo los datos; sin la IA completa lo que puede y vos revisás los números.' })),
+      [el('button', { type: 'button', class: 'btn primary', text: 'Listo', onclick: function () { closeModal(null); } })]);
+  }
+  tasComp = (function (o) { return function (t) {
+    o(t);
+    var ext = $('#gpBody .tas-ext'); if (!ext) return;
+    ext.prepend(el('button', { type: 'button', class: 'btn primary', onclick: function () { tasPegar(gGet('tasaciones', t.id) || t); } }, 'Pegar comparable copiado'));
+    var p = ext.parentNode; if (p) p.insertBefore(el('p', { class: 'sm' }, '¿Encontraste avisos en Zonaprop u otro portal? ', el('button', { type: 'button', class: 'linkbtn', text: 'Instalá el botón «Copiar comparable»', onclick: bookmarkletModal }), ' y cargalos con fotos en un clic.'), ext.nextSibling);
+  }; })(tasComp);
 
   /* ---------- arranque ---------- */
   var gStarted = false;
