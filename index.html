@@ -1015,6 +1015,11 @@ body.side-mini .side-foot { flex-direction: column; }
 #loginBtn { width: 100%; }
 .g-cap-rt { margin-left: 8px; font-weight: 500; }
 .g-caplink select { flex: 1 1 260px; }
+.login-sent { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: var(--ok-bg, #E7F6EE); color: var(--ink); border: 1px solid color-mix(in srgb, var(--ok, #1F8A4C) 35%, transparent); }
+.login-sent svg { flex: 0 0 auto; color: var(--ok, #1F8A4C); margin-top: 2px; }
+.login-sent div { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.login-sent b { font-size: 15px; }
+.login-linkbtn { align-self: flex-start; border: 0; background: none; padding: 0; color: var(--accent); font-weight: 600; text-decoration: underline; font-size: 13.5px; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1031,9 +1036,9 @@ body.side-mini .side-foot { flex-direction: column; }
   <p id="loginMsg">Cargando…</p>
   <button id="loginBtn" class="btn primary" type="button" hidden>Entrar con Google</button>
   <div id="loginAlt" class="login-alt" hidden>
-    <button id="loginMs" class="btn login-ms" type="button"><svg viewBox="0 0 21 21" width="16" height="16" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg>Entrar con Microsoft</button>
     <div class="login-or"><span>o recibí un link en tu mail</span></div>
     <form id="loginMailF" class="login-mail"><input id="loginMailIn" type="email" autocomplete="email" placeholder="nombre@coldwellbanker.com.ar" aria-label="Tu mail" required><button class="btn" type="submit">Enviame el link</button></form>
+    <div id="loginSent" class="login-sent" hidden role="status"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg><div><b>¡Link enviado!</b><span id="loginSentTxt"></span><button id="loginSentOtro" type="button" class="login-linkbtn">Usar otro mail o reenviar</button></div></div>
   </div>
 </div></div>
 <script src="firebase-config.js"></script>
@@ -1056,7 +1061,7 @@ body.side-mini .side-foot { flex-direction: column; }
     btnEl.hidden = state !== 'signin';
     document.getElementById('loginAlt').hidden = state !== 'signin';
     msgEl.className = state === 'error' ? 'err' : '';
-    if (state === 'signin') msgEl.textContent = msg || 'Entrá con tu cuenta de Google o de Microsoft, o pedí un link a tu mail. Tiene que ser un mail habilitado por la oficina.';
+    if (state === 'signin') msgEl.textContent = msg || 'Entrá con tu cuenta de Google o pedí un link a tu mail. Tiene que ser un mail habilitado por la oficina.';
     else if (state === 'error') msgEl.textContent = msg || 'Hubo un problema.';
     else if (state === 'loading') msgEl.textContent = 'Cargando…';
   }
@@ -1148,22 +1153,22 @@ body.side-mini .side-foot { flex-direction: column; }
       : 'No se pudo entrar (' + (c || 'error') + ').';
     if (t) { msgEl.textContent = t; msgEl.className = 'err'; }
   }
-  document.getElementById('loginMs').addEventListener('click', function () {
-    if (!fb || !auth || !fb.OAuthProvider) return;
-    var pr = new fb.OAuthProvider('microsoft.com'); pr.setCustomParameters({ prompt: 'select_account' });
-    var b = this; b.disabled = true;
-    fb.signInWithPopup(auth, pr).catch(function (e) { loginErr(e, 'Microsoft'); }).then(function () { b.disabled = false; });
+  document.getElementById('loginSentOtro').addEventListener('click', function () {
+    document.getElementById('loginSent').hidden = true; document.getElementById('loginMailF').hidden = false;
+    var i = document.getElementById('loginMailIn'); i.focus(); i.select();
   });
   document.getElementById('loginMailF').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var mail = String(document.getElementById('loginMailIn').value || '').trim();
     if (!fb || !auth || !mail) return;
     if (window.__linkFinish) { window.__linkFinish(mail); return; }
-    var b = this.querySelector('button'); b.disabled = true;
+    var f = this, b = f.querySelector('button'); b.disabled = true; b.textContent = 'Enviando…';
     fb.sendSignInLinkToEmail(auth, mail, { url: location.origin + location.pathname, handleCodeInApp: true }).then(function () {
       try { localStorage.setItem('juntos-login-mail', mail); } catch (e) {}
-      msgEl.className = ''; msgEl.textContent = 'Listo: te mandamos un link a ' + mail + '. Abrilo desde este mismo dispositivo (revisá también el correo no deseado).';
-    }, function (e) { loginErr(e, 'link'); }).then(function () { b.disabled = false; });
+      f.hidden = true; msgEl.className = ''; msgEl.textContent = '';
+      document.getElementById('loginSentTxt').textContent = 'Te lo mandamos a ' + mail + '. Abrilo desde este mismo dispositivo para entrar. Si no lo ves en unos minutos, revisá el correo no deseado.';
+      document.getElementById('loginSent').hidden = false;
+    }, function (e) { loginErr(e, 'link'); }).then(function () { b.disabled = false; b.textContent = 'Enviame el link'; });
   });
 
   /* ----- base de datos: misma interfaz que dentro de Claude ----- */
