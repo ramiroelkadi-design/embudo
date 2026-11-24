@@ -1094,6 +1094,13 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 .tas-ft button.tas-ft-p.mk { opacity: 0; transition: opacity .15s; background: rgba(0,0,0,.65); font-weight: 600; }
 .tas-ft:hover button.tas-ft-p.mk, .tas-ft button.tas-ft-p.mk:focus-visible { opacity: 1; }
 @media (hover: none) { .tas-ft button.tas-ft-p.mk { opacity: .85; } }
+.tas-falta td:not(.tas-acts) { opacity: .55; }
+.tas-falta .tas-cn .tag { margin-top: 4px; justify-self: start; align-self: flex-start; width: auto; }
+.tas-abrir { margin-top: 6px; justify-self: start; align-self: flex-start; width: auto; text-decoration: none; }
+.tas-verif { margin-bottom: 12px; }
+.tas-tbl tr.tas-falta, .tas-tbl tr.tas-falta.off { opacity: 1 !important; }
+.tas-tbl tr.tas-falta th .tas-cn > a:first-child, .tas-tbl tr.tas-falta th .tas-cn > b:first-child { opacity: .7; }
+.tas-tbl tr.off.tas-falta th, .tas-tbl tr.off.tas-falta td.tas-acts { opacity: 1; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -7717,7 +7724,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   }
   /* ----- cálculo ----- */
   function tasCalc(t) {
-    var cf = tasConf(t), s = t.s || {}, inc = (t.comps || []).filter(function (c) { return c.incl !== false; });
+    var cf = tasConf(t), s = t.s || {}, inc = (t.comps || []).filter(function (c) { return c.incl !== false && compUsable(c); });
     var vals = inc.map(function (c) { return compM2(c, cf); }).filter(function (x) { return x; });
     var sh = s.m2hom ? +s.m2hom : m2Hom(s.m2c, s.m2t, cf.coef);
     var base = cf.base === 'manual' && +t.m2man ? +t.m2man : cf.base === 'promedio' ? avg(vals) : median(vals);
@@ -7847,7 +7854,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var bsel = el('select', {}, [['mediana', 'Mediana'], ['promedio', 'Promedio'], ['manual', 'Valor a mano']].map(function (x) { return el('option', { value: x[0], text: x[1] }); })); bsel.value = cf.base; bsel.addEventListener('change', function () { setCfg({ base: bsel.value }); });
     function money0(k, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: t[k] ? String(t[k]) : '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = numIn(i.value); gUpd('tasaciones', t.id, o); gFill(); }); return i; }
     var shI = el('input', { type: 'text', inputmode: 'decimal', value: s.m2hom ? String(s.m2hom).replace('.', ',') : '', placeholder: r.sh ? String(Math.round(r.sh)) : '' }); shI.addEventListener('change', function () { setS(t, { m2hom: numIn(shI.value) }, true); });
-    var vals = (t.comps || []).filter(function (c) { return c.incl !== false; }).map(function (c) { return { c: c, v: compM2(c, cf) }; }).filter(function (x) { return x.v; }).sort(function (a, b) { return a.v - b.v; });
+    var vals = (t.comps || []).filter(function (c) { return c.incl !== false && compUsable(c); }).map(function (c) { return { c: c, v: compM2(c, cf) }; }).filter(function (x) { return x.v; }).sort(function (a, b) { return a.v - b.v; });
     var mx = Math.max.apply(null, vals.map(function (x) { return x.v; }).concat([1]));
     var concl = el('textarea', { rows: 4, placeholder: 'Conclusión para el informe: por qué este valor, fortalezas y debilidades del inmueble, estrategia de precio…' }); concl.value = t.concl || ''; concl.addEventListener('change', function () { gUpd('tasaciones', t.id, { concl: concl.value }); });
     gBody([el('div', { class: 'g-pane' },
@@ -8427,7 +8434,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var prog = tasBusy('Armando el informe con fotos y mapa…');
     try {
       var s = t.s || {}, r = tasCalc(t), cf = r.cf, ac = acmConf(), ai = aseInfo(t), op = Object.assign({ que: true, sem: true, fichas: true, eleg: true, cond: true }, t.pdf || {});
-      var comps = (t.comps || []).filter(function (c) { return c.incl !== false; });
+      var comps = (t.comps || []).filter(function (c) { return c.incl !== false && compUsable(c); });
       var doc = new JsPDF({ unit: 'mm', format: 'a4' }), W = 210, M = 18, page = 0;
       var NAVY = [42, 45, 92], GREY = [228, 229, 223], INK = [60, 60, 66];
       var _tx = doc.text.bind(doc); doc.text = function (tx, x, yy, o) { return _tx(Array.isArray(tx) ? tx.map(pdfTxt) : pdfTxt(tx), x, yy, o); };
@@ -8766,16 +8773,18 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
         if (!tid) tid = await tasElegir();
         if (!tid) { toast('El aviso no se agregó: abrí una tasación y volvé a tocar el botón en el aviso.', { kind: 'error' }); continue; }
         var t = gGet('tasaciones', tid);
-        if ((t.comps || []).some(function (c) { return c.url && c.url.split('#')[0] === o.url.split('#')[0]; })) { toast('Ese aviso ya está en la tasación.'); continue; }
+        var prevC = impRunMatch(t, { url: o.url });
+        if (prevC && !prevC.pend && compUsable(prevC)) { toast('Ese aviso ya está en la tasación.'); continue; }
         toast('Recibí un aviso de ' + (/zonaprop/i.test(o.url) ? 'Zonaprop' : /argenprop/i.test(o.url) ? 'Argenprop' : /mercadolibre/i.test(o.url) ? 'Mercado Libre' : 'un portal') + '. Leyendo los datos…');
         var c = await compDeCopiado(o);
         t = gGet('tasaciones', tid) || t;
         var falta = !c.precio || !(c.m2c || c.m2t);
         if (falta) c.nota = (c.nota ? c.nota + ' · ' : '') + 'Revisar datos';
-        tasAdd(t, [c]);
+        if (prevC) { var mg = Object.assign({}, c, { verif: true, pend: false, incl: !falta, aj: prevC.aj || 0 }); delete mg.id; tasUpdComp(t, prevC.id, mg); }
+        else { c.verif = true; tasAdd(t, [c]); }
         if (!gOpen || gOpen.id !== tid) tasOpen(tid, 'comp'); else if (gOpen.tab !== 'comp') { gOpen.tab = 'comp'; }
         tasAseRefreshSafe();
-        toast((falta ? 'Agregado, pero faltan datos (precio o m²): revisalo con «Editar». ' : 'Comparable agregado: ') + (c.dir || c.titulo || 'aviso') + (c.fotos && c.fotos.length ? ' · ' + c.fotos.length + ' fotos' : ''), falta ? { kind: 'error' } : undefined);
+        toast((falta ? 'Agregado, pero faltan datos (precio o m²): revisalo con «Editar». ' : prevC ? 'Comparable verificado: ' : 'Comparable agregado: ') + (c.dir || c.titulo || 'aviso') + (c.fotos && c.fotos.length ? ' · ' + c.fotos.length + ' fotos' : ''), falta ? { kind: 'error' } : undefined);
       }
     } finally { impBusy = false; }
   }
@@ -8819,6 +8828,49 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     ext.prepend(el('button', { type: 'button', class: 'btn primary', onclick: function () { tasPegar(gGet('tasaciones', t.id) || t); } }, 'Pegar comparable copiado'));
     var p = ext.parentNode; if (p) p.insertBefore(el('p', { class: 'sm' }, '¿Encontraste avisos en Zonaprop u otro portal? ', el('button', { type: 'button', class: 'linkbtn', text: 'Instalá el botón «Enviar a Juntos»', onclick: bookmarkletModal }), ' y sumalos a la tasación con un clic, con datos y fotos.'), ext.nextSibling);
   }; })(tasComp);
+
+  /* ----- comparables de la búsqueda en portales: hay que abrirlos y enviarlos con el botón ----- */
+  function avisoKey(u) {
+    u = String(u || ''); var m = /ML[A-Z]-?(\d{6,})/i.exec(u); if (m) return 'ml' + m[1];
+    var h = ''; try { var x = new URL(u); h = x.hostname.replace(/^www\./, ''); u = x.pathname; } catch (e) {}
+    var n = u.match(/(\d{6,})/g); if (n) return h.split('.')[0] + n[n.length - 1];
+    return h + u.replace(/\/+$/, '');
+  }
+  function compFalta(c) {
+    if (c.pend) return 'pend';
+    if (!+c.precio || !(+c.m2c || +c.m2t)) return 'datos';
+    if (!/^base/.test(c.src || '') && !(c.fotos || []).length) return 'fotos';
+    return '';
+  }
+  function compUsable(c) { return !compFalta(c); }
+  var FALTA_TXT = { pend: 'Por verificar: abrí el aviso y tocá «★ Enviar a Juntos»', datos: 'Faltan precio o m²: completalos con «Editar» o enviá el aviso con el botón', fotos: 'Sin fotos: enviá el aviso con «★ Enviar a Juntos» o subilas con «Editar»' };
+  tasAdd = (function (o) { return function (t, list) {
+    (list || []).forEach(function (c) { if (c.src === 'portal' && !c.verif) { c.pend = true; c.incl = false; } });
+    return o.apply(this, arguments);
+  }; })(tasAdd);
+  tasComp = (function (o) { return function (t) {
+    o(t);
+    var comps = t.comps || [], rows = document.querySelectorAll('#gpBody .tas-tbl tbody tr');
+    var nPend = 0, nMal = 0;
+    comps.forEach(function (c, i) {
+      var f = compFalta(c), tr = rows[i]; if (!f || !tr) return;
+      if (f === 'pend') nPend++; else nMal++;
+      tr.classList.add('tas-falta');
+      var cb = tr.querySelector('input[type=checkbox]'); if (cb) { cb.checked = false; cb.disabled = true; cb.title = FALTA_TXT[f]; }
+      var cn = tr.querySelector('.tas-cn');
+      if (cn) cn.append(el('span', { class: 'tag ' + (f === 'pend' ? 'soon' : 'warn'), text: f === 'pend' ? 'Por verificar' : f === 'fotos' ? 'Sin fotos' : 'Datos incompletos', title: FALTA_TXT[f] }),
+        c.url && f !== 'datos' ? el('a', { class: 'btn sm-btn tas-abrir', href: c.url, target: '_blank', rel: 'noopener', text: 'Abrir aviso ↗' }) : null);
+    });
+    var pane = $('#gpBody .g-pane');
+    if (pane && (nPend || nMal)) pane.prepend(el('div', { class: 'banner-lite warn tas-verif' },
+      el('b', { text: nPend ? nPend + (nPend === 1 ? ' comparable por verificar. ' : ' comparables por verificar. ') : '' }),
+      el('span', { text: (nPend ? 'Los avisos que trae la búsqueda vienen con datos y fotos incompletos: abrí cada uno con «Abrir aviso», revisalo y tocá «★ Enviar a Juntos». Recién ahí se pueden usar. ' : '') + (nMal ? nMal + (nMal === 1 ? ' comparable no se puede usar' : ' comparables no se pueden usar') + ' hasta que tenga precio, m² y fotos.' : '') })));
+  }; })(tasComp);
+  /* al recibir un aviso por el botón: si estaba por verificar, se completa ese mismo */
+  var impRunMatch = function (t, c) {
+    var k = avisoKey(c.url);
+    return (t.comps || []).filter(function (x) { return x.url && avisoKey(x.url) === k; })[0] || null;
+  };
 
   /* ---------- arranque ---------- */
   var gStarted = false;
