@@ -7603,7 +7603,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   }
   function tasUpdComp(t, id, f) { var cur = gGet('tasaciones', t.id); if (!cur) return; gUpd('tasaciones', t.id, { comps: (cur.comps || []).map(function (x) { return x.id === id ? Object.assign({}, x, f) : x; }) }); }
   /* ----- IA: portales, links, PDF y texto ----- */
-  var COMP_SCHEMA = 'Devolvé SOLO un JSON válido, sin texto antes ni después, con esta forma: {"comparables":[{"portal":"zonaprop|argenprop|mercadolibre|otro","url":"","titulo":"","direccion":"calle y altura si aparece","localidad":"barrio o localidad","tipo":"Departamento|Casa|PH|Terreno|Local|Oficina|Otro","ambientes":0,"m2_cubiertos":0,"m2_totales":0,"precio":0,"moneda":"USD|ARS","estado":"publicada|vendida","antiguedad":0,"dormitorios":0,"banos":0,"fecha_publicacion":"AAAA-MM-DD si aparece","publica":"inmobiliaria que publica","caracteristicas":["característica principal", "..."],"fotos":["URL completa de cada foto del aviso (hasta 4, solo si aparecen en la página)"],"notas":"dato corto"}]}. Usá null cuando un dato no aparezca. No inventes datos.';
+  var COMP_SCHEMA = 'Devolvé SOLO un JSON válido, sin texto antes ni después, con esta forma: {"comparables":[{"portal":"zonaprop|argenprop|mercadolibre|otro","url":"","titulo":"","direccion":"calle y altura si aparece","localidad":"barrio o localidad","tipo":"Departamento|Casa|PH|Terreno|Local|Oficina|Otro","ambientes":0,"m2_cubiertos":0,"m2_totales":0,"precio":0,"moneda":"USD|ARS","estado":"publicada|vendida","antiguedad":0,"dormitorios":0,"banos":0,"fecha_publicacion":"AAAA-MM-DD si aparece","precio_publicacion":0,"fecha_cierre":"AAAA-MM-DD si es vendida","publica":"inmobiliaria que publica","caracteristicas":["característica principal", "..."],"fotos":["URL completa de cada foto del aviso (hasta 4, solo si aparecen en la página)"],"notas":"dato corto"}]}. Usá null cuando un dato no aparezca. No inventes datos.';
   function aiOK() { return !!(window.claude && window.claude.aiRaw); }
   function aiNeed() { toast(window.claude && window.claude.standalone ? 'Falta configurar la clave de la IA (menú ⋯ → Asistente).' : 'La búsqueda con IA funciona en la versión de GitHub. Acá podés cargar comparables a mano.', { kind: 'error' }); }
   function parseComps(txt, src) {
@@ -7612,7 +7612,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     try { var o = JSON.parse(a.slice(i, j + 1)); } catch (e) { return []; }
     return (o.comparables || []).map(function (x) {
       var tipo = PROP_TIPOS.filter(function (p) { return norm(p) === norm(x.tipo || ''); })[0] || (x.tipo ? 'Otro' : '');
-      return { src: src, portal: x.portal || '', url: x.url || '', titulo: x.titulo || '', dir: x.direccion || x.titulo || '', loc: x.localidad || '', tipo: tipo, amb: +x.ambientes || null, m2c: +x.m2_cubiertos || null, m2t: +x.m2_totales || null, precio: +x.precio || null, mon: /ARS|\$/.test(x.moneda || '') && !/USD|U\$S/.test(x.moneda || '') ? '$' : 'U$S', estado: x.estado === 'vendida' ? 'vendida' : 'publicada', antig: +x.antiguedad || null, dorm: +x.dormitorios || null, banos: +x.banos || null, fecha: /^\d{4}-\d{2}-\d{2}$/.test(x.fecha_publicacion || '') ? x.fecha_publicacion : '', publica: x.publica || '', desc: Array.isArray(x.caracteristicas) ? x.caracteristicas.filter(function (q) { return q && q !== '...'; }).join('\n') : (x.caracteristicas || ''), fotos: (Array.isArray(x.fotos) ? x.fotos : []).filter(function (u) { return /^https?:\/\/\S+$/.test(u || ''); }).slice(0, 4), nota: x.notas || '' };
+      return { src: src, portal: x.portal || '', url: x.url || '', titulo: x.titulo || '', dir: x.direccion || x.titulo || '', loc: x.localidad || '', tipo: tipo, amb: +x.ambientes || null, m2c: +x.m2_cubiertos || null, m2t: +x.m2_totales || null, precio: +x.precio || null, mon: /ARS|\$/.test(x.moneda || '') && !/USD|U\$S/.test(x.moneda || '') ? '$' : 'U$S', estado: x.estado === 'vendida' ? 'vendida' : 'publicada', antig: +x.antiguedad || null, dorm: +x.dormitorios || null, banos: +x.banos || null, fecha: /^\d{4}-\d{2}-\d{2}$/.test(x.fecha_cierre || '') ? x.fecha_cierre : /^\d{4}-\d{2}-\d{2}$/.test(x.fecha_publicacion || '') ? x.fecha_publicacion : '', pubPrecio: +x.precio_publicacion || null, publica: x.publica || '', desc: Array.isArray(x.caracteristicas) ? x.caracteristicas.filter(function (q) { return q && q !== '...'; }).join('\n') : (x.caracteristicas || ''), fotos: (Array.isArray(x.fotos) ? x.fotos : []).filter(function (u) { return /^https?:\/\/\S+$/.test(u || ''); }).slice(0, 4), nota: x.notas || '' };
     }).filter(function (c) { return c.precio || c.m2c || c.url; });
   }
   async function aiRun(content, tools) {
@@ -8681,16 +8681,85 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   fillAse = (function (o) { return function () { document.body.classList.remove('ase-tas'); return o.apply(this, arguments); }; })(fillAse);
   if (window.__FB_MOCK) window.__t5 = { items: function () { return tasBaseItems().length; }, st: function () { return [!!gDb, canGestion(), gReady.captaciones, gReady.cierres, gReady.asesores, G.asesores.filter(function (a) { return a.acceso; }).length, !!window.ASE_MODE]; } };
   /* ----- botón de favoritos: copiar un aviso desde cualquier portal y pegarlo como comparable ----- */
-  function bmCode(B) {
-    var js = "(function(){try{var L=[];[].forEach.call(document.querySelectorAll('button,a,[role=button],span,div,p'),function(b){if(b.children.length>3)return;var t=(b.innerText||'').trim().toLowerCase();if(t.length>40||!/^(ver|leer|mostrar)( la)? (m\\u00e1s|mas)|descripci\\u00f3n completa|ver descripci/.test(t))return;var h=b.getAttribute('href');if(h&&!/^#|^javascript/.test(h))return;L.push(b);});L=L.filter(function(b){return !L.some(function(o){return o!==b&&b.contains(o);});}).slice(0,6);L.forEach(function(b){try{b.click();}catch(e){}});setTimeout(G,L.length?900:0);}catch(e){G();}function G(){try{var R=/https?:\\/\\/[^\"'\\s()<>\\\\,]+?\\.(?:jpe?g|webp|png)(?:\\?[^\"'\\s()<>\\\\,]*)?/gi,H=document.documentElement.outerHTML.replace(/\\\\u002F/gi,'/').replace(/\\\\\\//g,'/'),S={},F=[];function a(u){if(u&&!S[u]&&F.length<400){S[u]=1;F.push(u);}}(H.match(R)||[]).forEach(a);[].forEach.call(document.images,function(i){if(i.naturalWidth>=300)a(i.currentSrc||i.src);});"
-      + "var m=document.querySelector('meta[property=\"og:image\"]'),M=document.querySelector('main')||document.body,id=''+Date.now()+Math.random(),o={k:'juntos-comp',v:3,id:id,url:location.href,titulo:document.title,og:m?m.content:'',fotos:F,texto:((M.innerText||'')+'\\n'+[].map.call(document.querySelectorAll('[class*=descrip],[id*=descrip],[class*=Descrip]'),function(e){return e.textContent;}).join('\\n')).replace(/[ \\t]+/g,' ').replace(/\\n{3,}/g,'\\n\\n').slice(0,20000)},s=JSON.stringify(o);"
-      + "var d=document.getElementById('jg-bm')||document.createElement('div');d.id='jg-bm';d.style.cssText='position:fixed;z-index:2147483647;top:16px;right:16px;background:#012169;color:#fff;font:600 14px/1.4 Arial,sans-serif;padding:14px 34px 14px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:320px';document.body.appendChild(d);"
-      + "function P(h,btn){d.innerHTML='<div>Juntos Gesti\\u00f3n</div><div style=\"font-weight:400\">'+h+'</div>';var x=document.createElement('button');x.textContent='\\u00d7';x.style.cssText='position:absolute;top:6px;right:8px;background:none;border:0;color:#fff;font-size:18px;cursor:pointer';x.onclick=function(){d.remove();};d.appendChild(x);if(btn){var b=document.createElement('button');b.textContent='Copiar comparable';b.style.cssText='margin-top:10px;background:#fff;color:#012169;border:0;border-radius:8px;padding:8px 12px;font:700 14px Arial;cursor:pointer';b.onclick=function(){var t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();var c=false;try{c=document.execCommand('copy');}catch(e){}t.remove();if(c)b.textContent='\\u00a1Copiado! Peg\\u00e1lo en la tasaci\\u00f3n';else prompt('Copi\\u00e1 este texto:',s);};d.appendChild(b);}}";
-    if (B) js += "P('Enviando el aviso ('+F.length+' im\\u00e1genes)\\u2026');fetch('https://firestore.googleapis.com/v1/projects/" + B.p + "/databases/(default)/documents/buzon/" + B.t + "/items?key=" + B.k + "',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{d:{stringValue:s},t:{timestampValue:new Date().toISOString()}}})}).then(function(r){if(!r.ok)throw new Error(r.status);P('\\u2714 Enviado a tu tasaci\\u00f3n en Juntos Gesti\\u00f3n. Pod\\u00e9s seguir buscando.');setTimeout(function(){d.remove();},3500);}).catch(function(){P('No se pudo enviar. Copialo y pegalo en la tasaci\\u00f3n:',1);});";
-    else js += "P('Aviso le\\u00eddo con '+F.length+' im\\u00e1genes.',1);";
-    js += "}catch(e){alert('No se pudo leer el aviso: '+e.message);}}})();";
-    return 'javascript:' + js;
+  /* código del botón de favoritos: se serializa con toString, así que no usa nada de afuera */
+  function bmMain(B) {
+    var d = document, VER = /^(ver|leer|mostrar)( la)? (más|mas)|descripción completa|ver descripci/;
+    var PR = /(US\$|U\$S|USD|u\$s)\s*[\d.]{4,}/i, PRG = /(US\$|U\$S|USD|u\$s)\s*[\d.]{4,}/gi;
+    var R = /https?:\/\/[^"'\s()<>\\,]+?\.(?:jpe?g|webp|png)(?:\?[^"'\s()<>\\,]*)?/gi;
+    var box = d.getElementById('jg-bm') || d.createElement('div');
+    box.id = 'jg-bm';
+    box.style.cssText = 'position:fixed;z-index:2147483647;top:16px;right:16px;background:#012169;color:#fff;font:600 14px/1.4 Arial,sans-serif;padding:14px 34px 14px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;max-height:80vh;overflow:auto';
+    d.body.appendChild(box);
+    function btn(t, fn, light) { var b = d.createElement('button'); b.textContent = t; b.style.cssText = 'margin-top:10px;margin-right:6px;background:' + (light ? 'transparent' : '#fff') + ';color:' + (light ? '#fff' : '#012169') + ';border:' + (light ? '1px solid #fff' : '0') + ';border-radius:8px;padding:8px 12px;font:700 13px Arial;cursor:pointer'; b.onclick = fn; return b; }
+    function panel(html, nodes) {
+      box.innerHTML = '<div>Juntos Gestión</div><div style="font-weight:400">' + html + '</div>';
+      var x = d.createElement('button'); x.textContent = '×'; x.style.cssText = 'position:absolute;top:6px;right:8px;background:none;border:0;color:#fff;font-size:18px;cursor:pointer'; x.onclick = function () { box.remove(); }; box.appendChild(x);
+      (nodes || []).forEach(function (n) { box.appendChild(n); });
+    }
+    function copyBtn(s) { return btn('Copiar comparable', function () { var t = d.createElement('textarea'); t.value = s; d.body.appendChild(t); t.select(); var c = false; try { c = d.execCommand('copy'); } catch (e) {} t.remove(); if (c) this.textContent = '¡Copiado! Pegálo en la tasación'; else prompt('Copiá este texto:', s); }); }
+    function send(o, label) {
+      var s = JSON.stringify(o);
+      if (!B) { panel(label + ' listo. Copialo y pegalo en la tasación.', [copyBtn(s)]); return; }
+      panel('Enviando ' + label + '…');
+      fetch('https://firestore.googleapis.com/v1/projects/' + B.p + '/databases/(default)/documents/buzon/' + B.t + '/items?key=' + B.k, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: { d: { stringValue: s }, t: { timestampValue: new Date().toISOString() } } }) })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); panel('✔ Enviado a tu tasación en Juntos Gestión: ' + label + '. Podés seguir buscando.'); setTimeout(function () { box.remove(); }, 3500); })
+        .catch(function () { panel('No se pudo enviar. Copialo y pegalo en la tasación:', [copyBtn(s)]); });
+    }
+    function srcOf(i) { return i.currentSrc || i.src || i.getAttribute('data-src') || i.getAttribute('data-lazy') || ''; }
+    function fotosDe(root) {
+      var S = {}, F = [];
+      function a(u) { if (u && /^https?:/.test(u) && !S[u] && F.length < 300) { S[u] = 1; F.push(u); } }
+      (root.outerHTML.replace(/\\u002F/gi, '/').replace(/\\\//g, '/').match(R) || []).forEach(a);
+      [].forEach.call(root.querySelectorAll('img'), function (i) { a(srcOf(i)); });
+      return F;
+    }
+    function textoDe(root, max) {
+      var t = (root.innerText || '') + '\n' + [].map.call(root.querySelectorAll('[class*=descrip],[id*=descrip],[class*=Descrip]'), function (e) { return e.textContent; }).join('\n');
+      return t.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').slice(0, max);
+    }
+    var L = [];
+    [].forEach.call(d.querySelectorAll('button,a,[role=button],span,div,p'), function (b) {
+      if (b.children.length > 3) return; var t = (b.innerText || '').trim().toLowerCase();
+      if (t.length > 40 || !VER.test(t)) return; var h = b.getAttribute('href'); if (h && !/^#|^javascript/.test(h)) return; L.push(b);
+    });
+    L = L.filter(function (b) { return !L.some(function (o) { return o !== b && b.contains(o); }); }).slice(0, 6);
+    L.forEach(function (b) { try { b.click(); } catch (e) {} });
+    setTimeout(go, L.length ? 900 : 0);
+    function go() {
+      try {
+        var cards = [], cw = [], maxW = 0, big = false;
+        [].forEach.call(d.querySelectorAll('img'), function (i) {
+          var r = i.getBoundingClientRect(); if (r.width < 120 || r.height < 80) return; if (r.width > maxW) maxW = r.width;
+          var p = i.parentElement, n = 0;
+          while (p && p !== d.body && n < 9) { var t = p.innerText || ''; if (t.length > 60 && PR.test(t)) break; p = p.parentElement; n++; }
+          if (!p || p === d.body || n >= 9) { if (r.width >= 450) big = true; return; }
+          var np = ((p.innerText || '').match(PRG) || []).length; if (np > 4) { if (r.width >= 450) big = true; return; }
+          if (cards.indexOf(p) < 0) { cards.push(p); cw.push(r.width); }
+        });
+        var sw = cw.slice().sort(function (x, y) { return x - y; }), med = sw.length ? sw[Math.floor(sw.length / 2)] : 0;
+        if (med && maxW > med * 1.5 && maxW >= 450) big = true;
+        cards = cards.filter(function (c) { return !cards.some(function (o) { return o !== c && o.contains(c); }); });
+        var m = d.querySelector('meta[property="og:image"]'), M = d.querySelector('main') || d.body;
+        var one = { k: 'juntos-comp', v: 4, id: '' + Date.now() + Math.random(), url: location.href, titulo: d.title, og: m ? m.content : '', fotos: fotosDe(d.documentElement), texto: textoDe(M, 20000) };
+        if (cards.length < 2 || big) { var otros = {}; if (big) cards.forEach(function (c) { fotosDe(c).forEach(function (u) { otros[u] = 1; }); }); one.fotos = one.fotos.filter(function (u) { return !otros[u]; }); send(one, 'el aviso (' + one.fotos.length + ' imágenes)'); return; }
+        var items = cards.slice(0, 40).map(function (c, k) {
+          var t = textoDe(c, 4000), ref = (/(?:Referencia|Ref\.?|Código)\s*:?\s*([A-Z]{2,}[-\w]*\d{3,})/i.exec(t) || [])[1] || '';
+          var a = [].filter.call(c.querySelectorAll('a[href]'), function (x) { return /^https?:/.test(x.href) && x.href.split('#')[0] !== location.href.split('#')[0]; })[0];
+          return { url: a ? a.href : location.href.split('#')[0] + '#ref=' + (ref || 'n' + (k + 1)), titulo: (t.split('\n').filter(function (x) { return x.trim().length > 8; })[0] || ('Comparable ' + (k + 1))).trim().slice(0, 120), texto: t, fotos: fotosDe(c), precio: (t.match(PR) || [''])[0] };
+        });
+        var list = d.createElement('div'); list.style.cssText = 'margin-top:8px;font-weight:400;font-size:13px';
+        var chk = items.map(function (it) {
+          var l = d.createElement('label'); l.style.cssText = 'display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px solid rgba(255,255,255,.2);cursor:pointer';
+          var c = d.createElement('input'); c.type = 'checkbox'; c.checked = true; c.style.marginTop = '3px';
+          var sp = d.createElement('span'); sp.textContent = it.titulo + (it.precio ? ' · ' + it.precio : ''); l.appendChild(c); l.appendChild(sp); list.appendChild(l); return c;
+        });
+        panel('Encontré ' + items.length + ' propiedades en esta página. Elegí cuáles sumar a la tasación:', [list,
+          btn('Enviar seleccionadas', function () { var sel = items.filter(function (it, k) { return chk[k].checked; }); if (!sel.length) return; send({ k: 'juntos-comp', v: 4, multi: true, id: '' + Date.now() + Math.random(), url: location.href, titulo: d.title, items: sel.map(function (it) { return { url: it.url, titulo: it.titulo, texto: it.texto, fotos: it.fotos }; }) }, sel.length + (sel.length === 1 ? ' propiedad' : ' propiedades')); }),
+          btn('Es un solo aviso', function () { send(one, 'el aviso (' + one.fotos.length + ' imágenes)'); }, true)]);
+      } catch (e) { alert('No se pudo leer la página: ' + e.message); }
+    }
   }
+  function bmCode(B) { return 'javascript:' + encodeURIComponent('(' + bmMain.toString() + ')(' + JSON.stringify(B || null) + ')'); }
   /* buzón: el botón deja el aviso en la base y la plataforma abierta lo toma, sin abrir pestañas */
   var buzonOn = false;
   function buzonDb() { return gDb || aseDb; }
@@ -8715,7 +8784,10 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
           var key = 'juntos-imp-' + d.id; try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch (e) {}
           var o = null; try { o = JSON.parse((d.data() || {}).d || ''); } catch (e) {}
           try { col.doc(d.id).delete(); } catch (e) {}
-          if (o && o.k === 'juntos-comp' && typeof o.url === 'string' && /^https?:/.test(o.url) && !impSeen[o.id || d.id]) {
+          if (o && o.k === 'juntos-comp' && o.multi && Array.isArray(o.items) && !impSeen[o.id || d.id]) {
+            impSeen[o.id || d.id] = 1;
+            o.items.slice(0, 40).forEach(function (it) { if (it && typeof it.url === 'string' && /^https?:/.test(it.url)) impQ.push({ url: it.url, titulo: String(it.titulo || '').slice(0, 300), og: '', fotos: Array.isArray(it.fotos) ? it.fotos.filter(function (u) { return typeof u === 'string'; }).slice(0, 300) : [], texto: String(it.texto || '').slice(0, 6000), k: 'juntos-comp', card: true }); });
+          } else if (o && o.k === 'juntos-comp' && typeof o.url === 'string' && /^https?:/.test(o.url) && !impSeen[o.id || d.id]) {
             impSeen[o.id || d.id] = 1;
             impQ.push({ url: o.url, titulo: String(o.titulo || '').slice(0, 300), og: typeof o.og === 'string' ? o.og : '', fotos: Array.isArray(o.fotos) ? o.fotos.filter(function (u) { return typeof u === 'string'; }).slice(0, 400) : [], texto: String(o.texto || '').slice(0, 20000), k: 'juntos-comp' });
           }
@@ -8736,6 +8808,23 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var portal = /zonaprop/i.test(c.url) ? 'zonaprop' : /argenprop/i.test(c.url) ? 'argenprop' : /mercadolibre/i.test(c.url) ? 'mercadolibre' : '';
     if (portal) c.portal = portal;
     c.dir = String(o.titulo || '').split(/[|·\-–]/)[0].trim().slice(0, 80);
+    function num(x) { return x ? +String(x).replace(/\./g, '').replace(',', '.') : null; }
+    function lab(re) { var m = re.exec(tx); return m ? m[1].trim() : null; }
+    var pc = lab(/precio\s*(?:de\s*)?cierre\s*:?\s*(?:US\$|U\$S|USD)\s*([\d.,]+)/i), pp = lab(/precio\s*(?:de\s*)?publicaci[oó]n\s*:?\s*(?:US\$|U\$S|USD)\s*([\d.,]+)/i);
+    if (pc) { c.estado = 'vendida'; c.precio = num(pc); c.mon = 'U$S'; if (pp) c.pubPrecio = num(pp); }
+    else if (pp) { c.precio = num(pp); c.mon = 'U$S'; }
+    var sh = lab(/superficie\s*homogeneizada\s*:?\s*([\d.,]+)\s*m/i), sc = lab(/superficie\s*cubierta\s*:?\s*([\d.,]+)\s*m/i), st = lab(/superficie\s*total\s*:?\s*([\d.,]+)\s*m/i);
+    if (sc) c.m2c = num(sc); if (st) c.m2t = num(st); if (sh && !sc) { c.m2c = num(sh); c.nota = 'Superficie homogeneizada según la fuente'; }
+    var dl = lab(/direcci[oó]n\s*:\s*([^\n]+)/i); if (dl) c.dir = dl.split(/\s+-\s+/)[0].slice(0, 80);
+    var ub = lab(/ubicaci[oó]n\s*:\s*([^\n]+)/i); if (ub) { var parts = ub.split('|').map(function (x) { return x.trim(); }).filter(Boolean); if (parts.length) c.loc = parts[parts.length - 1]; }
+    var a2 = lab(/ambientes\s*:\s*(\d+)/i); if (a2) c.amb = +a2;
+    var h2 = lab(/(?:habitaciones|dormitorios)\s*:\s*(\d+)/i); if (h2) c.dorm = +h2;
+    var fc = /fecha\s*(?:de\s*)?cierre\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(tx) || (!pc && /fecha\s*(?:de\s*)?alta\s*:?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/i.exec(tx));
+    if (fc) c.fecha = fc[3] + '-' + ('0' + fc[2]).slice(-2) + '-' + ('0' + fc[1]).slice(-2);
+    var tp = lab(/tipo\s*(?:de\s*)?propiedad\s*:\s*([^\n]+)/i); if (tp) c.tipo = tp.split(/\s{2,}/)[0];
+    var rf = lab(/referencia\s*:\s*([A-Z0-9-]+)/i); if (rf) c.nota = (c.nota ? c.nota + ' · ' : '') + 'Ref. ' + rf;
+    if (/coldwell/i.test(tx + (o.url || '')) && pc) c.publica = 'Red Coldwell Banker';
+    c._strong = [pc ? 'estado' : '', pc || pp ? 'precio' : '', pc || pp ? 'mon' : '', pp && pc ? 'pubPrecio' : '', sc || sh ? 'm2c' : '', st ? 'm2t' : '', dl ? 'dir' : '', ub ? 'loc' : '', a2 ? 'amb' : '', h2 ? 'dorm' : '', fc ? 'fecha' : ''].filter(Boolean);
     return c;
   }
   async function compDeCopiado(o) {
@@ -8743,9 +8832,9 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var fv = await fotosValidas(fotos, 6); fotos = fv.length ? fv : (o.og ? [o.og] : []);
     var c = compDeTexto(o);
     if (aiOK()) {
-      try { var txt = await aiRun('Texto de un aviso inmobiliario (' + (o.url || '') + '), título: ' + (o.titulo || '') + '\n\n' + String(o.texto || '').slice(0, 20000) + '\n\nEs un solo inmueble. ' + COMP_SCHEMA, null); var cs = parseComps(txt, 'link'); if (cs[0]) { Object.keys(cs[0]).forEach(function (k) { var val = cs[0][k]; if (val != null && val !== '' && !(Array.isArray(val) && !val.length)) c[k] = val; }); } } catch (e) {}
+      try { var txt = await aiRun('Texto de ' + (o.card ? 'una tarjeta de propiedad (puede ser una operación cerrada)' : 'un aviso inmobiliario') + ' (' + (o.url || '') + '), título: ' + (o.titulo || '') + '\n\n' + String(o.texto || '').slice(0, 20000) + '\n\nEs un solo inmueble. Si figura un precio de cierre, es una propiedad vendida: estado "vendida", precio = precio de cierre, precio_publicacion = el publicado y fecha_cierre. ' + COMP_SCHEMA, null); var cs = parseComps(txt, 'link'); if (cs[0]) { Object.keys(cs[0]).forEach(function (k) { var val = cs[0][k]; if ((c._strong || []).indexOf(k) >= 0) return; if (val != null && val !== '' && !(Array.isArray(val) && !val.length)) c[k] = val; }); } } catch (e) {}
     }
-    c.url = o.url || c.url; c.src = 'link';
+    delete c._strong; c.url = o.url || c.url; c.src = 'link';
     var extra = (c.fotos || []).filter(function (u) { return fotos.indexOf(u) < 0; });
     if (extra.length && fotos.length < 6) extra = await fotosValidas(extra, 6 - fotos.length); else extra = [];
     c.fotos = fotos.concat(extra).slice(0, 6); c.fotosTry = true;
@@ -8831,7 +8920,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 
   /* ----- comparables de la búsqueda en portales: hay que abrirlos y enviarlos con el botón ----- */
   function avisoKey(u) {
-    u = String(u || ''); var m = /ML[A-Z]-?(\d{6,})/i.exec(u); if (m) return 'ml' + m[1];
+    u = String(u || ''); var hr = /#ref=([^&]+)/.exec(u); if (hr) return 'ref' + hr[1].toLowerCase() + '@' + u.split('#')[0].replace(/^https?:\/\/(www\.)?/, '').split('/')[0]; var m = /ML[A-Z]-?(\d{6,})/i.exec(u); if (m) return 'ml' + m[1];
     var h = ''; try { var x = new URL(u); h = x.hostname.replace(/^www\./, ''); u = x.pathname; } catch (e) {}
     var n = u.match(/(\d{6,})/g); if (n) return h.split('.')[0] + n[n.length - 1];
     return h + u.replace(/\/+$/, '');
