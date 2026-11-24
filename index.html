@@ -9349,9 +9349,14 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     k.mart = k.total * rate('mart'); k.fran = k.total * rate('fran');
     k.fact = !!r.facturar; k.iibb = 0; k.abao = 0; k.factNeto = 0;
     if (k.fact) {
-      /* estimado: se factura el 40% de la comisión de nuestras puntas (en el cierre se ajusta con la escritura) */
-      var P = +r.precio || 0, pctNos = (L.v.nos ? +L.v.pct || 0 : 0) + (L.c.nos ? +L.c.pct || 0 : 0);
-      k.factNeto = toUSD(P * pctNos, r.precioMon || 'U$S', r.cot) * 0.4;
+      /* estimado: el martillero factura el 40% de la parte de la oficina (lo que no va al split del asesor) de cada punta nuestra; en el cierre se ajusta con la escritura */
+      var P = +r.precio || 0, ofiPct = 0;
+      ['v', 'c'].forEach(function (sd) {
+        if (!L[sd].nos) return;
+        var a = gGet('asesores', L[sd].ase), sp = a ? splitAt(a, r.fechaFirma || todayStr()) : null; if (sp == null) sp = 0.5;
+        ofiPct += (+L[sd].pct || 0) * (1 - sp);
+      });
+      k.factNeto = toUSD(P * ofiPct, r.precioMon || 'U$S', r.cot) * 0.4;
       k.iibb = k.factNeto * rate('iibb');
       k.abao = venta && juris === 'PBA' ? k.factNeto * rate('abao') : 0;
     }
@@ -9376,7 +9381,7 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     row('Martillero (' + pctTxt(rate('mart'), 1) + ' de la comisión bruta)', null, k.mart, 'det', true);
     row('Coldwell Banker (' + pctTxt(rate('fran'), 1) + ' de la comisión bruta)', null, k.fran, 'det', true);
     if (k.fact) {
-      row('Ingresos brutos (' + pctTxt(rate('iibb'), 1) + ' de lo facturado, estimado)', null, k.iibb, 'det', true);
+      row('Ingresos brutos (' + pctTxt(rate('iibb'), 1) + ' del 40% de la parte de la oficina, estimado)', null, k.iibb, 'det', true);
       if (k.abao) row('ABAO (' + pctTxt(rate('abao'), 0) + ' de lo facturado): mitad de la oficina', null, k.abao / 2, 'det', true);
     }
     row('Neto de la oficina', k.total ? k.netoOf / k.total : null, k.netoOf, 'tot');
@@ -9393,14 +9398,21 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     var f = c.fact; if (!f || !f.on) return null;
     var cotF = +f.cot || +c.cot || +gConf.cot || 1, esc = +f.esc || 0, escARS = f.escMon === 'U$S' ? esc * cotF : esc, pct = f.pct != null && f.pct !== '' ? +f.pct : 0.4;
     var juris = c.juris || jurisDe(c.localidad), venta = (c.operacion || 'venta') === 'venta';
+    /* el martillero factura solo la parte de la oficina (100% − split del asesor); el asesor factura su parte por su cuenta */
+    var parts = cParts(c), spl = parts.reduce(function (a, x) { var p = x.parte != null ? +x.parte : 1 / (parts.length || 1); return a + p * (+x.split || 0); }, 0);
+    var ofi = parts.length ? Math.max(0, 1 - spl) : 0.5;
+    var red = c.compartida === 'red' && c.puntas !== 'ambas';
     var inv = ciePuntas(c).map(function (p) {
-      var pp = p === 'v' ? +c.pctVend || 0 : +c.pctComp || 0, sug = Math.round(escARS * pct * pp), fx = (f.inv || {})[p] || {};
+      var pp = p === 'v' ? +c.pctVend || 0 : +c.pctComp || 0;
+      if (red) pp = ((+c.pctVend || 0) + (+c.pctComp || 0)) / 2;
+      else if (p === 'c' && c.compartida === 'fuera' && c.pctOtra) pp = Math.max(0, pp - (+c.pctOtra || 0));
+      var sug = Math.round(escARS * pct * pp * ofi), fx = (f.inv || {})[p] || {};
       var neto = fx.neto != null && fx.neto !== '' ? +fx.neto : sug;
       return { p: p, pct: pp, sug: sug, neto: neto, iva: Math.round(neto * 0.21), fx: fx };
     });
     var netoT = inv.reduce(function (a, x) { return a + (x.neto || 0); }, 0);
     var cfPct = juris === 'CABA' ? 0.905 : 0.8, cfNeto = netoT * cfPct;
-    return { cot: cotF, escARS: escARS, pct: pct, inv: inv, neto: netoT, iibb: netoT * rate('iibb'), abao: venta && juris === 'PBA' ? netoT * rate('abao') : 0, juris: juris, cfPct: cfPct, cfNeto: cfNeto, ivaDeb: netoT * 0.21, ivaCred: cfNeto * 0.21, ivaSaldo: netoT * 0.21 - cfNeto * 0.21 };
+    return { cot: cotF, escARS: escARS, pct: pct, ofi: ofi, inv: inv, neto: netoT, iibb: netoT * rate('iibb'), abao: venta && juris === 'PBA' ? netoT * rate('abao') : 0, juris: juris, cfPct: cfPct, cfNeto: cfNeto, ivaDeb: netoT * 0.21, ivaCred: cfNeto * 0.21, ivaSaldo: netoT * 0.21 - cfNeto * 0.21 };
   }
   calcCierre = function (c) {
     var mon = c.moneda || 'U$S', cot = +c.cot || +gConf.cot || 1, valor = +c.valor || 0;
@@ -9517,7 +9529,7 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
         } catch (e) { done(); toast('No se pudo adjuntar: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
       });
       return el('div', { class: 'g-fact-card' },
-        el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura a la ' + lbl[x.p] }), el('span', { class: 'sm', text: pctTxt(x.pct, 2) + ' × ' + pctTxt(F.pct, 0) + ' de la escritura' })),
+        el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura del martillero a la ' + lbl[x.p] }), el('span', { class: 'sm', text: pctTxt(x.pct, 2) + ' × ' + pctTxt(F.ofi, 1) + ' oficina × ' + pctTxt(F.pct, 0) + ' de la escritura' })),
         el('div', { class: 'grid' },
           fld('Cliente', txt('cliente', 'Nombre o razón social')), fld('CUIT / DNI', txt('cuit')), fld('Nº de factura', txt('numero')),
           fld('Neto facturado ($)', num(fx.neto, function (v) { updInv({ neto: v }); }, x.sug ? 'Sugerido ' + fmtN(x.sug) : 'Cargá la escritura'), x.sug ? 'Sugerido: ' + ars(x.sug) : null)),
