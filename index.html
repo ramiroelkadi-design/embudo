@@ -1101,6 +1101,9 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 .tas-tbl tr.tas-falta, .tas-tbl tr.tas-falta.off { opacity: 1 !important; }
 .tas-tbl tr.tas-falta th .tas-cn > a:first-child, .tas-tbl tr.tas-falta th .tas-cn > b:first-child { opacity: .7; }
 .tas-tbl tr.off.tas-falta th, .tas-tbl tr.off.tas-falta td.tas-acts { opacity: 1; }
+.tas-portales { display: grid; gap: 8px; margin: 4px 0 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.tas-portales .row-wrap { gap: 8px; }
+.tas-portales .btn { text-decoration: none; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -7821,7 +7824,6 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var ext = sect('Sumar comparables externos', [
       el('p', { class: 'sm', text: 'Como nuestra base es chica, completá con avisos de portales o comparables que encuentres por tu cuenta.' }),
       el('div', { class: 'tas-ext' },
-        el('button', { type: 'button', class: 'btn primary', onclick: function () { tasPortales(t); } }, icon('search', 16), 'Buscar en portales con IA'),
         el('button', { type: 'button', class: 'btn', onclick: function () { tasLink(t); } }, 'Pegar un link'),
         el('button', { type: 'button', class: 'btn', onclick: function () { tasPdf(t); } }, 'Subir PDF del aviso (datos y fotos)'),
         el('button', { type: 'button', class: 'btn', onclick: function () { tasTexto(t); } }, 'Pegar el texto del aviso'),
@@ -8966,6 +8968,36 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var k = avisoKey(c.url);
     return (t.comps || []).filter(function (x) { return x.url && avisoKey(x.url) === k; })[0] || null;
   };
+  /* ----- accesos directos a los portales con la búsqueda precargada ----- */
+  function slugTxt(x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+  var ZP_TIPO = { 'Departamento': 'departamentos', 'Casa': 'casas', 'PH': 'ph', 'Terreno': 'terrenos', 'Lote': 'terrenos', 'Local': 'locales-comerciales', 'Local comercial': 'locales-comerciales', 'Oficina': 'oficinas-comerciales', 'Galpón': 'galpones', 'Depósito': 'galpones', 'Cochera': 'cocheras', 'Quinta': 'quintas-vacacionales' };
+  var AP_TIPO = { 'Departamento': 'departamentos', 'Casa': 'casas', 'PH': 'ph', 'Terreno': 'terrenos', 'Lote': 'terrenos', 'Local': 'locales', 'Local comercial': 'locales', 'Oficina': 'oficinas', 'Galpón': 'galpones', 'Depósito': 'galpones', 'Cochera': 'cocheras', 'Quinta': 'quintas' };
+  function portalLinks(t) {
+    var s = t.s || {}, loc = slugTxt(s.loc), amb = +s.amb || 0, tipo = s.tipo || 'Departamento';
+    if (!loc) return null;
+    var zp = 'https://www.zonaprop.com.ar/' + (ZP_TIPO[tipo] || 'inmuebles') + '-venta-' + loc + (amb ? '-' + amb + '-ambientes' : '') + '.html';
+    var ap = 'https://www.argenprop.com/' + (AP_TIPO[tipo] || 'inmuebles') + '/venta/' + loc;
+    var ml = 'https://listado.mercadolibre.com.ar/' + slugTxt([tipo, 'venta', s.loc, amb ? amb + ' ambientes' : ''].join(' '));
+    var desc = [tipo, amb ? amb + ' ambientes' : '', (+s.m2c || +s.m2t) ? 'de unos ' + Math.round(+s.m2c || +s.m2t) + ' m²' : '', 'en venta en ' + s.loc].filter(Boolean).join(' ');
+    return { zp: zp, ap: ap, ml: ml, rx: 'https://roomix.ai/buscar/comprar', desc: desc, amb: amb, m2: Math.round(+s.m2c || +s.m2t || 0) };
+  }
+  function copiar(txt) { try { if (navigator.clipboard) return navigator.clipboard.writeText(txt); } catch (e) {} var ta = el('textarea', {}); ta.value = txt; document.body.append(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); return Promise.resolve(); }
+  tasComp = (function (o) { return function (t) {
+    o(t);
+    var ext = $('#gpBody .tas-ext'); if (!ext) return;
+    var L = portalLinks(t);
+    var box = el('div', { class: 'tas-portales' });
+    if (!L) box.append(el('p', { class: 'sm', text: 'Cargá la localidad o barrio en la pestaña Inmueble para abrir los portales con la búsqueda ya armada.' }));
+    else {
+      function a(lbl, href, extra) { var x = el('a', { class: 'btn', href: href, target: '_blank', rel: 'noopener', text: lbl + ' ↗' }); if (extra) x.addEventListener('click', extra); return x; }
+      box.append(el('p', { class: 'sm', text: 'Buscá en los portales con los datos del inmueble (' + L.desc + '). Abrí los avisos que te sirvan y tocá «★ Enviar a Juntos» en cada uno.' }),
+        el('div', { class: 'row-wrap' },
+          a('Zonaprop', L.zp), a('Argenprop', L.ap), a('Mercado Libre', L.ml),
+          a('Roomix', L.rx, function () { copiar(L.desc).then(function () { toast('Copié la búsqueda: pegala en el buscador de Roomix (Ctrl+V).'); }); })),
+        el('p', { class: 'sm hint', text: (L.m2 ? 'Superficie a filtrar en el portal: entre ' + Math.round(L.m2 * 0.8) + ' y ' + Math.round(L.m2 * 1.2) + ' m². ' : '') + 'En Argenprop y Mercado Libre ajustá ambientes y superficie con sus filtros si hace falta.' }));
+    }
+    ext.parentNode.insertBefore(box, ext);
+  }; })(tasComp);
 
   /* ---------- arranque ---------- */
   var gStarted = false;
