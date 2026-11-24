@@ -5957,7 +5957,7 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
         var n2 = items[u][0], f2 = clone(items[u][1]), id2 = f2.id; delete f2.id;
         try {
           if (gGet(n2, id2)) { if (gDb) await gCols[n2].doc(id2).update(JSON.parse(JSON.stringify(f2))); Object.assign(gGet(n2, id2), f2); }
-          else { if (gDb) await gCols[n2].doc(id2).set(JSON.parse(JSON.stringify(f2))); f2.id = id2; G[n2].push(f2); }
+          else { if (gDb) await gCols[n2].doc(id2).set(JSON.parse(JSON.stringify(f2))); f2.id = id2; G[n2] = G[n2].filter(function (x) { return x.id !== id2; }).concat([f2]); }
           dn++;
         } catch (e) { fl++; }
       }
