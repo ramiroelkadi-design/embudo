@@ -1105,6 +1105,24 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 .tas-portales .row-wrap { gap: 8px; }
 .tas-portales .btn { text-decoration: none; }
 .tas-pt-h { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+/* liquidación detallada */
+.calc.liq tr.sub td { padding-top: 10px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3, #6b7280); border-bottom: 0; }
+.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
+.calc.liq tr.sum td { font-weight: 600; border-top: 1px solid var(--line); }
+.g-fact-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; margin-top: 10px; background: var(--surface); }
+.g-fact-h { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.g-fact-iva { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; padding: 8px 10px; background: var(--surface-2); border-radius: 8px; }
+.g-chks { display: grid; gap: 6px; }
+.g-chk { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+.g-chk.ok { background: color-mix(in srgb, var(--ok, #2e9f5b) 9%, transparent); border-color: color-mix(in srgb, var(--ok, #2e9f5b) 35%, var(--line)); }
+.g-chk.ok .g-chk-t { text-decoration: line-through; color: var(--ink-2); }
+.g-chk-m { font-variant-numeric: tabular-nums; }
+.g-tiempos { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+.g-tp { display: grid; gap: 2px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 220px; }
+.g-tp b { font-size: 20px; }
+.tas-portales { margin-top: 0; }
+table.g-mini.calc.liq tr.sub td { padding-top: 12px !important; font-size: 11px !important; font-weight: 700 !important; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3, #6b7280) !important; border-bottom: 0 !important; }
+table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -5112,8 +5130,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
         d.precioMon === '$' ? fld('Cotización del dólar', inNum(d.cot, set, 'cot', { placeholder: gConf.cot ? fmtN(+gConf.cot) : '' }), 'Para pasar la comisión a dólares. Vacío: usa la de Ajustes.') : null),
       el('div', { class: 'g-lados' }, ladoCard(d, L, 'v', setL), ladoCard(d, L, 'c', setL)),
       capLinkField(d, L, set),
-      comBox(d),
-      fld('Comisión total a mano (U$S, opcional)', inNum(d.comEst, set, 'comEst', { placeholder: 'Solo si difiere del cálculo' }), d.comEst != null && d.comEst !== '' ? 'Cargada a mano: se reparte entre los asesores según sus puntas. Borrala para volver al cálculo.' : null)]);
+      comBox(d)]);
     var dinero;
     if (isNew) {
       var p = d.pago_ || (d.pago_ = { moneda: 'U$S', fecha: todayStr(), medio: 'efectivo', estado: 'oficina' });
@@ -5553,7 +5570,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
       d.puntas === 'ambas' && !d.pctOtra ? null : el('div', { class: 'grid' },
         fld('La otra punta', inSel(d.compartida === 'no' ? 'fuera' : (d.compartida || 'fuera'), [['red', 'Otra oficina de la Red CB'], ['fuera', 'Inmobiliaria fuera de la red'], ['directo', 'Sin inmobiliaria (parte directa)']], set, 'compartida')),
         d.compartida === 'directo' ? null : fld('Inmobiliaria de la otra punta', listSel('inmobiliarias', d.otraParte, function (v, it) { var o = { otraParte: v }; if (it && it.red) { o.compartida = 'red'; } set(o); }, 'Elegí la inmobiliaria')),
-        d.compartida === 'red' ? el('label', { class: 'check' }, (function () { var cb = el('input', { type: 'checkbox' }); cb.checked = !!d.redCB; cb.addEventListener('change', function () { set({ redCB: cb.checked }); }); return cb; })(), 'Sumar las dos puntas y dividir 50/50') : null,
+        d.compartida === 'red' ? el('p', { class: 'sm', text: 'Red CB: se suman las comisiones de las dos puntas y a nuestra oficina le corresponde la mitad. Cargá abajo el % de las dos puntas.' }) : null,
         d.compartida === 'fuera' && d.puntas === 'ambas' ? fld('De la punta compradora, para la otra inmobiliaria', inNum(d.pctOtra, set, 'pctOtra', null, 100), '% del valor que se lleva la otra oficina') : null)]);
     var parts = (d.asesores || []).map(function (x) { return clone(x); });
     function setParts(np) { set({ asesores: np }); }
@@ -5570,8 +5587,8 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var valSec = sect('Valores', [
       el('div', { class: 'grid' },
         fld('Valor de cierre', el('span', { class: 'g-money-in' }, inSel(d.moneda || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'moneda', { 'aria-label': 'Moneda' }), inNum(d.valor, set, 'valor', { 'aria-label': 'Valor de cierre' })), d.operacion === 'venta' ? null : 'En alquileres, el total del contrato.'),
-        d.puntas !== 'comprador' || d.redCB ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), inNum(d.pctVend, set, 'pctVend', null, 100)) : null,
-        d.puntas !== 'vendedor' || d.redCB ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), inNum(d.pctComp, set, 'pctComp', null, 100)) : null,
+        d.puntas !== 'comprador' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), inNum(d.pctVend, set, 'pctVend', null, 100)) : null,
+        d.puntas !== 'vendedor' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), inNum(d.pctComp, set, 'pctComp', null, 100)) : null,
         d.moneda === '$' ? fld('Dólar del día', inNum(d.cot, set, 'cot'), 'Para pasar a U$S en las métricas') : null),
       d.calc === 'excel' ? null : fld('Comisión bruta cobrada (opcional)', inNum(d.brutoManual, set, 'brutoManual', { placeholder: 'Si difiere del cálculo' }), 'Dejalo vacío para usar valor × porcentaje.'),
       el('div', { id: 'gCalc', class: 'g-calc' })]);
@@ -9042,7 +9059,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
         el('div', { class: 'row-wrap' }, a('Mercado Libre', L.ml), a('Zonaprop', L.zp), a('Argenprop', L.ap), a('Roomix', L.rx)),
         el('p', { class: 'sm hint', text: (L.bb ? 'Mercado Libre abre el mapa exactamente en la zona de búsqueda. ' : 'Ubicá el inmueble o dibujá una zona para que Mercado Libre abra el mapa en esa área. ') + 'Zonaprop, Argenprop y Roomix no permiten pasarles un área por link: abren su mapa con los barrios de la zona, y ahí podés ajustar con su herramienta «Dibujar». Abrí los avisos que sirvan y tocá «★ Enviar a Juntos».' }));
     }
-    ext.parentNode.insertBefore(box, ext);
+    var pane = $('#gpBody .g-pane') || ext.parentNode; pane.insertBefore(box, pane.firstChild);
   }; })(tasComp);
   /* ===================== Informe ACM v3: diseño editorial ===================== */
   ACM_DEF.oficina = 'Av. Maipú 2463 (1636) Olivos · Tel. 011 4799-6606';
@@ -9313,6 +9330,325 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     } catch (e) { prog(); console.error(e); toast('No se pudo generar el informe: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
   }
   tasPdfOut = tasPdfV3;
+  /* ===================== Liquidación: conceptos, Red CB, facturación y checklist ===================== */
+  GCONF_DEF.iibb = 0.055;
+  var RATE_DEF = { mart: 0.04, fran: 0.085, iibb: 0.055, abao: 0.06 };
+  function rate(k) { var v = gConf[k]; return v != null && v !== '' && isFinite(+v) ? +v : RATE_DEF[k]; }
+  var _iibbMig = false;
+  gRefresh = (function (o) { return function () { var r = o.apply(this, arguments); try { if (!_iibbMig && gDb && !window.ASE_MODE && canGestion() && gReady.asesores && !gConf.iibbMig) { _iibbMig = true; var f = { iibbMig: true }; if (+gConf.iibb === 0.04 || gConf.iibb == null) f.iibb = 0.055; gSaveConf(f); } } catch (e) {} return r; }; })(gRefresh);
+
+  /* Red Coldwell Banker: también se reconoce por el nombre */
+  inmobRed = function (n) { var x = listFind('inmobiliarias', n); return !!(x && x.red) || /coldwell|\bc\.?b\.?\b/i.test(String(n || '')); };
+
+  /* ----- Reservas ----- */
+  rCom = (function (o) { return function (r) {
+    var k = o(Object.assign({}, r, { comEst: null }));
+    var L = k.L, venta = r.operacion === 'venta', juris = r.juris || jurisDe(r.localidad), cot = +r.cot || +gConf.cot || 1;
+    k.juris = juris;
+    if (k.total == null) return k;
+    k.mart = k.total * rate('mart'); k.fran = k.total * rate('fran');
+    k.fact = !!r.facturar; k.iibb = 0; k.abao = 0; k.factNeto = 0;
+    if (k.fact) {
+      /* estimado: se factura el 40% de la comisión de nuestras puntas (en el cierre se ajusta con la escritura) */
+      var P = +r.precio || 0, pctNos = (L.v.nos ? +L.v.pct || 0 : 0) + (L.c.nos ? +L.c.pct || 0 : 0);
+      k.factNeto = toUSD(P * pctNos, r.precioMon || 'U$S', r.cot) * 0.4;
+      k.iibb = k.factNeto * rate('iibb');
+      k.abao = venta && juris === 'PBA' ? k.factNeto * rate('abao') : 0;
+    }
+    k.parts.forEach(function (p) { p.abao = k.abao / 2 * (p.parte || 0); p.netoLiq = p.neto - p.abao; });
+    k.ofiBruta = k.total - k.agentes;
+    k.netoOf = k.ofiBruta - k.mart - k.fran - k.iibb - k.abao / 2;
+    k.manual = false;
+    return k;
+  }; })(rCom);
+  comBox = function (r) {
+    var k = rCom(r), rows = [];
+    function row(lbl, pct, val, cls, neg) { rows.push(el('tr', { class: cls || '' }, el('td', { text: lbl }), el('td', { class: 'num', text: pct != null ? pctTxt(pct, 2) : '' }), el('td', { class: 'num', text: val == null ? '' : (neg ? '− ' : '') + usd(Math.abs(val)) }))); }
+    function sub(t) { rows.push(el('tr', { class: 'sub' }, el('td', { colspan: 3, text: t }))); }
+    sub('Comisión');
+    k.lines.forEach(function (l) { rows.push(el('tr', {}, el('td', { text: l[0] }), el('td', { class: 'num', text: pctTxt(l[1], 2) }), el('td', { class: 'num', text: +r.precio ? money(+r.precio * l[1], k.mon) : '' }))); });
+    if (k.total == null) { row('Comisión bruta para la oficina', k.pct, null, 'tot'); rows.push(el('tr', {}, el('td', { colspan: 3, class: 'sm', text: 'Cargá el precio para ver la liquidación.' }))); return el('div', { class: 'g-combox' }, el('table', { class: 'g-mini calc' }, el('tbody', {}, rows))); }
+    row('Comisión bruta para la oficina', k.pct, k.total, 'tot');
+    sub('Asesores');
+    k.parts.forEach(function (p) { row(aseName(p.id) + ' · split ' + pctTxt(p.split, 0), null, p.neto); if (p.abao) row('   menos su mitad de ABAO', null, p.abao, 'det', true); });
+    row('Queda para la oficina', null, k.ofiBruta, 'sum');
+    sub('Descuentos de la oficina');
+    row('Martillero (' + pctTxt(rate('mart'), 1) + ' de la comisión bruta)', null, k.mart, 'det', true);
+    row('Coldwell Banker (' + pctTxt(rate('fran'), 1) + ' de la comisión bruta)', null, k.fran, 'det', true);
+    if (k.fact) {
+      row('Ingresos brutos (' + pctTxt(rate('iibb'), 1) + ' de lo facturado, estimado)', null, k.iibb, 'det', true);
+      if (k.abao) row('ABAO (' + pctTxt(rate('abao'), 0) + ' de lo facturado): mitad de la oficina', null, k.abao / 2, 'det', true);
+    }
+    row('Neto de la oficina', k.total ? k.netoOf / k.total : null, k.netoOf, 'tot');
+    var fx = el('input', { type: 'checkbox' }); fx.checked = !!r.facturar;
+    fx.addEventListener('change', function () { gSetter('reservas', function () { gFill(); })({ facturar: fx.checked }); });
+    return el('div', { class: 'g-combox' }, el('table', { class: 'g-mini calc liq' }, el('tbody', {}, rows)),
+      el('label', { class: 'check sm' }, fx, 'Se va a facturar (estimar ingresos brutos' + (r.operacion === 'venta' && k.juris === 'PBA' ? ' y ABAO' : '') + ')'),
+      el('p', { class: 'sm', text: k.fact ? 'Estimado sobre el 40% de la comisión de nuestras puntas. En el cierre se calcula con el monto de escritura, la cotización de la factura y las facturas reales.' : 'Ingresos brutos y ABAO solo se descuentan si se factura.' + (k.juris === 'PBA' && r.operacion === 'venta' ? ' Es venta en Provincia: si se factura, paga ABAO 50/50 entre oficina y asesor.' : '') }));
+  };
+
+  /* ----- Cierres: cálculo ----- */
+  function ciePuntas(c) { return c.puntas === 'vendedor' ? ['v'] : c.puntas === 'comprador' ? ['c'] : ['v', 'c']; }
+  function factCalc(c) {
+    var f = c.fact; if (!f || !f.on) return null;
+    var cotF = +f.cot || +c.cot || +gConf.cot || 1, esc = +f.esc || 0, escARS = f.escMon === 'U$S' ? esc * cotF : esc, pct = f.pct != null && f.pct !== '' ? +f.pct : 0.4;
+    var juris = c.juris || jurisDe(c.localidad), venta = (c.operacion || 'venta') === 'venta';
+    var inv = ciePuntas(c).map(function (p) {
+      var pp = p === 'v' ? +c.pctVend || 0 : +c.pctComp || 0, sug = Math.round(escARS * pct * pp), fx = (f.inv || {})[p] || {};
+      var neto = fx.neto != null && fx.neto !== '' ? +fx.neto : sug;
+      return { p: p, pct: pp, sug: sug, neto: neto, iva: Math.round(neto * 0.21), fx: fx };
+    });
+    var netoT = inv.reduce(function (a, x) { return a + (x.neto || 0); }, 0);
+    var cfPct = juris === 'CABA' ? 0.905 : 0.8, cfNeto = netoT * cfPct;
+    return { cot: cotF, escARS: escARS, pct: pct, inv: inv, neto: netoT, iibb: netoT * rate('iibb'), abao: venta && juris === 'PBA' ? netoT * rate('abao') : 0, juris: juris, cfPct: cfPct, cfNeto: cfNeto, ivaDeb: netoT * 0.21, ivaCred: cfNeto * 0.21, ivaSaldo: netoT * 0.21 - cfNeto * 0.21 };
+  }
+  calcCierre = function (c) {
+    var mon = c.moneda || 'U$S', cot = +c.cot || +gConf.cot || 1, valor = +c.valor || 0;
+    var red = c.compartida === 'red' && c.puntas !== 'ambas';
+    var pvAll = +c.pctVend || 0, pcAll = +c.pctComp || 0;
+    var pv = c.puntas !== 'comprador' ? pvAll : 0, pc = c.puntas !== 'vendedor' ? pcAll : 0;
+    if (!red && c.pctOtra && c.compartida === 'fuera') pc = Math.max(0, pc - (+c.pctOtra || 0));
+    var total2 = valor * (pvAll + pcAll), base = red ? total2 / 2 : valor * (pv + pc);
+    var bruto = c.brutoManual != null && c.brutoManual !== '' ? +c.brutoManual : base;
+    var parts = cParts(c), ag = 0, agBy = {};
+    parts.forEach(function (x) { var p = x.parte != null ? +x.parte : 1 / (parts.length || 1), v = bruto * p * (+x.split || 0); agBy[x.id] = { bruto: v, parte: p }; ag += v; });
+    var mart = bruto * rate('mart'), fran = bruto * rate('fran');
+    var F = c.fact == null ? null : factCalc(c), imp = 0, abao = 0, factMon = 0, juris = c.juris || jurisDe(c.localidad);
+    function toMon(ars, k) { return mon === '$' ? ars : ars / (k || cot); }
+    if (F) { imp = toMon(F.iibb, F.cot); abao = toMon(F.abao, F.cot); factMon = toMon(F.neto, F.cot); }
+    else if (c.facturado) {
+      factMon = c.facturadoMonto != null && c.facturadoMonto !== '' ? +c.facturadoMonto : bruto;
+      imp = factMon * rate('iibb'); abao = juris === 'PBA' && (c.operacion || 'venta') === 'venta' ? factMon * rate('abao') : 0;
+    }
+    Object.keys(agBy).forEach(function (id) { agBy[id].abao = abao / 2 * agBy[id].parte; agBy[id].liq = agBy[id].bruto - agBy[id].abao; });
+    var neto = bruto - ag - mart - fran - imp - abao / 2;
+    function u(v) { return mon === '$' ? v / cot : v; }
+    return { bruto: bruto, base: base, red: red, total2: total2, pvAll: pvAll, pcAll: pcAll, agentes: ag, agBy: agBy, mart: mart, fran: fran, imp: imp, abao: abao, juris: juris, aLiquidar: ag - abao / 2, neto: neto, factMon: factMon, F: F, brutoUSD: u(bruto), netoUSD: u(neto), facturadoUSD: u(factMon) };
+  };
+  updCalcBox = (function (o) { return function () {
+    var box = $('#gCalc'); if (!box || !gOpen) return;
+    var d = gRec() || gOpen.draft; if (d.calc === 'excel') return o();
+    var k = calcCierre(d), mon = d.moneda || 'U$S', rows = [];
+    function row(lbl, val, cls, neg) { rows.push(el('tr', { class: cls || '' }, el('td', { text: lbl }), el('td', { text: val == null ? '' : (neg ? '− ' : '') + money(Math.abs(val || 0), mon) }))); }
+    function sub(t) { rows.push(el('tr', { class: 'sub' }, el('td', { colspan: 2, text: t }))); }
+    var venta = (d.operacion || 'venta') === 'venta', lv = venta ? 'vendedora' : 'locadora', lc = venta ? 'compradora' : 'locataria', V = +d.valor || 0;
+    sub('Comisión');
+    if (k.red) {
+      row('Punta ' + lv + (d.puntas === 'comprador' ? ' (' + (d.otraParte || 'otra oficina CB') + ')' : '') + ' · ' + pctTxt(k.pvAll, 2), V * k.pvAll, 'det');
+      row('Punta ' + lc + (d.puntas === 'vendedor' ? ' (' + (d.otraParte || 'otra oficina CB') + ')' : '') + ' · ' + pctTxt(k.pcAll, 2), V * k.pcAll, 'det');
+      row('Total de las dos puntas', k.total2, 'det');
+      row('Red CB: nos corresponde el 50%', k.base, 'det');
+    } else {
+      if (d.puntas !== 'comprador') row('Punta ' + lv + ' · ' + pctTxt(k.pvAll, 2), V * k.pvAll, 'det');
+      if (d.puntas !== 'vendedor') row('Punta ' + lc + ' · ' + pctTxt(k.pcAll, 2), V * k.pcAll, 'det');
+      if (d.compartida === 'fuera' && +d.pctOtra && d.puntas !== 'vendedor') row('Para ' + (d.otraParte || 'la otra inmobiliaria') + ' · ' + pctTxt(+d.pctOtra, 2), V * (+d.pctOtra), 'det', true);
+    }
+    if (d.brutoManual != null && d.brutoManual !== '') row('Comisión bruta cargada a mano', k.bruto, 'det');
+    row('Comisión bruta para la oficina', k.bruto, 'sum');
+    sub('Asesores');
+    cParts(d).forEach(function (x) { var a = k.agBy[x.id]; if (!a) return; row(aseName(x.id) + ' · ' + pctTxt(+x.split || 0, 0) + (cParts(d).length > 1 ? ' de ' + pctTxt(a.parte, 0) : ''), a.bruto); if (a.abao) row('   menos su mitad de ABAO', a.abao, 'det', true); });
+    row('Queda para la oficina', k.bruto - k.agentes, 'sum');
+    sub('Descuentos de la oficina');
+    row('Martillero (' + pctTxt(rate('mart'), 1) + ' de la comisión bruta)', k.mart, 'det', true);
+    row('Coldwell Banker (' + pctTxt(rate('fran'), 1) + ' de la comisión bruta)', k.fran, 'det', true);
+    if (k.imp) row('Ingresos brutos (' + pctTxt(rate('iibb'), 1) + ' de lo facturado)', k.imp, 'det', true);
+    if (k.abao) row('ABAO (' + pctTxt(rate('abao'), 0) + ' de lo facturado): mitad de la oficina', k.abao / 2, 'det', true);
+    var usdLine = mon === '$' ? ' · ' + usd(toUSD(k.neto, '$', d.cot)) : '';
+    rows.push(el('tr', { class: 'tot' }, el('td', { text: 'Neto de la oficina' + (k.bruto ? ' (' + pctTxt(k.neto / k.bruto, 0) + ')' : '') }), el('td', { text: money(k.neto, mon) + usdLine })));
+    box.replaceChildren(el('table', { class: 'g-mini calc liq' }, el('tbody', {}, rows)),
+      el('p', { class: 'sm', text: (k.F || d.facturado ? '' : 'Ingresos brutos y ABAO se descuentan solo si se factura (sección Facturación). ') + 'Los porcentajes se cambian en ⋯ → Ajustes de gestión.' }));
+  }; })(updCalcBox);
+
+  /* ----- adjuntos (facturas) ----- */
+  async function adjSave(file) {
+    var d = await new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(file); });
+    if (d.length > 950000 && /^data:image/.test(d)) d = await imgCompress(file, 1600, 0.7);
+    if (d.length > 950000) throw new Error('El archivo es muy pesado (máx. ~700 KB).');
+    var id = 'a' + uid().slice(1);
+    if (gDb) await gDb.collection('adjuntos').doc(id).set({ d: d, nombre: file.name, t: new Date().toISOString(), por: meNameSafe() });
+    else { try { localStorage.setItem('juntos-adj-' + id, d); } catch (e) { throw new Error('No hay espacio en este navegador.'); } }
+    return { id: id, nombre: file.name };
+  }
+  async function adjOpen(ref) {
+    var d = null;
+    try { if (gDb) { var s = await gDb.collection('adjuntos').doc(ref.id).get(); var ex = s && (typeof s.exists === 'function' ? s.exists() : s.exists); d = ex ? (s.data() || {}).d : null; } else d = localStorage.getItem('juntos-adj-' + ref.id); } catch (e) {}
+    if (!d) { toast('No se encontró el archivo.', { kind: 'error' }); return; }
+    var b = await (await fetch(d)).blob(), u = URL.createObjectURL(b), w = window.open(u, '_blank'); if (!w) saveFile(ref.nombre || 'factura', b);
+  }
+  async function leerFactura(file) {
+    if (!aiOK()) return null;
+    var b64 = await fileB64(file), part = /pdf/.test(file.type) ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } } : { type: 'image', source: { type: 'base64', media_type: file.type || 'image/jpeg', data: b64 } };
+    var txt = await aiRun([part, { type: 'text', text: 'Es una factura argentina. Devolvé SOLO un JSON: {"cliente":"nombre o razón social del receptor","cuit":"CUIT o DNI del receptor","numero":"punto de venta y número","fecha":"AAAA-MM-DD","tipo":"A, B o C","neto":0,"iva":0,"total":0,"moneda":"$ o U$S"}. Montos como números sin separadores de miles.' }], null);
+    var m = /\{[\s\S]*\}/.exec(txt || ''); if (!m) return null;
+    try { return JSON.parse(m[0]); } catch (e) { return null; }
+  }
+
+  /* ----- Cierres: sección Facturación ----- */
+  function factSection(d, set, isNew) {
+    var f = Object.assign({ on: false, pct: 0.4, escMon: '$', inv: {} }, JSON.parse(JSON.stringify(d.fact || {})));
+    if (d.fact == null && d.facturado && !isNew) f.on = true;
+    function upd(x, re) { var nf = Object.assign({}, f, x); set({ fact: nf, facturado: !!nf.on }); if (re !== false) gFill(); }
+    var cb = el('input', { type: 'checkbox' }); cb.checked = !!f.on; cb.addEventListener('change', function () { upd({ on: cb.checked }); });
+    var head = el('label', { class: 'check' }, cb, 'Facturamos esta operación');
+    if (!f.on) return sect('Facturación', [head, el('p', { class: 'sm', text: 'Activalo si la oficina factura: se calculan los datos a facturar, el IVA de cada cliente, ingresos brutos, ABAO y la contrafactura.' })]);
+    var F = factCalc(Object.assign({}, d, { fact: f })), juris = F.juris;
+    function num(v, on, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: v != null && v !== '' ? String(v).replace('.', ',') : '', placeholder: ph || '' }); i.addEventListener('change', function () { on(numIn(i.value)); }); return i; }
+    var monSel = el('select', { 'aria-label': 'Moneda de la escritura' }, [['$', '$'], ['U$S', 'U$S']].map(function (o) { return el('option', { value: o[0], text: o[1] }); })); monSel.value = f.escMon || '$'; monSel.addEventListener('change', function () { upd({ escMon: monSel.value }); });
+    var ars = function (x) { return '$ ' + fmtN(Math.round(x || 0)); }, aU = function (x) { return usd((x || 0) / F.cot); };
+    var datos = el('div', { class: 'grid' },
+      fld('Monto de escritura', el('span', { class: 'g-money-in' }, monSel, num(f.esc, function (v) { upd({ esc: v }); }, 'A completar'))),
+      fld('% de la escritura que se factura', num(f.pct != null ? Math.round(f.pct * 1000) / 10 : 40, function (v) { upd({ pct: v != null ? v / 100 : 0.4 }); }), 'Por defecto, 40%'),
+      fld('Dólar de la factura ($ por U$S)', num(f.cot || d.cot || gConf.cot, function (v) { upd({ cot: v }); })),
+      fld('Jurisdicción', el('input', { type: 'text', value: juris === 'CABA' ? 'CABA' : 'Provincia (PBA)', disabled: true }), juris === 'PBA' && (d.operacion || 'venta') === 'venta' ? 'Paga ABAO ' + pctTxt(rate('abao'), 0) : 'No paga ABAO'));
+    var lbl = { v: (d.operacion || 'venta') === 'venta' ? 'punta vendedora' : 'punta locadora', c: (d.operacion || 'venta') === 'venta' ? 'punta compradora' : 'punta locataria' };
+    var cards = F.inv.map(function (x) {
+      var fx = x.fx || {};
+      function updInv(o, re) { var inv = JSON.parse(JSON.stringify(f.inv || {})); inv[x.p] = Object.assign({}, inv[x.p] || {}, o); upd({ inv: inv }, re); }
+      function txt(k, ph) { var i = el('input', { type: 'text', value: fx[k] || '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = i.value.trim(); updInv(o, false); }); return i; }
+      var fi = el('input', { type: 'file', accept: 'application/pdf,image/*', hidden: true });
+      fi.addEventListener('change', async function () {
+        var file = (fi.files || [])[0]; fi.value = ''; if (!file) return;
+        var done = tasBusy('Guardando la factura' + (aiOK() ? ' y leyendo sus datos…' : '…'));
+        try {
+          var ref = await adjSave(file), o = { adj: ref }, j = null;
+          try { j = await leerFactura(file); } catch (e) {}
+          if (j) { if (j.cliente) o.cliente = j.cliente; if (j.cuit) o.cuit = String(j.cuit); if (j.numero) o.numero = String(j.numero); if (/^\d{4}-\d{2}-\d{2}$/.test(j.fecha || '')) o.fecha = j.fecha; if (+j.neto) o.neto = +j.neto; if (+j.iva) o.ivaFact = +j.iva; if (j.tipo) o.tipo = j.tipo; }
+          done(); updInv(o); toast(j ? 'Factura adjuntada: completé los datos que leí. Revisalos.' : 'Factura adjuntada. Completá los datos a mano.');
+        } catch (e) { done(); toast('No se pudo adjuntar: ' + ((e && e.message) || 'error'), { kind: 'error' }); }
+      });
+      return el('div', { class: 'g-fact-card' },
+        el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura a la ' + lbl[x.p] }), el('span', { class: 'sm', text: pctTxt(x.pct, 2) + ' × ' + pctTxt(F.pct, 0) + ' de la escritura' })),
+        el('div', { class: 'grid' },
+          fld('Cliente', txt('cliente', 'Nombre o razón social')), fld('CUIT / DNI', txt('cuit')), fld('Nº de factura', txt('numero')),
+          fld('Neto facturado ($)', num(fx.neto, function (v) { updInv({ neto: v }); }, x.sug ? 'Sugerido ' + fmtN(x.sug) : 'Cargá la escritura'), x.sug ? 'Sugerido: ' + ars(x.sug) : null)),
+        el('div', { class: 'g-fact-iva' },
+          el('span', {}, 'Neto ', el('b', { text: ars(x.neto) })),
+          el('span', {}, 'IVA 21% que paga el cliente ', el('b', { text: ars(x.iva) }), el('span', { class: 'sm', text: ' (≈ ' + aU(x.iva) + ')' })),
+          el('span', {}, 'Total factura ', el('b', { text: ars(x.neto + x.iva) }))),
+        el('div', { class: 'row-wrap' },
+          el('button', { type: 'button', class: 'btn sm-btn', text: fx.adj ? 'Reemplazar factura' : 'Adjuntar factura (PDF o foto)', onclick: function () { fi.click(); } }),
+          fx.adj ? el('button', { type: 'button', class: 'btn sm-btn ghost', text: 'Ver ' + (fx.adj.nombre || 'factura'), onclick: function () { adjOpen(fx.adj); } }) : null,
+          aiOK() ? el('span', { class: 'sm', text: 'Al adjuntarla, la IA completa cliente, CUIT, número y neto.' }) : null), fi);
+    });
+    var tr = function (a, b, c, cls) { return el('tr', { class: cls || '' }, el('td', { text: a }), el('td', { class: 'num', text: b }), el('td', { class: 'num', text: c || '' })); };
+    var tot = el('table', { class: 'g-mini calc liq' }, el('tbody', {},
+      tr('Neto facturado por la oficina', ars(F.neto), aU(F.neto), 'sum'),
+      tr('Ingresos brutos ' + pctTxt(rate('iibb'), 1) + ' (paga la oficina)', ars(F.iibb), aU(F.iibb), 'det'),
+      F.abao ? tr('ABAO ' + pctTxt(rate('abao'), 0) + ' (50% oficina · 50% asesor)', ars(F.abao), aU(F.abao), 'det') : null,
+      F.abao ? tr('   mitad de cada uno', ars(F.abao / 2), aU(F.abao / 2), 'det') : null,
+      tr('IVA facturado (débito)', ars(F.ivaDeb), aU(F.ivaDeb), 'sum'),
+      tr('Contrafactura de la otra sociedad al martillero (' + pctTxt(F.cfPct, 1) + ' ' + (juris === 'CABA' ? 'CABA' : 'PBA') + ')', ars(F.cfNeto), aU(F.cfNeto), 'det'),
+      tr('IVA de la contrafactura (crédito)', ars(F.ivaCred), aU(F.ivaCred), 'det'),
+      tr('IVA resultante a pagar', ars(F.ivaSaldo), aU(F.ivaSaldo), 'tot')));
+    var legacy = d.fact == null && d.facturado ? el('p', { class: 'banner-lite warn', text: 'Este cierre se marcó como facturado antes de esta sección: hasta que cargues el monto de escritura, ingresos brutos y ABAO se calculan sobre ' + (d.facturadoMonto ? 'el monto facturado cargado' : 'toda la comisión') + '.' }) : null;
+    return sect('Facturación', [head, legacy, el('p', { class: 'sm', text: 'Solo se facturan nuestras puntas. Montos en pesos, con el dólar de la factura.' }), datos].concat(cards).concat([tot]));
+  }
+  /* ----- Cierres: checklist ----- */
+  function chkSection(d, set, isNew) {
+    if (isNew) return null;
+    var k = calcCierre(d), F = k.F, fact = !!(F || d.facturado), ch = Object.assign({}, d.check || {});
+    var mon = d.moneda || 'U$S', ars = function (x) { return '$ ' + fmtN(Math.round(x || 0)); };
+    var items = [
+      ['liq', 'Liquidación de la comisión al asesor', money(k.aLiquidar, mon), true],
+      ['ivaAse', 'El asesor entregó el IVA que le pagó el cliente', F ? ars(F.ivaDeb) : '', fact],
+      ['uif', 'El asesor entregó los papeles UIF a la oficina', '', fact],
+      ['martHon', 'Honorarios entregados al martillero', money(k.mart, mon), true],
+      ['martIva', 'IVA entregado al martillero', F ? ars(F.ivaSaldo) + ' a pagar' : '', fact],
+      ['martIibb', 'Ingresos brutos entregados al martillero', F ? ars(F.iibb) : '', fact]].filter(function (x) { return x[3]; });
+    var done = items.filter(function (x) { return x[0] === 'liq' ? d.liquidado : ch[x[0]]; }).length;
+    var list = items.map(function (x) {
+      var on = x[0] === 'liq' ? !!d.liquidado : !!ch[x[0]], when = x[0] === 'liq' ? d.liquidadoEl : ch[x[0]];
+      var cb = el('input', { type: 'checkbox' }); cb.checked = on;
+      cb.addEventListener('change', function () {
+        if (x[0] === 'liq') set({ liquidado: cb.checked, liquidadoEl: cb.checked ? todayStr() : '' });
+        else { var nc = Object.assign({}, d.check || {}); nc[x[0]] = cb.checked ? todayStr() : ''; set({ check: nc }); }
+        gFill();
+      });
+      return el('label', { class: 'g-chk' + (on ? ' ok' : '') }, cb, el('span', { class: 'g-chk-t', text: x[1] }), x[2] ? el('b', { class: 'g-chk-m', text: x[2] }) : null, on && when ? el('span', { class: 'sm', text: dmy(when) }) : null);
+    });
+    return sect('Checklist de la operación · ' + done + ' de ' + items.length, [el('div', { class: 'g-chks' }, list)]);
+  }
+  /* ----- Cierres: volver a reserva ----- */
+  async function cieAReserva(c) {
+    var r = c.reservaId ? gGet('reservas', c.reservaId) : null;
+    var ok = await confirmBox('¿Volver esta operación a reserva?', (r ? 'Se borra el cierre y la reserva vuelve a «Aceptada».' : 'Se crea una reserva aceptada con los datos de este cierre y se borra el cierre.') + ' Usalo si todavía no se firmó.', 'Volver a reserva', true);
+    if (!ok) return;
+    if (r) gUpd('reservas', r.id, { estado: 'aceptada', cierreId: null, cerradaEl: '', historial: gLog(r, 'Volvió de cierre a reserva (todavía no se firmó)') });
+    else {
+      var ps = cParts(c), a0 = ps[0] ? ps[0].id : '', a1 = ps[1] ? ps[1].id : a0;
+      var L = { v: { nos: c.puntas !== 'comprador', ase: c.puntas !== 'comprador' ? a0 : '', pct: +c.pctVend || null, inmob: c.puntas === 'comprador' ? c.otraParte || '' : '' }, c: { nos: c.puntas !== 'vendedor', ase: c.puntas !== 'vendedor' ? (c.puntas === 'ambas' ? a1 : a0) : '', pct: +c.pctComp || null, inmob: c.puntas === 'vendedor' ? c.otraParte || '' : '', pctOtra: c.pctOtra || null } };
+      var rid = gNewId('reservas');
+      gSet('reservas', rid, { estado: 'aceptada', operacion: c.operacion || 'venta', propiedad: c.direccion || '', localidad: c.localidad || '', juris: c.juris || '', precio: +c.valor || null, precioMon: c.moneda || 'U$S', cot: +c.cot || null, lados: L, asesorIds: rAseIds(L), punta: puntaDe(L), fecha: c.fechaReserva || todayStr(), fechaFirma: c.fecha || '', tokko: c.tokko || null, prop: c.prop || null, pago: c.pago || 'Escritura', pagos: [], creado: new Date().toISOString(), creadoPor: meNameSafe(), historial: [{ t: new Date().toISOString(), por: meNameSafe(), texto: 'Creada desde un cierre que todavía no se firmó' }] });
+      r = { id: rid };
+    }
+    try { var cp = capOf(c.tokko); if (cp && cp.cierre && cp.cierre.id === c.id) gUpd('captaciones', cp.id, { cierre: null, resultado: null }); } catch (e) {}
+    gDel('cierres', c.id);
+    toast('La operación volvió a Reservas.');
+    openRes(r.id); render();
+  }
+  /* ----- Cierres: reserva vinculada y fecha automática ----- */
+  function resLinkField(d, set) {
+    var opts = G.reservas.filter(function (r) { return (r.estado === 'aceptada' && !r.cierreId) || r.id === d.reservaId; }).sort(function (a, b) { return String(b.fecha) < String(a.fecha) ? -1 : 1; });
+    var s = el('select', { 'aria-label': 'Reserva de la operación' }, [el('option', { value: '', text: 'Sin reserva vinculada' })].concat(opts.map(function (r) { return el('option', { value: r.id, text: (r.propiedad || 'Sin dirección') + ' · reserva ' + dmy(r.fecha) }); })));
+    s.value = d.reservaId || '';
+    s.addEventListener('change', function () { var r = s.value ? gGet('reservas', s.value) : null; set({ reservaId: s.value || null, fechaReserva: r ? r.fecha || '' : d.fechaReserva || '' }); gFill(); });
+    return fld('Reserva de la operación', s, d.reservaId ? 'La fecha de reserva se toma de ahí para el tiempo de operación.' : 'Vinculala para tomar la fecha de reserva y el tiempo de operación.');
+  }
+  function cieLados(d) { var a0 = (cParts(d)[0] || {}).id || ''; return { v: { nos: d.puntas !== 'comprador', ase: d.puntas !== 'comprador' ? a0 : '' }, c: { nos: d.puntas !== 'vendedor', ase: a0 } }; }
+  fillCie = (function (o) { return function () {
+    var c0 = gRec(), d0 = c0 || gOpen.draft;
+    if (d0 && d0.reservaId && !d0.fechaReserva) { var r0 = gGet('reservas', d0.reservaId); if (r0 && r0.fecha) { if (c0) gUpd('cierres', c0.id, { fechaReserva: r0.fecha }); else d0.fechaReserva = r0.fecha; } }
+    o.apply(this, arguments);
+    var c = gRec(), isNew = !c, d = isNew ? gOpen.draft : c;
+    var set = gSetter('cierres', function (f) { if (['fact', 'facturado', 'check', 'liquidado', 'reservaId', 'tokko'].some(function (k) { return k in f; })) return; updCalcBox(); });
+    var body = $('#gpBody'); if (!body) return;
+    var secs = Array.prototype.slice.call(body.querySelectorAll(':scope > .g-sec, :scope > section, :scope > .g-pane > .g-sec'));
+    var factOld = secs.filter(function (s) { var h = s.querySelector('.g-sec-h'); return h && /Facturación y liquidación/.test(h.textContent); })[0];
+    var fs = factSection(d, set, isNew), ck = chkSection(d, set, isNew);
+    if (factOld) { factOld.replaceWith(fs); if (ck) fs.after(ck); }
+    var opSec = secs.filter(function (s) { var h = s.querySelector('.g-sec-h'); return h && /^Operación/.test(h.textContent); })[0];
+    if (opSec) {
+      var fr = opSec.querySelector('input[type=date]') && Array.prototype.slice.call(opSec.querySelectorAll('.field')).filter(function (f) { return /Fecha de reserva/.test(f.textContent); })[0];
+      if (fr && d.reservaId) { var inp = fr.querySelector('input'); if (inp) { inp.disabled = true; inp.title = 'Se toma de la reserva vinculada'; } }
+      var extra = el('div', { class: 'grid' }, resLinkField(d, function (f) { gSetter('cierres', function () {})(f); }), capLinkField(d, cieLados(d), function (f) { var g = {}; ['tokko', 'direccion', 'localidad', 'prop', 'juris'].forEach(function (k) { if (k in f) g[k] = f[k]; }); if ('propiedad' in f && !d.direccion) g.direccion = f.propiedad; if ('precio' in f && !+d.valor) { g.valor = f.precio; } gSetter('cierres', function () { gFill(); })(g); }));
+      opSec.append(extra);
+    }
+    if (!isNew) {
+      var foot = $('#gpFoot');
+      if (foot) foot.append(el('button', { type: 'button', class: 'btn ghost', text: 'Volver a reserva', title: 'Si todavía no se firmó', onclick: function () { cieAReserva(gRec()); } }));
+    }
+  }; })(fillCie);
+  /* el cierre guarda los montos calculados también al cambiar la facturación */
+  gUpd = (function (o) { return function (n, id, fields) {
+    if (n === 'cierres' && fields && ('fact' in fields || 'facturado' in fields) && !('bruto' in fields)) {
+      var cur = gGet('cierres', id);
+      if (cur && cur.calc !== 'excel') { var nx = applyCalc(Object.assign(clone(cur), fields)); ['bruto', 'agenteMonto', 'martillero', 'franquicia', 'abao', 'aLiquidar', 'neto', 'brutoUSD', 'netoUSD', 'facturadoUSD'].forEach(function (k) { fields[k] = nx[k]; }); }
+    }
+    return o.apply(this, arguments);
+  }; })(gUpd);
+
+  /* ----- tiempo de operación de la oficina ----- */
+  function opTiempos(list) {
+    var d1 = [], d2 = [];
+    list.forEach(function (c) {
+      var r = c.reservaId ? gGet('reservas', c.reservaId) : null, fr = c.fechaReserva || (r && r.fecha) || '';
+      if (fr && c.fecha) { var x = Math.round((new Date(c.fecha) - new Date(fr)) / 864e5); if (x >= 0 && x < 1000) d1.push(x); }
+      var cp = capOf(c.tokko); if (cp && fr) { var al = validDate(String(cp.alta || '').slice(0, 10)) || cp.primeraVez; if (al) { var y = Math.round((new Date(fr) - new Date(al)) / 864e5); if (y >= 0 && y < 2000) d2.push(y); } }
+    });
+    function av(a) { return a.length ? Math.round(a.reduce(function (s, x) { return s + x; }, 0) / a.length) : null; }
+    return { resFirma: av(d1), nRF: d1.length, mercado: av(d2), nM: d2.length };
+  }
+  renderCie = (function (o) { return function (box) {
+    o(box);
+    if (!G.cierres.length) return;
+    var y = gF.cieY, list = G.cierres.filter(function (c) { return yearOf(c.fecha) === y && (c.operacion || 'venta') === 'venta'; }), T = opTiempos(list);
+    if (!T.nRF && !T.nM) return;
+    var head = box.querySelector('.g-head'); if (!head) return;
+    head.after(el('div', { class: 'g-tiempos' },
+      el('div', { class: 'g-tp' }, el('span', { class: 'sm', text: 'Tiempo promedio de la reserva a la firma · ventas ' + y }), el('b', { text: T.resFirma != null ? T.resFirma + ' días' : '–' }), el('span', { class: 'sm', text: T.nRF + (T.nRF === 1 ? ' operación' : ' operaciones') })),
+      T.nM ? el('div', { class: 'g-tp' }, el('span', { class: 'sm', text: 'De la captación a la reserva (captaciones propias)' }), el('b', { text: T.mercado + ' días' }), el('span', { class: 'sm', text: T.nM + (T.nM === 1 ? ' operación' : ' operaciones') })) : null));
+  }; })(renderCie);
+  if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; } };
 
   /* ---------- arranque ---------- */
   var gStarted = false;
