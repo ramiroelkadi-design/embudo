@@ -1091,6 +1091,9 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
 .bm-modal ol { margin: 8px 0 10px 20px; padding: 0; display: grid; gap: 8px; }
 .bm-btn { display: inline-block; padding: 6px 12px; border-radius: 8px; background: var(--brand, #012169); color: #fff !important; font-weight: 700; text-decoration: none; cursor: grab; }
 .linkbtn { background: none; border: 0; padding: 0; color: var(--accent, #1F69FF); font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
+.tas-ft button.tas-ft-p.mk { opacity: 0; transition: opacity .15s; background: rgba(0,0,0,.65); font-weight: 600; }
+.tas-ft:hover button.tas-ft-p.mk, .tas-ft button.tas-ft-p.mk:focus-visible { opacity: 1; }
+@media (hover: none) { .tas-ft button.tas-ft-p.mk { opacity: .85; } }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -8074,7 +8077,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
         el('div', { class: 'tas-fts' }, list.map(function (r, i) {
           return el('div', { class: 'tas-ft' }, fotoImg(r),
             el('button', { type: 'button', class: 'tas-ft-x', 'aria-label': 'Quitar la foto', text: '×', onclick: function () { list.splice(i, 1); onChange(list.slice()); draw(); } }),
-            i === 0 ? el('span', { class: 'tas-ft-p', text: 'Portada' }) : el('button', { type: 'button', class: 'tas-ft-p', text: 'Portada', title: 'Usar como foto principal', onclick: function () { var x = list.splice(i, 1)[0]; list.unshift(x); onChange(list.slice()); draw(); } }));
+            i === 0 ? el('span', { class: 'tas-ft-p', text: 'Portada' }) : el('button', { type: 'button', class: 'tas-ft-p mk', text: 'Hacer portada', title: 'Usar como foto principal', onclick: function () { var x = list.splice(i, 1)[0]; list.unshift(x); onChange(list.slice()); draw(); } }));
         }), list.length < 6 ? el('button', { type: 'button', class: 'tas-ft add', onclick: function () { fi.click(); } }, icon('plus', 18), el('span', { text: 'Subir fotos' })) : null),
         el('div', { class: 'row-wrap' }, url, el('button', { type: 'button', class: 'btn sm-btn', text: 'Agregar link', onclick: addUrl }), el('button', { type: 'button', class: 'btn sm-btn', text: 'Sacar fotos de un PDF del aviso', onclick: function () { if (list.length >= 6) { toast('Hasta 6 fotos por propiedad.'); return; } fp.click(); } }), busyTxt), fi, fp);
     }
@@ -8302,12 +8305,27 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   }
   function fotoKey(u) { return String(u).replace(/[?#].*$/, '').replace(/\/\d{2,4}x\d{2,4}\//, '/').replace(/_(\d{2,4}x\d{2,4})(?=\.)/, '').replace(/-[A-Z](\.(jpe?g|webp|png))$/i, '$1').replace(/D_NQ_NP_(2X_)?/, 'D_').replace(/\.(jpe?g|webp|png)$/i, ''); }
   function fotoSize(u) { var m = /(\d{2,4})x(\d{2,4})/.exec(u); return m ? +m[1] * +m[2] : /-F\.|_2X_|original|full|large|1200|1024/i.test(u) ? 1e6 : 2e5; }
+  function imgDim(u) {
+    return new Promise(function (res) {
+      var im = new Image(), to = setTimeout(function () { res(null); }, 7000);
+      try { im.referrerPolicy = 'no-referrer'; } catch (e) {}
+      im.onload = function () { clearTimeout(to); res({ w: im.naturalWidth, h: im.naturalHeight }); };
+      im.onerror = function () { clearTimeout(to); fetch('https://wsrv.nl/?url=' + encodeURIComponent(u) + '&output=json').then(function (r) { return r.json(); }).then(function (j) { res(j && j.width ? { w: j.width, h: j.height } : null); }, function () { res(null); }); };
+      im.src = u;
+    });
+  }
+  async function fotosValidas(list, max) {
+    var cand = (list || []).slice(0, 18);
+    var dims = await Promise.all(cand.map(function (u) { return /^tf:|^data:/.test(u) ? Promise.resolve({ w: 9999, h: 9999 }) : imgDim(u); }));
+    if (!dims.some(Boolean)) return cand.slice(0, max || 6);
+    return cand.filter(function (u, i) { var d = dims[i]; return d && d.w >= 400 && d.h >= 260 && d.w / d.h <= 2.3 && d.h / d.w <= 1.6; }).slice(0, max || 6);
+  }
   function fotosDeHtml(html, pageUrl) {
     var h = String(html || '').replace(/\\u002F/gi, '/').replace(/\\\//g, '/').replace(/&amp;/g, '&');
     var re = /https?:\/\/[^"'\s()<>\\,]+?\.(?:jpe?g|webp|png)(?:\?[^"'\s()<>\\,]*)?/gi, m, best = {}, order = [];
     while ((m = re.exec(h))) {
       var u = m[0];
-      if (!fotoOK(u) || /logo|isotipo|favicon|banner|staticmap|static-map|avatar|agente|agent|perfil|profile|qr|flag|app-?store|google-?play|play-?store|badge|share|\/icons?\/|\/static\/images\//i.test(u)) continue;
+      if (!fotoOK(u) || /logo|isotipo|favicon|banner|staticmap|static-map|avatar|agente|agent|perfil|profile|qr|flag|app-?store|google-?play|play-?store|badge|share|verif|check|default|placeholder|no-?image|sin-?foto|empty|user|publicidad|promo|\/ads?\/|frontend-assets|exhibitor|sprite|\/icons?\/|\/static\/images\//i.test(u)) continue;
       var sz = fotoSize(u); if (sz < 200 * 150) continue;
       var k = fotoKey(u);
       if (!best[k]) { best[k] = u; order.push(k); } else if (sz > fotoSize(best[k])) best[k] = u;
@@ -8340,7 +8358,8 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
       try { var j3 = await microReq(url, ''); if (j3 && j3.status === 'success' && j3.data && j3.data.image && j3.data.image.url) out.push(j3.data.image.url); } catch (e) {}
     }
     if (!out.length && lim) throw Object.assign(new Error('limite'), { code: 'limite' });
-    var seen = {}; return out.filter(function (u) { var k = fotoKey(u); if (!/^https?:/.test(u) || seen[k]) return false; seen[k] = 1; return true; }).slice(0, 6);
+    var seen = {}; out = out.filter(function (u) { var k = fotoKey(u); if (!/^https?:/.test(u) || seen[k]) return false; seen[k] = 1; return true; });
+    return fotosValidas(out, 6);
   }
   var fotosRun = {};
   async function fotosAuto(tid, force, quiet) {
@@ -8656,13 +8675,13 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   if (window.__FB_MOCK) window.__t5 = { items: function () { return tasBaseItems().length; }, st: function () { return [!!gDb, canGestion(), gReady.captaciones, gReady.cierres, gReady.asesores, G.asesores.filter(function (a) { return a.acceso; }).length, !!window.ASE_MODE]; } };
   /* ----- botón de favoritos: copiar un aviso desde cualquier portal y pegarlo como comparable ----- */
   function bmCode(B) {
-    var js = "(function(){try{var R=/https?:\\/\\/[^\"'\\s()<>\\\\,]+?\\.(?:jpe?g|webp|png)(?:\\?[^\"'\\s()<>\\\\,]*)?/gi,H=document.documentElement.outerHTML.replace(/\\\\u002F/gi,'/').replace(/\\\\\\//g,'/'),S={},F=[];function a(u){if(u&&!S[u]&&F.length<400){S[u]=1;F.push(u);}}(H.match(R)||[]).forEach(a);[].forEach.call(document.images,function(i){if(i.naturalWidth>=300)a(i.currentSrc||i.src);});"
-      + "var m=document.querySelector('meta[property=\"og:image\"]'),M=document.querySelector('main')||document.body,id=''+Date.now()+Math.random(),o={k:'juntos-comp',v:3,id:id,url:location.href,titulo:document.title,og:m?m.content:'',fotos:F,texto:(M.innerText||'').replace(/\\n{3,}/g,'\\n\\n').slice(0,14000)},s=JSON.stringify(o);"
+    var js = "(function(){try{var L=[];[].forEach.call(document.querySelectorAll('button,a,[role=button],span,div,p'),function(b){if(b.children.length>3)return;var t=(b.innerText||'').trim().toLowerCase();if(t.length>40||!/^(ver|leer|mostrar)( la)? (m\\u00e1s|mas)|descripci\\u00f3n completa|ver descripci/.test(t))return;var h=b.getAttribute('href');if(h&&!/^#|^javascript/.test(h))return;L.push(b);});L=L.filter(function(b){return !L.some(function(o){return o!==b&&b.contains(o);});}).slice(0,6);L.forEach(function(b){try{b.click();}catch(e){}});setTimeout(G,L.length?900:0);}catch(e){G();}function G(){try{var R=/https?:\\/\\/[^\"'\\s()<>\\\\,]+?\\.(?:jpe?g|webp|png)(?:\\?[^\"'\\s()<>\\\\,]*)?/gi,H=document.documentElement.outerHTML.replace(/\\\\u002F/gi,'/').replace(/\\\\\\//g,'/'),S={},F=[];function a(u){if(u&&!S[u]&&F.length<400){S[u]=1;F.push(u);}}(H.match(R)||[]).forEach(a);[].forEach.call(document.images,function(i){if(i.naturalWidth>=300)a(i.currentSrc||i.src);});"
+      + "var m=document.querySelector('meta[property=\"og:image\"]'),M=document.querySelector('main')||document.body,id=''+Date.now()+Math.random(),o={k:'juntos-comp',v:3,id:id,url:location.href,titulo:document.title,og:m?m.content:'',fotos:F,texto:((M.innerText||'')+'\\n'+[].map.call(document.querySelectorAll('[class*=descrip],[id*=descrip],[class*=Descrip]'),function(e){return e.textContent;}).join('\\n')).replace(/[ \\t]+/g,' ').replace(/\\n{3,}/g,'\\n\\n').slice(0,20000)},s=JSON.stringify(o);"
       + "var d=document.getElementById('jg-bm')||document.createElement('div');d.id='jg-bm';d.style.cssText='position:fixed;z-index:2147483647;top:16px;right:16px;background:#012169;color:#fff;font:600 14px/1.4 Arial,sans-serif;padding:14px 34px 14px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:320px';document.body.appendChild(d);"
       + "function P(h,btn){d.innerHTML='<div>Juntos Gesti\\u00f3n</div><div style=\"font-weight:400\">'+h+'</div>';var x=document.createElement('button');x.textContent='\\u00d7';x.style.cssText='position:absolute;top:6px;right:8px;background:none;border:0;color:#fff;font-size:18px;cursor:pointer';x.onclick=function(){d.remove();};d.appendChild(x);if(btn){var b=document.createElement('button');b.textContent='Copiar comparable';b.style.cssText='margin-top:10px;background:#fff;color:#012169;border:0;border-radius:8px;padding:8px 12px;font:700 14px Arial;cursor:pointer';b.onclick=function(){var t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();var c=false;try{c=document.execCommand('copy');}catch(e){}t.remove();if(c)b.textContent='\\u00a1Copiado! Peg\\u00e1lo en la tasaci\\u00f3n';else prompt('Copi\\u00e1 este texto:',s);};d.appendChild(b);}}";
     if (B) js += "P('Enviando el aviso ('+F.length+' im\\u00e1genes)\\u2026');fetch('https://firestore.googleapis.com/v1/projects/" + B.p + "/databases/(default)/documents/buzon/" + B.t + "/items?key=" + B.k + "',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{d:{stringValue:s},t:{timestampValue:new Date().toISOString()}}})}).then(function(r){if(!r.ok)throw new Error(r.status);P('\\u2714 Enviado a tu tasaci\\u00f3n en Juntos Gesti\\u00f3n. Pod\\u00e9s seguir buscando.');setTimeout(function(){d.remove();},3500);}).catch(function(){P('No se pudo enviar. Copialo y pegalo en la tasaci\\u00f3n:',1);});";
     else js += "P('Aviso le\\u00eddo con '+F.length+' im\\u00e1genes.',1);";
-    js += "}catch(e){alert('No se pudo leer el aviso: '+e.message);}})();";
+    js += "}catch(e){alert('No se pudo leer el aviso: '+e.message);}}})();";
     return 'javascript:' + js;
   }
   /* buzón: el botón deja el aviso en la base y la plataforma abierta lo toma, sin abrir pestañas */
@@ -8691,7 +8710,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
           try { col.doc(d.id).delete(); } catch (e) {}
           if (o && o.k === 'juntos-comp' && typeof o.url === 'string' && /^https?:/.test(o.url) && !impSeen[o.id || d.id]) {
             impSeen[o.id || d.id] = 1;
-            impQ.push({ url: o.url, titulo: String(o.titulo || '').slice(0, 300), og: typeof o.og === 'string' ? o.og : '', fotos: Array.isArray(o.fotos) ? o.fotos.filter(function (u) { return typeof u === 'string'; }).slice(0, 400) : [], texto: String(o.texto || '').slice(0, 14000), k: 'juntos-comp' });
+            impQ.push({ url: o.url, titulo: String(o.titulo || '').slice(0, 300), og: typeof o.og === 'string' ? o.og : '', fotos: Array.isArray(o.fotos) ? o.fotos.filter(function (u) { return typeof u === 'string'; }).slice(0, 400) : [], texto: String(o.texto || '').slice(0, 20000), k: 'juntos-comp' });
           }
         });
         impRun();
@@ -8713,14 +8732,16 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     return c;
   }
   async function compDeCopiado(o) {
-    var fotos = fotosDeHtml((o.og ? ['"' + o.og + '"'] : []).concat((o.fotos || []).map(function (u) { return '"' + u + '"'; })).join(' '), o.url).slice(0, 6);
-    if (!fotos.length && o.og) fotos = [o.og];
+    var fotos = fotosDeHtml((o.og ? ['"' + o.og + '"'] : []).concat((o.fotos || []).map(function (u) { return '"' + u + '"'; })).join(' '), o.url);
+    var fv = await fotosValidas(fotos, 6); fotos = fv.length ? fv : (o.og ? [o.og] : []);
     var c = compDeTexto(o);
     if (aiOK()) {
-      try { var txt = await aiRun('Texto de un aviso inmobiliario (' + (o.url || '') + '), título: ' + (o.titulo || '') + '\n\n' + String(o.texto || '').slice(0, 14000) + '\n\nEs un solo inmueble. ' + COMP_SCHEMA, null); var cs = parseComps(txt, 'link'); if (cs[0]) { Object.keys(cs[0]).forEach(function (k) { var val = cs[0][k]; if (val != null && val !== '' && !(Array.isArray(val) && !val.length)) c[k] = val; }); } } catch (e) {}
+      try { var txt = await aiRun('Texto de un aviso inmobiliario (' + (o.url || '') + '), título: ' + (o.titulo || '') + '\n\n' + String(o.texto || '').slice(0, 20000) + '\n\nEs un solo inmueble. ' + COMP_SCHEMA, null); var cs = parseComps(txt, 'link'); if (cs[0]) { Object.keys(cs[0]).forEach(function (k) { var val = cs[0][k]; if (val != null && val !== '' && !(Array.isArray(val) && !val.length)) c[k] = val; }); } } catch (e) {}
     }
     c.url = o.url || c.url; c.src = 'link';
-    c.fotos = fotos.concat((c.fotos || []).filter(function (u) { return fotos.indexOf(u) < 0; })).slice(0, 6); c.fotosTry = true;
+    var extra = (c.fotos || []).filter(function (u) { return fotos.indexOf(u) < 0; });
+    if (extra.length && fotos.length < 6) extra = await fotosValidas(extra, 6 - fotos.length); else extra = [];
+    c.fotos = fotos.concat(extra).slice(0, 6); c.fotosTry = true;
     return c;
   }
   /* recepción directa desde el botón de favoritos (sin copiar y pegar) */
