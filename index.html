@@ -8173,6 +8173,7 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
       var col = db.collection('tasaciones'), q = col.where ? col.where('ase', '==', M.asesorId) : null;
       if (q && q.onSnapshot) q.onSnapshot(function (sn) { G.tasaciones = sn.docs.map(function (d) { var x = clone(d.data() || {}); x.id = d.id; return x; }); gReady.tasaciones = true; tasAseRefresh(); }, function () { gReady.tasaciones = true; });
       var bd = db.collection('tasbase').doc('base');
+      setTimeout(buzonStart, 1500);
       if (bd.onSnapshot) bd.onSnapshot(function (d) { var ex = d && (typeof d.exists === 'function' ? d.exists() : d.exists); TB = ex ? JSON.parse(JSON.stringify(d.data() || {})) : null; if (TB && TB.locs && TB.locs.length) gConf.localidades = TB.locs; tasAseRefresh(); }, function () {});
     } catch (e) {}
   }; })(aseModeStart);
@@ -8654,17 +8655,50 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
   fillAse = (function (o) { return function () { document.body.classList.remove('ase-tas'); return o.apply(this, arguments); }; })(fillAse);
   if (window.__FB_MOCK) window.__t5 = { items: function () { return tasBaseItems().length; }, st: function () { return [!!gDb, canGestion(), gReady.captaciones, gReady.cierres, gReady.asesores, G.asesores.filter(function (a) { return a.acceso; }).length, !!window.ASE_MODE]; } };
   /* ----- botón de favoritos: copiar un aviso desde cualquier portal y pegarlo como comparable ----- */
-  function bmCode(U) {
+  function bmCode(B) {
     var js = "(function(){try{var R=/https?:\\/\\/[^\"'\\s()<>\\\\,]+?\\.(?:jpe?g|webp|png)(?:\\?[^\"'\\s()<>\\\\,]*)?/gi,H=document.documentElement.outerHTML.replace(/\\\\u002F/gi,'/').replace(/\\\\\\//g,'/'),S={},F=[];function a(u){if(u&&!S[u]&&F.length<400){S[u]=1;F.push(u);}}(H.match(R)||[]).forEach(a);[].forEach.call(document.images,function(i){if(i.naturalWidth>=300)a(i.currentSrc||i.src);});"
-      + "var m=document.querySelector('meta[property=\"og:image\"]'),M=document.querySelector('main')||document.body,id=''+Date.now()+Math.random(),o={k:'juntos-comp',v:2,id:id,url:location.href,titulo:document.title,og:m?m.content:'',fotos:F,texto:(M.innerText||'').replace(/\\n{3,}/g,'\\n\\n').slice(0,14000)},s=JSON.stringify(o);"
+      + "var m=document.querySelector('meta[property=\"og:image\"]'),M=document.querySelector('main')||document.body,id=''+Date.now()+Math.random(),o={k:'juntos-comp',v:3,id:id,url:location.href,titulo:document.title,og:m?m.content:'',fotos:F,texto:(M.innerText||'').replace(/\\n{3,}/g,'\\n\\n').slice(0,14000)},s=JSON.stringify(o);"
       + "var d=document.getElementById('jg-bm')||document.createElement('div');d.id='jg-bm';d.style.cssText='position:fixed;z-index:2147483647;top:16px;right:16px;background:#012169;color:#fff;font:600 14px/1.4 Arial,sans-serif;padding:14px 34px 14px 16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:320px';document.body.appendChild(d);"
-      + "function P(h,btn){d.innerHTML='<div>Juntos Gesti\\u00f3n</div><div style=\"font-weight:400\">'+h+'</div>';var x=document.createElement('button');x.textContent='\\u00d7';x.style.cssText='position:absolute;top:6px;right:8px;background:none;border:0;color:#fff;font-size:18px;cursor:pointer';x.onclick=function(){d.remove();};d.appendChild(x);if(btn){var b=document.createElement('button');b.textContent='Copiar comparable';b.style.cssText='margin-top:10px;background:#fff;color:#012169;border:0;border-radius:8px;padding:8px 12px;font:700 14px Arial;cursor:pointer';b.onclick=function(){var t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();var c=false;try{c=document.execCommand('copy');}catch(e){}t.remove();if(c)b.textContent='\\u00a1Copiado! Peg\\u00e1lo en la tasaci\\u00f3n';else prompt('Copi\\u00e1 este texto:',s);};d.appendChild(b);}}"
-      + "P('Enviando el aviso ('+F.length+' im\\u00e1genes)\\u2026');var w=null;try{w=window.open('','juntosGestion');}catch(e){}if(!w){P('El navegador bloque\\u00f3 la ventana. Copialo y pegalo en la tasaci\\u00f3n:',1);return;}var f=false;try{f=w.location.href==='about:blank';}catch(e){}if(f)w.location.href=" + JSON.stringify(U) + ";"
-      + "var ok=false,n=0;window.addEventListener('message',function(e){if(e.data&&e.data.k==='juntos-ack'&&e.data.id===id&&!ok){ok=true;P('\\u2714 Enviado a la tasaci\\u00f3n. Pod\\u00e9s seguir buscando.');setTimeout(function(){d.remove();},3500);}});"
-      + "var iv=setInterval(function(){if(ok){clearInterval(iv);return;}if(n++>80){clearInterval(iv);P('No se pudo enviar (\\u00bfest\\u00e1 abierta la sesi\\u00f3n?). Copialo y pegalo:',1);return;}try{w.postMessage(o,'*');}catch(e){}},500);"
-      + "}catch(e){alert('No se pudo leer el aviso: '+e.message);}})();";
+      + "function P(h,btn){d.innerHTML='<div>Juntos Gesti\\u00f3n</div><div style=\"font-weight:400\">'+h+'</div>';var x=document.createElement('button');x.textContent='\\u00d7';x.style.cssText='position:absolute;top:6px;right:8px;background:none;border:0;color:#fff;font-size:18px;cursor:pointer';x.onclick=function(){d.remove();};d.appendChild(x);if(btn){var b=document.createElement('button');b.textContent='Copiar comparable';b.style.cssText='margin-top:10px;background:#fff;color:#012169;border:0;border-radius:8px;padding:8px 12px;font:700 14px Arial;cursor:pointer';b.onclick=function(){var t=document.createElement('textarea');t.value=s;document.body.appendChild(t);t.select();var c=false;try{c=document.execCommand('copy');}catch(e){}t.remove();if(c)b.textContent='\\u00a1Copiado! Peg\\u00e1lo en la tasaci\\u00f3n';else prompt('Copi\\u00e1 este texto:',s);};d.appendChild(b);}}";
+    if (B) js += "P('Enviando el aviso ('+F.length+' im\\u00e1genes)\\u2026');fetch('https://firestore.googleapis.com/v1/projects/" + B.p + "/databases/(default)/documents/buzon/" + B.t + "/items?key=" + B.k + "',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{d:{stringValue:s},t:{timestampValue:new Date().toISOString()}}})}).then(function(r){if(!r.ok)throw new Error(r.status);P('\\u2714 Enviado a tu tasaci\\u00f3n en Juntos Gesti\\u00f3n. Pod\\u00e9s seguir buscando.');setTimeout(function(){d.remove();},3500);}).catch(function(){P('No se pudo enviar. Copialo y pegalo en la tasaci\\u00f3n:',1);});";
+    else js += "P('Aviso le\\u00eddo con '+F.length+' im\\u00e1genes.',1);";
+    js += "}catch(e){alert('No se pudo leer el aviso: '+e.message);}})();";
     return 'javascript:' + js;
   }
+  /* buzón: el botón deja el aviso en la base y la plataforma abierta lo toma, sin abrir pestañas */
+  var buzonOn = false;
+  function buzonDb() { return gDb || aseDb; }
+  function buzonCfg() { var c = window.FIREBASE_CONFIG; return c && c.projectId && c.apiKey && buzonDb() && window.claude && window.claude.aiRaw ? c : null; }
+  async function buzonToken() {
+    var tk = null; try { tk = localStorage.getItem('juntos-buzon'); } catch (e) {}
+    if (tk) return tk;
+    var a = new Uint8Array(18); crypto.getRandomValues(a); tk = 'b' + Array.prototype.map.call(a, function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+    await buzonDb().collection('buzonKeys').doc(tk).set({ ase: window.ASE_MODE ? window.ASE_MODE.asesorId : '', creado: new Date().toISOString(), quien: meNameSafe() });
+    try { localStorage.setItem('juntos-buzon', tk); } catch (e) {}
+    return tk;
+  }
+  function buzonStart() {
+    if (buzonOn || !buzonCfg()) return;
+    var tk = null; try { tk = localStorage.getItem('juntos-buzon'); } catch (e) {}
+    if (!tk) return;
+    buzonOn = true;
+    try {
+      var col = buzonDb().collection('buzon').doc(tk).collection('items');
+      col.onSnapshot(function (sn) {
+        (sn.docs || []).forEach(function (d) {
+          var key = 'juntos-imp-' + d.id; try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch (e) {}
+          var o = null; try { o = JSON.parse((d.data() || {}).d || ''); } catch (e) {}
+          try { col.doc(d.id).delete(); } catch (e) {}
+          if (o && o.k === 'juntos-comp' && typeof o.url === 'string' && /^https?:/.test(o.url) && !impSeen[o.id || d.id]) {
+            impSeen[o.id || d.id] = 1;
+            impQ.push({ url: o.url, titulo: String(o.titulo || '').slice(0, 300), og: typeof o.og === 'string' ? o.og : '', fotos: Array.isArray(o.fotos) ? o.fotos.filter(function (u) { return typeof u === 'string'; }).slice(0, 400) : [], texto: String(o.texto || '').slice(0, 14000), k: 'juntos-comp' });
+          }
+        });
+        impRun();
+      }, function () { buzonOn = false; });
+    } catch (e) { buzonOn = false; }
+  }
+  gStart = (function (o) { return function (db) { var r = o.apply(this, arguments); setTimeout(buzonStart, 1500); return r; }; })(gStart);
   function compDeTexto(o) {
     var tx = String(o.texto || ''), c = { src: 'link', url: o.url || '', titulo: o.titulo || '', dir: '', estado: 'publicada', mon: 'U$S' };
     var p = /(U\$S|USD|US\$|u\$s)\s*([\d.]{4,})/.exec(tx); if (p) c.precio = +p[2].replace(/\./g, ''); else { var p2 = /\$\s*([\d.]{6,})/.exec(tx); if (p2) { c.precio = +p2[1].replace(/\./g, ''); c.mon = '$'; } }
@@ -8690,7 +8724,6 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     return c;
   }
   /* recepción directa desde el botón de favoritos (sin copiar y pegar) */
-  try { if (!window.name || !/^juntos/.test(window.name)) window.name = 'juntosGestion'; } catch (e) {}
   var impSeen = {}, impQ = [], impBusy = false;
   function tasActiva() { if (gOpen && gOpen.t === 'tas' && gGet('tasaciones', gOpen.id)) return gOpen.id; var id = null; try { id = localStorage.getItem('juntos-tas-activa'); } catch (e) {} return id && gGet('tasaciones', id) ? id : null; }
   tasOpen = (function (o) { return function (id) { try { localStorage.setItem('juntos-tas-activa', id); } catch (e) {} return o.apply(this, arguments); }; })(tasOpen);
@@ -8744,14 +8777,19 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     var done = tasBusy('Leyendo los datos del aviso…'); var c; try { c = await compDeCopiado(o); } finally { done(); }
     compForm(t, c, null);
   }
-  function bookmarkletModal() {
-    var a = el('a', { href: '#', class: 'bm-btn', text: '★ Enviar a Juntos', title: 'Arrastrame a la barra de favoritos' });
-    a.setAttribute('href', bmCode(location.href.split('#')[0]));
+  async function bookmarkletModal() {
+    var B = null, cfg = buzonCfg();
+    if (cfg) { try { var tk = await buzonToken(); B = { p: cfg.projectId, k: cfg.apiKey, t: tk }; buzonStart(); } catch (e) { B = null; } }
+    var a = el('a', { href: '#', class: 'bm-btn', text: B ? '★ Enviar a Juntos' : '★ Copiar comparable', title: 'Arrastrame a la barra de favoritos' });
+    a.setAttribute('href', bmCode(B));
     a.addEventListener('click', function (e) { e.preventDefault(); toast('No lo toques acá: arrastralo a la barra de favoritos.'); });
-    showModal('Copiar avisos de Zonaprop y otros portales', el('div', { class: 'field bm-modal' },
-      el('p', { text: 'Sirve para Zonaprop, Argenprop, Mercado Libre, fichas de Tokko y cualquier página de avisos. Se instala una sola vez en la compu:' }),
-      el('ol', {}, el('li', { text: 'Mostrá la barra de favoritos de Chrome (Ctrl+Shift+B en Windows, Cmd+Shift+B en Mac).' }), el('li', {}, 'Arrastrá este botón hasta la barra: ', a), el('li', { text: 'Dejá abierta la tasación en Juntos Gestión. En otra pestaña abrí un aviso y tocá el favorito «★ Enviar a Juntos»: el comparable se agrega solo, con link, datos y fotos.' }), el('li', { text: 'Podés seguir abriendo avisos y tocando el favorito: cada uno se suma a la misma tasación.' })),
-      el('p', { class: 'sm', text: 'Lo lee tu propio navegador, así que el portal no lo bloquea. Con la IA activa completa solo los datos; sin la IA completa lo que puede y vos revisás los números.' })),
+    showModal('Traer avisos de Zonaprop y otros portales', el('div', { class: 'field bm-modal' },
+      el('p', { text: 'Sirve para Zonaprop, Argenprop, Mercado Libre, fichas de Tokko y cualquier página de avisos. Se instala una vez en cada computadora:' }),
+      el('ol', {}, el('li', { text: 'Mostrá la barra de favoritos de Chrome (Ctrl+Shift+B en Windows, Cmd+Shift+B en Mac).' }), el('li', {}, 'Arrastrá este botón hasta la barra: ', a),
+        B ? el('li', { text: 'Con la tasación abierta en Juntos Gestión, andá a otra pestaña, abrí un aviso y tocá «★ Enviar a Juntos». No se abre nada: el aviso queda guardado y se suma solo a la tasación, con link, datos y fotos.' })
+          : el('li', { text: 'Abrí un aviso, tocá el favorito y después «Copiar comparable». Volvé a la tasación y tocá «Pegar comparable copiado».' }),
+        B ? el('li', { text: 'Si en ese momento Juntos Gestión no está abierto, los avisos esperan y se agregan la próxima vez que lo abras (a la última tasación que usaste).' }) : null),
+      el('p', { class: 'sm', text: B ? 'El botón es personal de esta computadora: no lo compartas. Si lo instalás en otra compu, hacelo desde Juntos Gestión en esa compu.' : 'En esta versión el envío directo no está disponible; usá la de GitHub para enviar sin copiar y pegar.' })),
       [el('button', { type: 'button', class: 'btn primary', text: 'Listo', onclick: function () { closeModal(null); } })]);
   }
   tasComp = (function (o) { return function (t) {
