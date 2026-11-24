@@ -8809,12 +8809,18 @@ body.ase-mode.ase-tas #gpFoot { display: flex !important; }
     if (portal) c.portal = portal;
     c.dir = String(o.titulo || '').split(/[|·\-–]/)[0].trim().slice(0, 80);
     function num(x) { return x ? +String(x).replace(/\./g, '').replace(',', '.') : null; }
+    function numM2(x) {
+      x = String(x || '').trim(); if (!x) return null;
+      if (/^\d{1,3}([.,]\d{3})+$/.test(x)) return +x.replace(/[.,]/g, '');
+      var m = /^(\d+(?:[.,]\d{3})*)[.,](\d{1,2})$/.exec(x); if (m) return Math.round(+(m[1].replace(/[.,]/g, '') + '.' + m[2]) * 100) / 100;
+      return +x.replace(/[.,]/g, '') || null;
+    }
     function lab(re) { var m = re.exec(tx); return m ? m[1].trim() : null; }
     var pc = lab(/precio\s*(?:de\s*)?cierre\s*:?\s*(?:US\$|U\$S|USD)\s*([\d.,]+)/i), pp = lab(/precio\s*(?:de\s*)?publicaci[oó]n\s*:?\s*(?:US\$|U\$S|USD)\s*([\d.,]+)/i);
     if (pc) { c.estado = 'vendida'; c.precio = num(pc); c.mon = 'U$S'; if (pp) c.pubPrecio = num(pp); }
     else if (pp) { c.precio = num(pp); c.mon = 'U$S'; }
     var sh = lab(/superficie\s*homogeneizada\s*:?\s*([\d.,]+)\s*m/i), sc = lab(/superficie\s*cubierta\s*:?\s*([\d.,]+)\s*m/i), st = lab(/superficie\s*total\s*:?\s*([\d.,]+)\s*m/i);
-    if (sc) c.m2c = num(sc); if (st) c.m2t = num(st); if (sh && !sc) { c.m2c = num(sh); c.nota = 'Superficie homogeneizada según la fuente'; }
+    if (sc) c.m2c = numM2(sc); if (st) c.m2t = numM2(st); if (sh && !sc) { c.m2c = numM2(sh); c.nota = 'Superficie homogeneizada según la fuente'; }
     var dl = lab(/direcci[oó]n\s*:\s*([^\n]+)/i); if (dl) c.dir = dl.split(/\s+-\s+/)[0].slice(0, 80);
     var ub = lab(/ubicaci[oó]n\s*:\s*([^\n]+)/i); if (ub) { var parts = ub.split('|').map(function (x) { return x.trim(); }).filter(Boolean); if (parts.length) c.loc = parts[parts.length - 1]; }
     var a2 = lab(/ambientes\s*:\s*(\d+)/i); if (a2) c.amb = +a2;
