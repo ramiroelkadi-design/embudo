@@ -10156,7 +10156,14 @@ div.g-chk select { max-width: 260px; }
   }
   function guaOutlook(g) {
     var t = GUA_T[g.turno];
-    return 'https://outlook.office.com/calendar/0/deeplink/compose?path=%2Fcalendar%2Faction%2Fcompose&rru=addevent&subject=' + encodeURIComponent('Guardia en la oficina (' + t.h + ')') + '&startdt=' + encodeURIComponent(g.fecha + 'T' + t.i + ':00-03:00') + '&enddt=' + encodeURIComponent(g.fecha + 'T' + t.f + ':00-03:00') + '&body=' + encodeURIComponent(GUA_MSG) + '&location=' + encodeURIComponent('Coldwell Banker Juntos · Olivos');
+    return 'https://outlook.office.com/calendar/action/compose?subject=' + encodeURIComponent('Guardia en la oficina (' + t.h + ')') + '&startdt=' + encodeURIComponent(g.fecha + 'T' + t.i + ':00-03:00') + '&enddt=' + encodeURIComponent(g.fecha + 'T' + t.f + ':00-03:00') + '&body=' + encodeURIComponent(GUA_MSG) + '&location=' + encodeURIComponent('Coldwell Banker Juntos · Olivos');
+  }
+  function guaIcs(g) {
+    var t = GUA_T[g.turno], d = g.fecha.replace(/-/g, ''), z = function (h) { var x = new Date(g.fecha + 'T' + h + ':00-03:00'); return x.toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''); };
+    var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Juntos Gestion//Guardias//ES', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:guardia-' + g.fecha + '-' + g.turno + '@juntos', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''),
+      'DTSTART:' + z(t.i), 'DTEND:' + z(t.f), 'SUMMARY:Guardia en la oficina (' + t.h + ')', 'LOCATION:Coldwell Banker Juntos · Olivos', 'DESCRIPTION:' + GUA_MSG.replace(/,/g, '\\,'),
+      'BEGIN:VALARM', 'TRIGGER:-P2D', 'ACTION:DISPLAY', 'DESCRIPTION:Guardia en 48 hs', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+    saveFile('guardia-' + g.fecha + '-' + (g.turno === 'm' ? 'manana' : 'tarde') + '.ics', new Blob([ics], { type: 'text/calendar' }));
   }
   function guaTexto(g) { return 'Hola ' + String(g.nombre || '').split(' ')[0] + '! Te recuerdo que tenés guardia en la oficina el ' + guaDia(g.fecha).toLowerCase() + ', de ' + GUA_T[g.turno].h + '. ' + GUA_MSG; }
   /* grilla de una semana: ase = id del asesor que se anota (modo asesor) o null (oficina: elige a quién) */
@@ -10172,7 +10179,7 @@ div.g-chk select { max-width: 260px; }
         if (g) nodes.push(el('b', { text: mine ? 'Vos' : (g.nombre || 'Ocupada') }));
         if (!g && !past) nodes.push(el('button', { type: 'button', class: 'btn sm-btn', text: 'Anotarme', onclick: function () { guaSet(id, { fecha: f, turno: t, aseId: ase, nombre: window.ASE_MODE ? aseFull({ nombre: (gGet('asesores', ase) || {}).nombre || window.ASE_MODE.nombre || '' }) : aseName(ase), creado: new Date().toISOString(), por: meNameSafe() }); toast('Anotado en la guardia del ' + guaDia(f) + ', ' + GUA_T[t].h + '.', { action: { label: 'Agendar', fn: function () { window.open(guaOutlook({ fecha: f, turno: t }), '_blank'); } } }); guaRefresh(); } }));
         if (mine && !past) {
-          nodes.push(el('a', { class: 'g-link-btn sm', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agendar en Outlook' }));
+          nodes.push(el('a', { class: 'g-link-btn sm', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agendar en Outlook' }), el('button', { type: 'button', class: 'g-link-btn sm', text: 'Descargar (.ics)', onclick: function () { guaIcs(g); } }));
           if (guaHoras(g) > 48) nodes.push(el('button', { type: 'button', class: 'g-link-btn sm', text: 'Darme de baja', onclick: function () { guaDel(id); guaRefresh(); } }));
           else nodes.push(el('span', { class: 'sm', text: 'Para cambiarla, hablá con la oficina' }));
         }
@@ -10235,7 +10242,7 @@ div.g-chk select { max-width: 260px; }
       el('p', { class: 'banner-lite', text: GUA_MSG }),
       N.bar, guaSemana(N.lun, a.id),
       el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Tus próximas guardias' }),
-        mias.length ? el('div', { class: 'g-links' }, mias.map(function (g) { return el('div', { class: 'gua-rec' }, el('b', { text: guaDia(g.fecha) + ' · ' + GUA_T[g.turno].h }), el('span', { class: 'row-wrap' }, el('a', { class: 'btn ghost sm-btn', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agregar a Outlook' }), el('a', { class: 'btn ghost sm-btn', href: guaGcal(g), target: '_blank', rel: 'noopener', text: 'Google Calendar' }))); })) : el('p', { class: 'hint', text: 'Todavía no te anotaste.' })))]);
+        mias.length ? el('div', { class: 'g-links' }, mias.map(function (g) { return el('div', { class: 'gua-rec' }, el('b', { text: guaDia(g.fecha) + ' · ' + GUA_T[g.turno].h }), el('span', { class: 'row-wrap' }, el('a', { class: 'btn ghost sm-btn', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agregar a Outlook' }), el('button', { type: 'button', class: 'btn ghost sm-btn', text: 'Descargar para Outlook (.ics)', onclick: function () { guaIcs(g); } }), el('a', { class: 'btn ghost sm-btn', href: guaGcal(g), target: '_blank', rel: 'noopener', text: 'Google Calendar' }))); })) : el('p', { class: 'hint', text: 'Todavía no te anotaste.' })))]);
   }
   /* recordatorio en la plataforma: aviso en el resumen del asesor */
   aseResumen = (function (o) { return function (a) {
