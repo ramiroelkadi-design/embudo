@@ -1170,6 +1170,20 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
 .tag.blue { background: color-mix(in srgb, #1f69ff 14%, transparent); color: #1f4fbf; }
 .g-blue-chk.on b { color: #1f4fbf; }
 .hoy-cie .g-table { margin-top: 6px; }
+.notif-btn { position: relative; }
+.notif-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #e5484d; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.notif-pop { position: fixed; z-index: 80; width: min(420px, calc(100vw - 16px)); max-height: min(560px, 75vh); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+.notif-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
+.notif-it { display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: start; width: 100%; text-align: left; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; color: inherit; font: inherit; }
+.notif-it:hover { background: var(--surface-2); }
+.notif-it .notif-tx { display: grid; gap: 2px; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: transparent; }
+.notif-it.new .notif-dot { background: #1f69ff; }
+.notif-it.new b { font-weight: 700; }
+.notif-t { white-space: nowrap; }
+.notif-cfg { border-collapse: collapse; width: 100%; font-size: 14px; }
+.notif-cfg th, .notif-cfg td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.notif-cfg td.c, .notif-cfg th:not(:first-child) { text-align: center; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -10313,6 +10327,93 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
       var kp = box.querySelector('.kpis'); if (kp) kp.after(sec); else box.append(sec);
     } catch (e) {}
   }; })(renderHoy);
+  /* ===================== Notificaciones (campanita) ===================== */
+  G.notiflect = [];
+  ICONS.bell = '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>';
+  var NOTIF_T = [
+    ['cierre_nuevo', 'Cierre nuevo'], ['bluesoft', 'Cierre cargado en BlueSoft'], ['reserva_nueva', 'Reserva nueva'], ['reserva_aceptada', 'Reserva aceptada'],
+    ['reserva_caida', 'Reserva caída o rechazada'], ['guardia', 'Guardias: alguien se anota'], ['tasacion', 'Tasación nueva de un asesor'], ['audiovisual', 'Producción audiovisual pasada a cuenta corriente']];
+  gUpd = (function (o) { return function (n, id, f) { if (n === 'reservas' && f && f.estado) { var r0 = gGet('reservas', id); if (!r0 || r0.estado !== f.estado) { f.estadoEl = new Date().toISOString(); f.estadoPor = meNameSafe(); } } return o.apply(this, arguments); }; })(gUpd);
+  function notifKey() { var m = miMail(); return m || ('n:' + String(meName() || 'yo').toLowerCase()); }
+  function notifDocId(k) { return String(k).replace(/[^a-z0-9]/gi, '_').slice(0, 120); }
+  function notifMe() { return gGet('notiflect', notifDocId(notifKey())) || null; }
+  function notifPara(tipo, key) { var c = gConf.notif; if (!c) return true; return (c[tipo] || []).indexOf(key) >= 0; }
+  function notifItems() {
+    var lim = new Date(Date.now() - 30 * 864e5).toISOString(), yo = meNameSafe(), L = [];
+    function add(tipo, id, t, txt, sub, open, por) { if (!t || String(t) < lim) return; if (por && yo && String(por).split(' ')[0] === yo.split(' ')[0]) return; L.push({ tipo: tipo, id: tipo + ':' + id, t: String(t), txt: txt, sub: sub, open: open }); }
+    G.cierres.forEach(function (c) {
+      var who = cParts(c).map(function (x) { return aseName(x.id); }).join(' y ');
+      add('cierre_nuevo', c.id, c.creado, 'Cierre nuevo: ' + (c.direccion || 'sin dirección'), who + (c.valor ? ' · ' + money(c.valor, c.moneda) : ''), function () { setView('cie'); openCie(c.id); }, c.creadoPor);
+      if (c.bluesoft && c.bluesoft.t) add('bluesoft', c.id, c.bluesoft.t + 'T23:00:00', 'Cargado en BlueSoft: ' + (c.direccion || 'cierre'), c.bluesoft.por || '', function () { setView('cie'); openCie(c.id); }, c.bluesoft.por);
+    });
+    G.reservas.forEach(function (r) {
+      var who = aseNames(r.asesorIds);
+      add('reserva_nueva', r.id, r.creado, 'Reserva nueva: ' + (r.propiedad || 'sin dirección'), who, function () { setView('res'); openRes(r.id); }, r.creadoPor);
+      if (r.estado === 'aceptada' && r.estadoEl) add('reserva_aceptada', r.id, r.estadoEl, 'Reserva aceptada: ' + (r.propiedad || ''), who, function () { setView('res'); openRes(r.id); }, r.estadoPor);
+      if ((r.estado === 'caida' || r.estado === 'rechazada') && r.estadoEl) add('reserva_caida', r.id, r.estadoEl, (r.estado === 'caida' ? 'Se cayó: ' : 'Rechazada: ') + (r.propiedad || ''), who + (r.motivoBaja ? ' · ' + r.motivoBaja : ''), function () { setView('res'); openRes(r.id); }, r.estadoPor);
+    });
+    G.guardias.forEach(function (g) { add('guardia', g.id, g.creado, (g.nombre || aseName(g.aseId)) + ' se anotó en una guardia', guaDia(g.fecha) + ' · ' + GUA_T[g.turno].h, function () { setView('gua'); }, g.por === g.nombre ? '' : g.por); });
+    (G.tasaciones || []).forEach(function (t) { if (!t.ase) return; add('tasacion', t.id, t.creado, 'Tasación nueva de ' + aseName(t.ase), (t.s && (t.s.direccion || t.s.dir)) || '', function () { openAse(t.ase, 'tas'); }, t.creadoPor === aseName(t.ase) ? '' : t.creadoPor); });
+    G.movimientos.forEach(function (m) { if (m.avCapId) add('audiovisual', m.id, m.creado, 'Audiovisual a cuenta corriente: ' + aseName(m.asesorId), money(m.monto, m.moneda) + ' · ' + (m.detalle || ''), function () { openAse(m.asesorId, 'cc'); }); });
+    var k = notifKey();
+    return L.filter(function (x) { return notifPara(x.tipo, k); }).sort(function (a, b) { return a.t < b.t ? 1 : -1; });
+  }
+  function notifEstado() { var d = notifMe() || {}; return { visto: d.visto || '', leidas: d.leidas || {} }; }
+  function notifUnread(L) { var e = notifEstado(); return L.filter(function (x) { return x.t > e.visto && !e.leidas[x.id]; }); }
+  function notifSave(f) { var id = notifDocId(notifKey()), cur = notifMe() || {}; var d = Object.assign({ key: notifKey(), nombre: me && me.name ? me.name : meNameSafe() }, cur, f); delete d.id; gSet('notiflect', id, d); }
+  function notifRegistrar() { if (window.ASE_MODE || !gDb || !gReady.notiflect) return; var cur = notifMe(); if (!cur) notifSave({ visto: new Date(Date.now() - 7 * 864e5).toISOString(), leidas: {} }); else if (me && me.name && cur.nombre !== me.name) notifSave({ nombre: me.name }); }
+  var _nb = null;
+  function notifBell() {
+    if (window.ASE_MODE || !canGestion()) { if (_nb) _nb.hidden = true; return; }
+    var tools = document.querySelector('header.top .tools'); if (!tools) return;
+    if (!_nb) {
+      _nb = el('button', { type: 'button', class: 'btn icon notif-btn', 'aria-label': 'Notificaciones', 'aria-haspopup': 'dialog', onclick: function (e) { e.stopPropagation(); notifPanel(); } }, icon('bell'), el('span', { class: 'notif-badge', hidden: true }));
+      var more = document.getElementById('more'); tools.insertBefore(_nb, more || null);
+    }
+    _nb.hidden = false;
+    var n = notifUnread(notifItems()).length, b = _nb.querySelector('.notif-badge');
+    b.hidden = !n; b.textContent = n > 99 ? '99+' : String(n); _nb.setAttribute('aria-label', 'Notificaciones' + (n ? ' (' + n + ' sin leer)' : ''));
+  }
+  function notifPanel() {
+    var old = document.querySelector('.notif-pop'); if (old) { old.remove(); return; }
+    var L = notifItems(), e = notifEstado();
+    var pop = el('div', { class: 'notif-pop', role: 'dialog', 'aria-label': 'Notificaciones' },
+      el('div', { class: 'notif-h' }, el('b', { text: 'Notificaciones' }),
+        el('span', { class: 'row-wrap' },
+          L.length ? el('button', { type: 'button', class: 'g-link-btn sm', text: 'Marcar todas como leídas', onclick: function () { notifSave({ visto: new Date().toISOString(), leidas: {} }); pop.remove(); notifBell(); } }) : null,
+          el('button', { type: 'button', class: 'g-link-btn sm', text: 'Configurar', onclick: function () { pop.remove(); notifConfig(); } }))),
+      L.length ? el('div', { class: 'notif-list' }, L.slice(0, 40).map(function (x) {
+        var nuevo = x.t > e.visto && !e.leidas[x.id];
+        return el('button', { type: 'button', class: 'notif-it' + (nuevo ? ' new' : ''), onclick: function () { var le = Object.assign({}, notifEstado().leidas); le[x.id] = 1; notifSave({ leidas: le }); pop.remove(); notifBell(); try { x.open(); } catch (er) {} } },
+          el('span', { class: 'notif-dot' }), el('span', { class: 'notif-tx' }, el('b', { text: x.txt }), x.sub ? el('span', { class: 'sm', text: x.sub }) : null), el('span', { class: 'sm notif-t', text: relTxt(x.t) }));
+      })) : el('p', { class: 'hint', style: 'padding:14px', text: 'No tenés notificaciones de los últimos 30 días.' }));
+    document.body.append(pop);
+    var r = _nb.getBoundingClientRect(); pop.style.top = (r.bottom + 6) + 'px'; pop.style.right = Math.max(8, innerWidth - r.right) + 'px';
+    setTimeout(function () { document.addEventListener('click', function f(ev) { if (!pop.contains(ev.target)) { pop.remove(); document.removeEventListener('click', f); } }); }, 0);
+  }
+  function relTxt(t) { var h = (Date.now() - new Date(t)) / 36e5; if (h < 1) return 'recién'; if (h < 24) return 'hace ' + Math.round(h) + ' h'; var d = Math.round(h / 24); return d === 1 ? 'ayer' : 'hace ' + d + ' días'; }
+  async function notifConfig() {
+    var users = G.notiflect.filter(function (u) { return u.key; }).sort(function (a, b) { return String(a.nombre || a.key).localeCompare(String(b.nombre || b.key), 'es'); });
+    var conf = gConf.notif ? JSON.parse(JSON.stringify(gConf.notif)) : null;
+    if (!conf) { conf = {}; NOTIF_T.forEach(function (t) { conf[t[0]] = users.map(function (u) { return u.key; }); }); }
+    var tbl = el('table', { class: 'notif-cfg' },
+      el('thead', {}, el('tr', {}, el('th', { text: 'Avisar de…' }), users.map(function (u) { return el('th', { title: u.key.indexOf('n:') === 0 ? '' : u.key, text: String(u.nombre || u.key).split(' ')[0] }); }))),
+      el('tbody', {}, NOTIF_T.map(function (t) {
+        return el('tr', {}, el('td', { text: t[1] }), users.map(function (u) {
+          var c = el('input', { type: 'checkbox', 'aria-label': t[1] + ' para ' + (u.nombre || u.key) }); c.checked = (conf[t[0]] || []).indexOf(u.key) >= 0;
+          c.addEventListener('change', function () { var a = conf[t[0]] = (conf[t[0]] || []).filter(function (k) { return k !== u.key; }); if (c.checked) a.push(u.key); });
+          return el('td', { class: 'c' }, c);
+        }));
+      })));
+    var ok = await showModal('¿Quién recibe cada notificación?', el('div', {},
+      el('p', { class: 'sm', text: 'Cada persona aparece acá después de entrar una vez a la plataforma con su usuario. Las notificaciones de lo que hace uno mismo no se le muestran.' }),
+      users.length ? el('div', { class: 'gua-wrap' }, tbl) : el('p', { class: 'hint', text: 'Todavía no hay usuarios registrados.' })), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () { closeModal(true); } })]);
+    if (!ok) return;
+    gSaveConf({ notif: conf }); toast('Listo: notificaciones configuradas.'); notifBell();
+  }
+  gRefresh = (function (o) { return function () { var r = o.apply(this, arguments); try { notifRegistrar(); notifBell(); } catch (e) {} return r; }; })(gRefresh);
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
