@@ -1147,6 +1147,7 @@ div.g-chk select { max-width: 260px; }
 .g-av-btn.avok { background: color-mix(in srgb, var(--ok, #2e9f5b) 12%, transparent); color: var(--ok, #2e9f5b); }
 .g-av-btn.avwarn { background: color-mix(in srgb, #d9822b 16%, transparent); color: #a85a12; }
 .g-lst { font-weight: 400; color: var(--ink-2); }
+.g-cap-main > .tag, .g-cap-main > button { justify-self: start; align-self: flex-start; width: fit-content; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -9955,7 +9956,63 @@ div.g-chk select { max-width: 260px; }
         avs.length ? el('p', { class: 'sm', text: 'Producción audiovisual en curso: ' + avs.length + ' (' + avs.map(function (i) { return i.dias + ' días'; }).join(', ') + ' para vender)' }) : null);
     } catch (e) {}
   }; })(aseResumen);
-  if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet };
+  /* ===================== Captaciones publicadas más de una vez ===================== */
+  function capDirKey(p) {
+    var s = String(p.dir || p.titulo || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    s = s.split(',')[0].replace(/[°º.#\-\/]/g, ' ').replace(/\b(av|avda|avenida|calle|gral|general|pje|pasaje|piso|depto|dpto|dto|departamento|uf|unidad|al|n|nro)\b/g, ' ').replace(/\s+/g, ' ').trim();
+    var m = /^(.*?)(\d{1,5})\b(.*)$/.exec(s); if (!m) return '';
+    var calle = m[1].replace(/[^a-z]/g, ''), unit = m[3].replace(/[^a-z0-9]/g, '');
+    return calle.length >= 3 ? calle + '#' + m[2] + '#' + unit : '';
+  }
+  var _dupC = { k: '', m: {} }, _capFull = null;
+  function capSrc() { return _capFull || G.captaciones; }
+  function capById(id) { return capSrc().filter(function (p) { return p.id === id; })[0] || null; }
+  function capDupMap() {
+    var CS = capSrc();
+    var k = CS.length + '|' + CS.map(function (p) { return p.id + (p.noDup ? '!' : '') + (p.estado === 'baja' ? 'b' + p.baja : ''); }).join(',');
+    if (_dupC.k === k) return _dupC.m;
+    var by = {}, m = {}, hoy = todayStr();
+    CS.forEach(function (p) { if (p.noDup) return; var dk = capDirKey(p); if (!dk) return; var key = (capAse(p) || p.prod || '?') + '|' + (p.tipo || '') + '|' + dk; (by[key] = by[key] || []).push(p); });
+    function desde(p) { return String(p.alta || p.primeraVez || '').slice(0, 10); }
+    function hasta(p) { return p.estado === 'baja' ? String(p.baja || hoy) : hoy; }
+    Object.keys(by).forEach(function (key) {
+      var L = by[key].sort(function (a, b) { return desde(a) < desde(b) ? -1 : 1; }); if (L.length < 2) return;
+      /* mismo inmueble publicado a la vez: los períodos de publicación se superponen */
+      var groups = [];
+      L.forEach(function (p) {
+        var g = groups.filter(function (g) { return g.some(function (q) { return desde(p) <= hasta(q) && desde(q) <= hasta(p); }); })[0];
+        if (g) g.push(p); else groups.push([p]);
+      });
+      groups.forEach(function (g) { if (g.length < 2) return; var main = g.filter(function (p) { return p.estado !== 'baja'; })[0] || g[0]; g.forEach(function (p) { m[p.id] = { main: main.id, all: g.map(function (q) { return q.id; }) }; }); });
+    });
+    _dupC = { k: k, m: m }; return m;
+  }
+  function capEsDup(p) { var d = capDupMap()[p.id]; return !!(d && d.main !== p.id); }
+  function capUnicas(list) { return list.filter(function (p) { return !capEsDup(p); }); }
+  function withUnicas(fn) { if (gF.capDup || _capFull) return fn(); var all = G.captaciones; capDupMap(); _capFull = all; G.captaciones = capUnicas(all); try { return fn(); } finally { G.captaciones = all; _capFull = null; } }
+  renderCap = (function (o) { return function (box) {
+    withUnicas(function () { o(box); });
+    try {
+      var nd = G.captaciones.filter(function (p) { return capEsDup(p) && p.estado !== 'baja'; }).length, ndAll = G.captaciones.filter(capEsDup).length;
+      if (!ndAll) return;
+      var tabs = box.querySelector('.onb-chips[role="tablist"]'); if (!tabs) return;
+      var b = el('button', { type: 'button', class: 'chip' + (gF.capDup ? ' on' : ''), 'aria-pressed': String(!!gF.capDup), title: 'La misma propiedad publicada más de una vez a la vez (otro barrio, otro título…)', onclick: function () { gF.capDup = !gF.capDup; gKeepF(); gRenderView(); } },
+        gF.capDup ? 'Ocultar avisos repetidos' : 'Mostrar avisos repetidos (' + ndAll + ')');
+      tabs.append(b);
+      box.querySelector('.kpis') && box.querySelector('.kpis').after(el('p', { class: 'sm', text: gF.capDup ? 'Se cuentan todos los avisos, también los que repiten la misma propiedad.' : 'Los totales, el listing y las altas del mes cuentan cada propiedad una sola vez, aunque esté publicada en varios avisos.' }));
+    } catch (e) {}
+  }; })(renderCap);
+  aseResumen = (function (o) { return function (a, s, y) { var self = this, args = arguments; return withUnicas(function () { return o.apply(self, args); }); }; })(aseResumen);
+  capRow = (function (o) { return function (p) {
+    var n = o(p), d = capDupMap()[p.id]; if (!d) return n;
+    var otros = d.all.filter(function (id) { return id !== p.id; }).map(capById).filter(Boolean);
+    var main = d.main === p.id;
+    var tag = el('span', { class: 'tag ' + (main ? 'muted' : 'warn'), title: otros.map(function (q) { return (q.ref || q.tid) + ' · ' + (q.titulo || q.dir || '') + (q.loc ? ' · ' + q.loc : ''); }).join('\n'), text: main ? 'Publicada ' + d.all.length + ' veces' : 'Aviso repetido de ' + ((capById(d.main) || {}).ref || 'otra publicación') });
+    var mainEl = n.querySelector('.g-cap-main'); mainEl.append(tag);
+    if (!window.ASE_MODE) mainEl.append(el('button', { type: 'button', class: 'g-link-btn sm', text: 'No es la misma propiedad', onclick: function () { d.all.forEach(function (id) { gUpd('captaciones', id, { noDup: true }); }); toast('Listo: se cuentan por separado.'); gRenderView(); } }));
+    return n;
+  }; })(capRow);
+  if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
   var gStarted = false;
