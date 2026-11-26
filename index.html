@@ -1131,6 +1131,22 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
 .g-sub-h { font-size: 13px; font-weight: 600; margin: 14px 0 4px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; }
 .g-fsum td.num { white-space: nowrap; }
 @media (max-width: 600px) { .g-fact-card.ase { margin-left: 0; } }
+.g-pctamt { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.g-pctamt > input { flex: 1 1 90px; min-width: 80px; }
+.g-amt { display: flex; align-items: center; gap: 4px; flex: 1 1 120px; }
+.g-amt-m { font-size: 13px; color: var(--ink-2); }
+.g-amt input { flex: 1; min-width: 80px; }
+.g-chk2 { grid-template-columns: auto 1fr auto; cursor: default; }
+.g-chk2 .g-chk-steps { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.g-chk-steps .dis { opacity: .5; }
+.g-chk-i { width: 18px; text-align: center; color: var(--ink-2); }
+.g-chk.ok .g-chk-i { color: var(--ok, #2e9f5b); }
+div.g-chk { cursor: default; }
+div.g-chk select { max-width: 260px; }
+.g-av-btn { margin-top: 4px; justify-self: start; align-self: flex-start; width: fit-content; font-size: 12px; padding: 2px 10px; min-height: 0; }
+.g-av-btn.avok { background: color-mix(in srgb, var(--ok, #2e9f5b) 12%, transparent); color: var(--ok, #2e9f5b); }
+.g-av-btn.avwarn { background: color-mix(in srgb, #d9822b 16%, transparent); color: #a85a12; }
+.g-lst { font-weight: 400; color: var(--ink-2); }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -4869,9 +4885,8 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
               el('td', { text: String(map[k].n) }), el('td', { text: usdK(map[k].b) }));
           }))), keys.length > 12 ? el('p', { class: 'sm', text: '+' + (keys.length - 12) + ' más' }) : null);
     }
-    var breakdown = el('div', { class: 'g-two' },
-      miniTable('Por asesor · ' + perName, aks, function (k) { return aseName(k); }, byA, function (k) { if (gGet('asesores', k)) openAse(k); }),
-      miniTable('Por cómo llegó el cliente · ' + perName, oks, function (k) { return k; }, byO));
+    var breakdown = el('div', {},
+      miniTable('Por asesor · ' + perName, aks, function (k) { return aseName(k); }, byA, function (k) { if (gGet('asesores', k)) openAse(k); }));
     var q = norm(gF.cieQ);
     var list = per.filter(function (c) { return cMatches(c, q) && (!gF.cieA || cShare(c, gF.cieA)); }).sort(function (a, b) { return String(a.fecha) < String(b.fecha) ? 1 : -1; });
     if (gF.cieCol) list = sortBy(list, C_KEY, gF.cieCol);
@@ -5523,7 +5538,7 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       return 'mailto:' + q(to.value).replace(/%40/g, '@').replace(/%2C/g, ',') + '?' + (cc.value ? 'cc=' + q(cc.value) + '&' : '') + 'subject=' + q(subj.value) + '&body=' + q(body.value);
     }
     var wrap = el('div', { class: 'field' },
-      el('p', { class: 'hint', text: 'Se genera el PDF del comprobante. ' + (canShare ? 'Con “Compartir” lo mandás adjunto.' : 'Gmail no deja adjuntarlo solo: se descarga el PDF y lo arrastrás al mail que se abre.') }),
+      el('p', { class: 'hint', text: 'Se genera el PDF del comprobante. ' + (canShare ? 'Con “Compartir” lo mandás adjunto.' : 'Para adjuntarlo en Gmail, descargalo antes con “Solo descargar PDF” y arrastralo al mail.') }),
       el('div', { class: 'field' }, el('span', { text: 'Para (mail de la ficha del asesor)' }), to), fld('Con copia', cc), fld('Asunto', subj), fld('Mensaje', body));
     function noTo(e) { if (to.value) return false; if (e) e.preventDefault(); toast('Elegí un asesor con mail cargado en su ficha.', { kind: 'error' }); return true; }
     var acts = [el('button', { type: 'button', class: 'btn ghost', text: 'Ahora no', onclick: function () { closeModal(null); } }),
@@ -5535,9 +5550,9 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     acts.push(el('a', { class: 'btn' + (canShare ? '' : ' primary'), href: '#', target: '_blank', rel: 'noopener', text: 'Abrir en Gmail', onclick: function (e) {
       if (noTo(e)) return;
       e.currentTarget.href = mailUrl(true);
-      downloadReceipt(r, i, kind); markSent(r, i, to.value, kind); setTimeout(function () { closeModal(null); }, 50);
+      markSent(r, i, to.value, kind); setTimeout(function () { closeModal(null); }, 50);
     } }));
-    acts.push(el('a', { class: 'btn ghost', href: '#', text: 'Otra app de correo', onclick: function (e) { if (noTo(e)) return; e.currentTarget.href = mailUrl(false); downloadReceipt(r, i, kind); markSent(r, i, to.value, kind); setTimeout(function () { closeModal(null); }, 50); } }));
+    acts.push(el('a', { class: 'btn ghost', href: '#', text: 'Otra app de correo', onclick: function (e) { if (noTo(e)) return; e.currentTarget.href = mailUrl(false); markSent(r, i, to.value, kind); setTimeout(function () { closeModal(null); }, 50); } }));
     return showModal('Comprobante de ' + (ent ? 'entrega' : 'recepción') + ' · ' + money(p.monto, p.moneda), wrap, acts);
   }
 
@@ -5553,13 +5568,13 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     var d = { fecha: ff, operacion: r.operacion || 'venta', puntas: otra && !k.red && L.v.nos && (+L.c.pct || 0) > 0 ? 'ambas' : puntaDe(L), compartida: !otra ? 'no' : k.red ? 'red' : 'fuera', otraParte: otra ? otra.inmob || '' : '', redCB: !!k.red, pctOtra: otra && !k.red && L.v.nos ? (+L.c.pctOtra || null) : null,
       direccion: r.propiedad || '', localidad: r.localidad || '', juris: r.juris || jurisDe(r.localidad), pago: r.pago || '', moneda: r.precioMon || 'U$S', valor: +r.precio || null, cot: +r.cot || +gConf.cot, pctVend: +L.v.pct || 0, pctComp: +L.c.pct || 0, reservaId: r.id, tokko: r.tokko || null, prop: (function () { var pr = propOf(r), cp = capOf(r.tokko); if (cp) { var x = capProp(cp); if (x.pub) { pr.pub = x.pub; pr.pubMon = x.pubMon; } } return pr; })(), fechaReserva: r.fecha || '', facturado: !!r.facturar, fact: r.facturar ? { on: true, pct: 0.4, escMon: '$', inv: {}, otra: !!r.facturarOtra } : null, liquidado: false,
       asesores: k.parts.length ? k.parts.map(function (p) { var a = gGet('asesores', p.id), sp = splitAt(a, ff); return { id: p.id, parte: Math.round(p.parte * 10000) / 10000, split: sp != null ? sp : 0.5 }; }) : (r.asesorIds || []).map(function (id) { var a = gGet('asesores', id), sp = splitAt(a, ff); return { id: id, parte: 1 / r.asesorIds.length, split: sp != null ? sp : 0.5 }; }) };
-    if (k.manual && k.total != null) d.brutoManual = d.moneda === '$' ? Math.round(k.total * (d.cot || 1)) : Math.round(k.total);
+    if (false) d.brutoManual = d.moneda === '$' ? Math.round(k.total * (d.cot || 1)) : Math.round(k.total);
     openCie(null, d);
   }
   function fillCie() {
     var c = gRec(), isNew = !c, d = isNew ? gOpen.draft : c;
     var set = gSetter('cierres', function (f) {
-      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad', 'redCB', 'pctOtra', 'prop'].some(function (k) { return k in f; });
+      var structural = ['operacion', 'puntas', 'compartida', 'moneda', 'asesores', 'facturado', 'liquidado', 'calc', 'juris', 'localidad', 'redCB', 'pctOtra', 'prop', 'valor', 'pctVend', 'pctComp'].some(function (k) { return k in f; });
       if (structural) gFill(); else updCalcBox();
     });
     var opLbl = d.operacion === 'venta' ? PUNTAS : PUNTAS_ALQ;
@@ -5574,12 +5589,12 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       el('div', { class: 'grid' },
         fld('Localidad', listSel('localidades', d.localidad, function (v, it) { set({ localidad: v, juris: (it && it.juris) || jurisDe(v) }); }, 'Elegí la localidad')),
         fld('Jurisdicción', inSel(d.juris || jurisDe(d.localidad), [['PBA', 'Provincia (PBA)'], ['CABA', 'CABA']], set, 'juris'), (d.juris || jurisDe(d.localidad)) === 'PBA' ? 'Paga ABAO sobre lo facturado por la oficina' : 'No paga ABAO'),
-        fld('Cómo llegó el cliente', inSel(d.origen || '', [['', 'Sin especificar']].concat(ORIG_CLI.concat(d.origen && ORIG_CLI.indexOf(d.origen) < 0 ? [d.origen] : []).map(function (o) { return [o, o]; })), set, 'origen'))),
+        null),
       d.puntas === 'ambas' && !d.pctOtra ? null : el('div', { class: 'grid' },
         fld('La otra punta', inSel(d.compartida === 'no' ? 'fuera' : (d.compartida || 'fuera'), [['red', 'Otra oficina de la Red CB'], ['fuera', 'Inmobiliaria fuera de la red'], ['directo', 'Sin inmobiliaria (parte directa)']], set, 'compartida')),
         d.compartida === 'directo' ? null : fld('Inmobiliaria de la otra punta', listSel('inmobiliarias', d.otraParte, function (v, it) { var o = { otraParte: v }; if (it && it.red) { o.compartida = 'red'; } set(o); }, 'Elegí la inmobiliaria')),
         d.compartida === 'red' ? el('p', { class: 'sm', text: 'Red CB: se suman las comisiones de las dos puntas y a nuestra oficina le corresponde la mitad. Cargá abajo el % de las dos puntas.' }) : null,
-        d.compartida === 'fuera' && d.puntas === 'ambas' ? fld('De la punta compradora, para la otra inmobiliaria', inNum(d.pctOtra, set, 'pctOtra', null, 100), '% del valor que se lleva la otra oficina') : null)]);
+        d.compartida === 'fuera' && d.puntas === 'ambas' ? fld('De la punta compradora, para la otra inmobiliaria', pctAmt(inNum(d.pctOtra, set, 'pctOtra', null, 100), d.pctOtra, d.valor, d.moneda, function (v) { set({ pctOtra: v }); }), '% del valor que se lleva la otra oficina') : null)]);
     var parts = (d.asesores || []).map(function (x) { return clone(x); });
     function setParts(np) { set({ asesores: np }); }
     var aseRows = parts.map(function (x, k) {
@@ -5595,10 +5610,10 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     var valSec = sect('Valores', [
       el('div', { class: 'grid' },
         fld('Valor de cierre', el('span', { class: 'g-money-in' }, inSel(d.moneda || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'moneda', { 'aria-label': 'Moneda' }), inNum(d.valor, set, 'valor', { 'aria-label': 'Valor de cierre' })), d.operacion === 'venta' ? null : 'En alquileres, el total del contrato.'),
-        d.puntas !== 'comprador' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), inNum(d.pctVend, set, 'pctVend', null, 100)) : null,
-        d.puntas !== 'vendedor' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), inNum(d.pctComp, set, 'pctComp', null, 100)) : null,
+        d.puntas !== 'comprador' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), pctAmt(inNum(d.pctVend, set, 'pctVend', null, 100), d.pctVend, d.valor, d.moneda, function (v) { set({ pctVend: v }); })) : null,
+        d.puntas !== 'vendedor' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), pctAmt(inNum(d.pctComp, set, 'pctComp', null, 100), d.pctComp, d.valor, d.moneda, function (v) { set({ pctComp: v }); })) : null,
         d.moneda === '$' ? fld('Dólar del día', inNum(d.cot, set, 'cot'), 'Para pasar a U$S en las métricas') : null),
-      d.calc === 'excel' ? null : fld('Comisión bruta cobrada (opcional)', inNum(d.brutoManual, set, 'brutoManual', { placeholder: 'Si difiere del cálculo' }), 'Dejalo vacío para usar valor × porcentaje.'),
+
       el('div', { id: 'gCalc', class: 'g-calc' })]);
     var factSec = sect('Facturación y liquidación', [
       el('label', { class: 'check' }, (function () { var cb = el('input', { type: 'checkbox' }); cb.checked = !!d.facturado; cb.addEventListener('change', function () { set({ facturado: cb.checked }); }); return cb; })(), 'Facturado'),
@@ -6222,6 +6237,7 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       var c = gGet('cierres', sel.value), k = cierreLiqDe(c, a.id); if (!k) return;
       var rows = [['Comisión bruta de la operación', k.bruto], ['Participación', null, pctTxt(k.sh, 0)], ['Split', null, pctTxt(k.sp, 0)], ['Comisión del asesor', k.com]];
       if (k.abao) rows.push(['Mitad del ABAO', -k.abao]);
+      if (k.av) rows.push(['Su parte de producción audiovisual', -k.av]);
       if (iva.checked) rows.push(['IVA 21%', k.neto * 0.21]);
       var tot = k.neto + (iva.checked ? k.neto * 0.21 : 0);
       box.replaceChildren(el('table', { class: 'g-mini calc' }, el('tbody', {}, rows.map(function (r) { return el('tr', {}, el('td', { text: r[0] }), el('td', { text: r[2] || ((r[1] < 0 ? '− ' : '') + money(Math.abs(r[1]), k.mon)) })); }), el('tr', { class: 'tot' }, el('td', { text: 'Total a favor del asesor' }), el('td', { text: money(tot, k.mon) })))));
@@ -6323,11 +6339,11 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     acts.push(el('a', { class: 'btn' + (canShare ? '' : ' primary'), href: '#', target: '_blank', rel: 'noopener', text: 'Abrir en Gmail', onclick: function (e) {
       if (!to.value.trim()) { e.preventDefault(); to.focus(); to.setAttribute('aria-invalid', 'true'); return; }
       e.currentTarget.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + q(to.value) + '&su=' + q(subj.value) + '&body=' + q(body.value);
-      dl(); if (o.onSent) o.onSent(to.value); setTimeout(function () { closeModal(null); }, 50);
+      if (o.onSent) o.onSent(to.value); setTimeout(function () { closeModal(null); }, 50);
     } }));
-    acts.push(el('a', { class: 'btn ghost', href: '#', text: 'Otra app de correo', onclick: function (e) { e.currentTarget.href = 'mailto:' + to.value.trim() + '?subject=' + q(subj.value) + '&body=' + q(body.value); dl(); if (o.onSent) o.onSent(to.value); setTimeout(function () { closeModal(null); }, 50); } }));
+    acts.push(el('a', { class: 'btn ghost', href: '#', text: 'Otra app de correo', onclick: function (e) { e.currentTarget.href = 'mailto:' + to.value.trim() + '?subject=' + q(subj.value) + '&body=' + q(body.value); if (o.onSent) o.onSent(to.value); setTimeout(function () { closeModal(null); }, 50); } }));
     showModal(o.title, el('div', { class: 'field' },
-      el('p', { class: 'hint', text: canShare ? 'Con “Compartir” mandás el PDF adjunto por mail o WhatsApp.' : 'Gmail no deja adjuntarlo solo: se descarga el PDF y lo arrastrás al mail que se abre.' }),
+      el('p', { class: 'hint', text: canShare ? 'Con “Compartir” mandás el PDF adjunto por mail o WhatsApp.' : 'Para adjuntarlo en Gmail, descargalo antes con “Solo descargar PDF” y arrastralo al mail.' }),
       o.extra || null, fld('Para', to, o.to ? null : 'Cargá el mail del asesor en su pestaña Datos para que aparezca solo.'), fld('Asunto', subj), fld('Mensaje', body)), acts);
   }
   function sendMov(a, m) {
@@ -9421,20 +9437,20 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     var red = c.compartida === 'red' && c.puntas !== 'ambas', otraOK = factOtraOK(c);
     var pts = ciePuntas(c).filter(function (p) { return !(p === 'c' && otraOK && !f.otra); });
     var cfPct = juris === 'CABA' ? 0.905 : 0.8, rI = rate('iibb'), rA = venta && juris === 'PBA' ? rate('abao') : 0;
-    var T = { neto: 0, netoUSD: 0, iibb: 0, iibbUSD: 0, abao: 0, abaoUSD: 0, cfNeto: 0, ivaDeb: 0, ivaCred: 0, ivaSaldo: 0, ivaSaldoUSD: 0, ivaDebUSD: 0 };
+    var T = { cfNetoUSD: 0, ivaCredUSD: 0, neto: 0, netoUSD: 0, iibb: 0, iibbUSD: 0, abao: 0, abaoUSD: 0, cfNeto: 0, ivaDeb: 0, ivaCred: 0, ivaSaldo: 0, ivaSaldoUSD: 0, ivaDebUSD: 0 };
     var inv = pts.map(function (p) {
       var pp = p === 'v' ? +c.pctVend || 0 : +c.pctComp || 0, otra = false;
       if (red) pp = ((+c.pctVend || 0) + (+c.pctComp || 0)) / 2;
       else if (p === 'c' && c.compartida === 'fuera' && +c.pctOtra) { pp = Math.max(0, pp - (+c.pctOtra || 0)); otra = otraOK; }
       var fx = (f.inv || {})[p] || {}, k = +fx.cot || cot0;
-      var base = escU ? esc * k * pct * pp : esc * pct * pp, sug = Math.round(base * ofi);
+      var base = escU ? esc * k * pct * pp : esc * pct * pp, sug = Math.round(base * ofi * 100) / 100;
       var neto = fx.neto != null && fx.neto !== '' ? +fx.neto : sug;
-      var ase = sh.map(function (a) { var e = Math.round(base * a.parte * a.split), ax = (fx.ase || {})[a.id] || {}; return { id: a.id, esp: e, espUSD: e / k, fx: ax, chk: ax.adj || (ax.neto != null && ax.neto !== '') ? chkMonto(ax.neto, e) : null }; });
-      var x = { p: p, pct: pp, otra: otra, cot: k, base: base, sug: sug, sugUSD: sug / k, neto: neto, netoUSD: neto / k, iva: Math.round(neto * 0.21), ivaUSD: neto * 0.21 / k, fx: fx, ase: ase,
+      var ase = sh.map(function (a) { var e = Math.round(base * a.parte * a.split * 100) / 100, ax = (fx.ase || {})[a.id] || {}; return { id: a.id, esp: e, espUSD: e / k, fx: ax, chk: ax.adj || (ax.neto != null && ax.neto !== '') ? chkMonto(ax.neto, e) : null }; });
+      var x = { p: p, pct: pp, otra: otra, cot: k, base: base, sug: sug, sugUSD: sug / k, neto: neto, netoUSD: neto / k, iva: Math.round(neto * 21) / 100, ivaUSD: neto * 0.21 / k, cf: neto * cfPct, cfUSD: neto * cfPct / k, fx: fx, ase: ase,
         chk: fx.adj || (fx.neto != null && fx.neto !== '') ? chkMonto(fx.neto, sug) : null,
         chkIva: fx.ivaFact != null && fx.ivaFact !== '' && neto ? chkMonto(fx.ivaFact, neto * 0.21) : null };
       T.neto += neto; T.netoUSD += neto / k; T.iibb += neto * rI; T.iibbUSD += neto * rI / k; T.abao += neto * rA; T.abaoUSD += neto * rA / k;
-      T.cfNeto += neto * cfPct; T.ivaDeb += neto * 0.21; T.ivaDebUSD += neto * 0.21 / k; T.ivaCred += neto * cfPct * 0.21; T.ivaSaldo += neto * 0.21 * (1 - cfPct); T.ivaSaldoUSD += neto * 0.21 * (1 - cfPct) / k;
+      T.cfNeto += neto * cfPct; T.cfNetoUSD += neto * cfPct / k; T.ivaCredUSD += neto * cfPct * 0.21 / k; T.ivaDeb += neto * 0.21; T.ivaDebUSD += neto * 0.21 / k; T.ivaCred += neto * cfPct * 0.21; T.ivaSaldo += neto * 0.21 * (1 - cfPct); T.ivaSaldoUSD += neto * 0.21 * (1 - cfPct) / k;
       return x;
     });
     return Object.assign(T, { cot: cot0, esc: esc, escU: escU, pct: pct, ofi: ofi, sh: sh, inv: inv, otraOK: otraOK, otra: !!f.otra, juris: juris, cfPct: cfPct });
@@ -9446,7 +9462,7 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     var pv = c.puntas !== 'comprador' ? pvAll : 0, pc = c.puntas !== 'vendedor' ? pcAll : 0;
     if (!red && c.pctOtra && c.compartida === 'fuera') pc = Math.max(0, pc - (+c.pctOtra || 0));
     var total2 = valor * (pvAll + pcAll), base = red ? total2 / 2 : valor * (pv + pc);
-    var bruto = c.brutoManual != null && c.brutoManual !== '' ? +c.brutoManual : base;
+    var bruto = base;
     var parts = cParts(c), ag = 0, agBy = {};
     parts.forEach(function (x) { var p = x.parte != null ? +x.parte : 1 / (parts.length || 1), v = bruto * p * (+x.split || 0); agBy[x.id] = { bruto: v, parte: p }; ag += v; });
     var mart = bruto * rate('mart'), fran = bruto * rate('fran');
@@ -9480,7 +9496,6 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       if (d.puntas !== 'vendedor') row('Punta ' + lc + ' · ' + pctTxt(k.pcAll, 2), V * k.pcAll, 'det');
       if (d.compartida === 'fuera' && +d.pctOtra && d.puntas !== 'vendedor') row('Para ' + (d.otraParte || 'la otra inmobiliaria') + ' · ' + pctTxt(+d.pctOtra, 2), V * (+d.pctOtra), 'det', true);
     }
-    if (d.brutoManual != null && d.brutoManual !== '') row('Comisión bruta cargada a mano', k.bruto, 'det');
     row('Comisión bruta para la oficina', k.bruto, 'sum');
     sub('Asesores');
     cParts(d).forEach(function (x) { var a = k.agBy[x.id]; if (!a) return; row(aseName(x.id) + ' · ' + pctTxt(+x.split || 0, 0) + (cParts(d).length > 1 ? ' de ' + pctTxt(a.parte, 0) : ''), a.bruto); if (a.abao) row('   menos su mitad de ABAO', a.abao, 'det', true); });
@@ -9536,17 +9551,17 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     function num(v, on, ph) { var i = el('input', { type: 'text', inputmode: 'decimal', value: v != null && v !== '' ? String(v).replace('.', ',') : '', placeholder: ph || '' }); i.addEventListener('change', function () { on(numIn(i.value)); }); return i; }
     var monSel = el('select', { 'aria-label': 'Moneda de la escritura' }, [['$', '$'], ['U$S', 'U$S']].map(function (o) { return el('option', { value: o[0], text: o[1] }); })); monSel.value = f.escMon || '$'; monSel.addEventListener('change', function () { upd({ escMon: monSel.value }); });
     var ars = function (x) { return '$ ' + fmtN(Math.round(x || 0)); };
+    var f2 = function (x) { return (x || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }, ars2 = function (x) { return '$ ' + f2(x); }, usd2 = function (x) { return 'U$S ' + f2(x); };
     var lbl = { v: venta ? 'punta vendedora' : 'punta locadora', c: venta ? 'punta compradora' : 'punta locataria' };
     var datos = el('div', { class: 'grid' },
       fld('Monto de escritura', el('span', { class: 'g-money-in' }, monSel, num(f.esc, function (v) { upd({ esc: v }); }, 'A completar'))),
       fld('% de la escritura que se factura', num(f.pct != null ? Math.round(f.pct * 1000) / 10 : 40, function (v) { upd({ pct: v != null ? v / 100 : 0.4 }); }), 'Por defecto, 40%'),
-      fld('Dólar ($ por U$S)', num(f.cot || d.cot || gConf.cot, function (v) { upd({ cot: v }); }), 'Se toma solo al adjuntar la factura del martillero de cada punta'),
       fld('Jurisdicción', el('input', { type: 'text', value: juris === 'CABA' ? 'CABA' : 'Provincia (PBA)', disabled: true }), juris === 'PBA' && venta ? 'Paga ABAO ' + pctTxt(rate('abao'), 0) : 'No paga ABAO'));
     var otraCb = null;
     if (F.otraOK) { var oc = el('input', { type: 'checkbox' }); oc.checked = !!f.otra; oc.addEventListener('change', function () { upd({ otra: oc.checked }); }); otraCb = el('label', { class: 'check sm' }, oc, 'Facturar también nuestra parte de la ' + lbl.c + ' (' + pctTxt(Math.max(0, (+d.pctComp || 0) - (+d.pctOtra || 0)), 2) + '; el resto es de ' + (d.otraParte || 'la otra inmobiliaria') + ')'); }
     function vf(ch, real, esp, mon) {
       if (!ch) return null;
-      return el('span', { class: 'g-vf ' + (ch.ok ? 'ok' : 'bad'), text: ch.ok ? '✓ Coincide con lo que correspondía' : '⚠ Difiere ' + (ch.d > 0 ? '+' : '') + pctTxt(ch.d, 1) + ': facturó ' + ars(real) + ', correspondía ' + ars(esp) });
+      return el('span', { class: 'g-vf ' + (ch.ok ? 'ok' : 'bad'), text: ch.ok ? '✓ Coincide con lo que correspondía' : '⚠ Difiere ' + (ch.d > 0 ? '+' : '') + pctTxt(ch.d, 1) + ': facturó ' + ars2(real) + ', correspondía ' + ars2(esp) });
     }
     /* resumen: cuánto factura cada uno */
     var sumRows = [];
@@ -9554,9 +9569,9 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     sumRows.push(el('tr', { class: 'sub' }, el('td', { text: '' }), el('td', { class: 'num', text: 'Neto' }), el('td', { class: 'num', text: 'IVA' }), el('td', { class: 'num', text: 'Total' })));
     F.inv.forEach(function (x) {
       sumRows.push(el('tr', { class: 'sub' }, el('td', { colspan: 4, text: lbl[x.p].charAt(0).toUpperCase() + lbl[x.p].slice(1) + (x.otra ? ' · nuestra parte' : '') + ' · ' + pctTxt(x.pct, 2) + ' × ' + pctTxt(F.pct, 0) + ' de la escritura' + (F.inv.length > 1 || x.cot !== F.cot ? ' · dólar ' + fmtN(x.cot) : '') })));
-      sr('Martillero (oficina, ' + pctTxt(F.ofi, 0) + ')', usd(x.sugUSD), usd(x.sugUSD * 0.21), usd(x.sugUSD * 1.21));
-      sr('', ars(x.sug), ars(x.sug * 0.21), ars(x.sug * 1.21), 'det');
-      x.ase.forEach(function (a) { var s0 = F.sh.filter(function (z) { return z.id === a.id; })[0] || {}; sr(aseName(a.id) + ' (factura C, ' + pctTxt(s0.parte * s0.split, 0) + ')', usd(a.espUSD), '–', usd(a.espUSD)); sr('', ars(a.esp), '', ars(a.esp), 'det'); });
+      sr('Martillero (oficina, ' + pctTxt(F.ofi, 0) + ')', usd2(x.sugUSD), usd2(x.sugUSD * 0.21), usd2(x.sugUSD * 1.21));
+      sr('', ars2(x.sug), ars2(x.sug * 0.21), ars2(x.sug * 1.21), 'det');
+      x.ase.forEach(function (a) { var s0 = F.sh.filter(function (z) { return z.id === a.id; })[0] || {}; sr(aseName(a.id) + ' (factura C, ' + pctTxt(s0.parte * s0.split, 0) + ')', usd2(a.espUSD), '–', usd2(a.espUSD)); sr('', ars2(a.esp), '', ars2(a.esp), 'det'); });
     });
     var resumen = F.esc ? el('div', {}, el('h4', { class: 'g-sub-h', text: 'Qué hay que facturar' }), el('table', { class: 'g-mini calc liq g-fsum' }, el('tbody', {}, sumRows)))
       : el('p', { class: 'banner-lite', text: 'Cargá el monto de escritura para ver cuánto tiene que facturar el martillero (neto e IVA) y cada asesor.' });
@@ -9599,15 +9614,15 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       function txt(k, ph) { var i = el('input', { type: 'text', value: fx[k] || '', placeholder: ph || '' }); i.addEventListener('change', function () { var o = {}; o[k] = i.value.trim(); updInv(o, false); }); return i; }
       var fi = attach(x, null);
       var mart = el('div', { class: 'g-fact-card' },
-        el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura del martillero a la ' + lbl[x.p] + (x.otra ? ' (nuestra parte)' : '') }), el('span', { class: 'sm', text: 'Correspondía ' + usd(x.sugUSD) + ' + IVA (' + ars(x.sug) + ' + ' + ars(x.sug * 0.21) + ')' })),
+        el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura del martillero a la ' + lbl[x.p] + (x.otra ? ' (nuestra parte)' : '') }), el('span', { class: 'sm', text: 'Correspondía ' + usd2(x.sugUSD) + ' + IVA ' + usd2(x.sugUSD * 0.21) + ' (' + ars2(x.sug) + ' + ' + ars2(x.sug * 0.21) + ')' })),
         el('div', { class: 'grid' },
           fld('Cliente', txt('cliente', 'Nombre o razón social')), fld('CUIT / DNI', txt('cuit')), fld('Nº de factura', txt('numero')),
-          fld('Neto facturado ($)', num(fx.neto, function (v) { updInv({ neto: v }); }, x.sug ? 'Sugerido ' + fmtN(x.sug) : 'Cargá la escritura'), fx.monFact === 'U$S' ? 'Factura en dólares: ' + usd(fx.netoOrig) : (x.sug ? 'Sugerido: ' + ars(x.sug) : null)),
+          fld('Neto facturado ($)', num(fx.neto, function (v) { updInv({ neto: v }); }, x.sug ? 'Sugerido ' + f2(x.sug) : 'Cargá la escritura'), fx.monFact === 'U$S' ? 'Factura en dólares: ' + usd2(fx.netoOrig) : (x.sug ? 'Sugerido: ' + ars2(x.sug) : null)),
           fld('Dólar de esta factura', num(fx.cot, function (v) { updInv({ cot: v }); }, fmtN(F.cot)), fx.cot ? null : 'Vacío: usa el general')),
         el('div', { class: 'g-fact-iva' },
-          el('span', {}, 'Neto ', el('b', { text: ars(x.neto) }), el('span', { class: 'sm', text: ' (' + usd(x.netoUSD) + ')' })),
-          el('span', {}, 'IVA 21% ', el('b', { text: ars(x.iva) }), el('span', { class: 'sm', text: ' (' + usd(x.ivaUSD) + ')' })),
-          el('span', {}, 'Total ', el('b', { text: ars(x.neto + x.iva) }))),
+          el('span', {}, 'Neto ', el('b', { text: ars2(x.neto) }), el('span', { class: 'sm', text: ' (' + usd2(x.netoUSD) + ')' })),
+          el('span', {}, 'IVA 21% ', el('b', { text: ars2(x.iva) }), el('span', { class: 'sm', text: ' (' + usd2(x.ivaUSD) + ')' })),
+          el('span', {}, 'Total ', el('b', { text: ars2(x.neto + x.iva) }), el('span', { class: 'sm', text: ' (' + usd2(x.netoUSD + x.ivaUSD) + ')' }))),
         el('div', { class: 'row-wrap' }, vf(x.chk, fx.neto, x.sug), x.chkIva && !x.chkIva.ok ? el('span', { class: 'g-vf bad', text: '⚠ El IVA de la factura (' + ars(fx.ivaFact) + ') no es el 21% del neto' }) : null),
         el('div', { class: 'row-wrap' },
           el('button', { type: 'button', class: 'btn sm-btn', text: fx.adj ? 'Reemplazar factura' : 'Adjuntar factura del martillero', onclick: function () { fi.click(); } }),
@@ -9615,10 +9630,10 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       var aseCards = x.ase.map(function (a) {
         var ax = a.fx || {}, fa = attach(x, a.id);
         return el('div', { class: 'g-fact-card ase' },
-          el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura de ' + aseName(a.id) + ' a la ' + lbl[x.p] }), el('span', { class: 'sm', text: 'Correspondía ' + usd(a.espUSD) + ' (' + ars(a.esp) + '), factura C sin IVA' })),
+          el('div', { class: 'g-fact-h' }, el('b', { text: 'Factura de ' + aseName(a.id) + ' a la ' + lbl[x.p] }), el('span', { class: 'sm', text: 'Correspondía ' + usd2(a.espUSD) + ' (' + ars2(a.esp) + '), factura C sin IVA' })),
           el('div', { class: 'grid' },
             fld('Nº de factura', (function () { var i = el('input', { type: 'text', value: ax.numero || '' }); i.addEventListener('change', function () { updAse(a.id, { numero: i.value.trim() }); }); return i; })()),
-            fld('Monto facturado ($)', num(ax.neto, function (v) { updAse(a.id, { neto: v }); }, a.esp ? 'Debería ser ' + fmtN(a.esp) : ''), ax.monFact === 'U$S' ? 'Factura en dólares: ' + usd(ax.netoOrig) : null)),
+            fld('Monto facturado ($)', num(ax.neto, function (v) { updAse(a.id, { neto: v }); }, a.esp ? 'Debería ser ' + f2(a.esp) : ''), ax.monFact === 'U$S' ? 'Factura en dólares: ' + usd2(ax.netoOrig) : null)),
           el('div', { class: 'row-wrap' }, vf(a.chk, ax.neto, a.esp), ax.tipo && ax.tipo !== 'C' ? el('span', { class: 'g-vf bad', text: 'Es factura ' + ax.tipo + ': no es la C de monotributo' }) : null),
           el('div', { class: 'row-wrap' },
             el('button', { type: 'button', class: 'btn sm-btn', text: ax.adj ? 'Reemplazar factura' : 'Adjuntar factura del asesor', onclick: function () { fa.click(); } }),
@@ -9627,42 +9642,72 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
       return el('div', { class: 'g-fact-punta' }, [mart].concat(aseCards));
     });
     var tr = function (a, b, c, cls) { return el('tr', { class: cls || '' }, el('td', { text: a }), el('td', { class: 'num', text: b }), el('td', { class: 'num', text: c || '' })); };
-    var tot = el('table', { class: 'g-mini calc liq' }, el('tbody', {},
-      tr('Neto facturado por el martillero', ars(F.neto), usd(F.netoUSD), 'sum'),
-      tr('Ingresos brutos ' + pctTxt(rate('iibb'), 1) + ' (paga la oficina)', ars(F.iibb), usd(F.iibbUSD), 'det'),
-      F.abao ? tr('ABAO ' + pctTxt(rate('abao'), 0) + ' (50% oficina · 50% asesor)', ars(F.abao), usd(F.abaoUSD), 'det') : null,
-      F.abao ? tr('   mitad de cada uno', ars(F.abao / 2), usd(F.abaoUSD / 2), 'det') : null,
-      tr('IVA facturado (débito)', ars(F.ivaDeb), usd(F.ivaDebUSD), 'sum'),
-      tr('Contrafactura de la otra sociedad al martillero (' + pctTxt(F.cfPct, 1) + ' ' + (juris === 'CABA' ? 'CABA' : 'PBA') + ')', ars(F.cfNeto), '', 'det'),
-      tr('IVA de la contrafactura (crédito)', ars(F.ivaCred), '', 'det'),
-      tr('IVA resultante a pagar', ars(F.ivaSaldo), usd(F.ivaSaldoUSD), 'tot')));
+    var tot = el('table', { class: 'g-mini calc liq' }, el('tbody', {}, [
+      tr('Neto facturado por el martillero', ars2(F.neto), usd2(F.netoUSD), 'sum'),
+      tr('Ingresos brutos ' + pctTxt(rate('iibb'), 1) + ' (paga la oficina)', ars2(F.iibb), usd2(F.iibbUSD), 'det'),
+      F.abao ? tr('ABAO ' + pctTxt(rate('abao'), 0) + ' (50% oficina · 50% asesor)', ars2(F.abao), usd2(F.abaoUSD), 'det') : null,
+      F.abao ? tr('   mitad de cada uno', ars2(F.abao / 2), usd2(F.abaoUSD / 2), 'det') : null,
+      tr('IVA facturado (débito)', ars2(F.ivaDeb), usd2(F.ivaDebUSD), 'sum'),
+      tr('Contrafactura de la otra sociedad al martillero (' + pctTxt(F.cfPct, 1) + ' del neto, ' + (juris === 'CABA' ? 'CABA' : 'PBA') + ')', ars2(F.cfNeto), usd2(F.cfNetoUSD), 'sum')]
+      .concat(F.inv.map(function (x) { return tr('   ' + lbl[x.p] + ': neto ' + ars2(x.cf) + ' + IVA ' + ars2(x.cf * 0.21) + ', a dólar ' + fmtN(x.cot), usd2(x.cfUSD), '+ IVA ' + usd2(x.cfUSD * 0.21), 'det'); }))
+      .concat([tr('IVA de la contrafactura (crédito)', ars2(F.ivaCred), usd2(F.ivaCredUSD), 'det'),
+      tr('IVA resultante a pagar', ars2(F.ivaSaldo), usd2(F.ivaSaldoUSD), 'tot')])));
+    var cotFld = el('div', { class: 'grid' }, fld('Dólar general ($ por U$S)', num(f.cot || d.cot || gConf.cot, function (v) { upd({ cot: v }); }), 'Se completa solo al adjuntar la factura del martillero. Cada punta usa el dólar de su factura; si no tiene, este.'));
     var legacy = d.fact == null && d.facturado ? el('p', { class: 'banner-lite warn', text: 'Este cierre se marcó como facturado antes de esta sección: hasta que cargues el monto de escritura, ingresos brutos y ABAO se calculan sobre ' + (d.facturadoMonto ? 'el monto facturado cargado' : 'toda la comisión') + '.' }) : null;
-    return sect('Facturación', [head, legacy, el('p', { class: 'sm', text: 'El martillero factura la parte de la oficina; cada asesor, la suya. Montos en dólares y en pesos.' }), datos, otraCb, resumen].concat(cards).concat([el('h4', { class: 'g-sub-h', text: 'Impuestos de la oficina' }), tot]));
+    return sect('Facturación', [head, legacy, el('p', { class: 'sm', text: 'El martillero factura la parte de la oficina; cada asesor, la suya. Montos en dólares y en pesos.' }), datos, otraCb, resumen].concat(cards).concat([cotFld, el('h4', { class: 'g-sub-h', text: 'Impuestos de la oficina' }), tot]));
   }
   /* ----- Cierres: checklist ----- */
   function chkSection(d, set, isNew) {
     if (isNew) return null;
     var k = calcCierre(d), F = k.F, fact = !!(F || d.facturado), ch = Object.assign({}, d.check || {});
-    var mon = d.moneda || 'U$S', ars = function (x) { return '$ ' + fmtN(Math.round(x || 0)); };
-    var items = [
-      ['liq', 'Liquidación de la comisión al asesor', money(k.aLiquidar, mon), true],
-      ['ivaAse', 'El asesor entregó el IVA que le pagó el cliente', F ? ars(F.ivaDeb) : '', fact],
-      ['uif', 'El asesor entregó los papeles UIF a la oficina', '', fact],
-      ['martHon', 'Honorarios entregados al martillero', money(k.mart, mon), true],
-      ['martIva', 'IVA entregado al martillero', F ? ars(F.ivaSaldo) + ' a pagar' : '', fact],
-      ['martIibb', 'Ingresos brutos entregados al martillero', F ? ars(F.iibb) : '', fact]].filter(function (x) { return x[3]; });
-    var done = items.filter(function (x) { return x[0] === 'liq' ? d.liquidado : ch[x[0]]; }).length;
-    var list = items.map(function (x) {
-      var on = x[0] === 'liq' ? !!d.liquidado : !!ch[x[0]], when = x[0] === 'liq' ? d.liquidadoEl : ch[x[0]];
+    var mon = d.moneda || 'U$S', f2 = function (x) { return (x || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }, ars = function (x) { return '$ ' + f2(x); };
+    var venta = (d.operacion || 'venta') === 'venta', lbl = { v: venta ? 'vendedor' : 'locador', c: venta ? 'comprador' : 'locatario' };
+    function save(nc) { set({ check: nc }); gFill(); }
+    function stamp() { return { t: todayStr(), por: meNameSafe() }; }
+    function when(v) { return v ? (typeof v === 'string' ? dmy(v) : dmy(v.t) + (v.por ? ' · ' + v.por : '')) : ''; }
+    var items = [];
+    /* simple: [key, texto, monto] */
+    function simple(key, txt, amt) {
+      var on = key === 'liq' ? !!d.liquidado : !!ch[key], w = key === 'liq' ? d.liquidadoEl : ch[key];
       var cb = el('input', { type: 'checkbox' }); cb.checked = on;
       cb.addEventListener('change', function () {
-        if (x[0] === 'liq') set({ liquidado: cb.checked, liquidadoEl: cb.checked ? todayStr() : '' });
-        else { var nc = Object.assign({}, d.check || {}); nc[x[0]] = cb.checked ? todayStr() : ''; set({ check: nc }); }
-        gFill();
+        if (key === 'liq') { set({ liquidado: cb.checked, liquidadoEl: cb.checked ? todayStr() : '' }); gFill(); return; }
+        var nc = Object.assign({}, d.check || {}); nc[key] = cb.checked ? stamp() : ''; save(nc);
       });
-      return el('label', { class: 'g-chk' + (on ? ' ok' : '') }, cb, el('span', { class: 'g-chk-t', text: x[1] }), x[2] ? el('b', { class: 'g-chk-m', text: x[2] }) : null, on && when ? el('span', { class: 'sm', text: dmy(when) }) : null);
+      items.push({ done: on, node: el('label', { class: 'g-chk' + (on ? ' ok' : '') }, cb, el('span', { class: 'g-chk-t', text: txt }), amt ? el('b', { class: 'g-chk-m', text: amt }) : el('span'), on && w ? el('span', { class: 'sm', text: when(w) }) : el('span')) });
+    }
+    simple('liq', 'Liquidación de la comisión al asesor', money(k.aLiquidar, mon));
+    /* IVA de cada cliente: cómo llegó a la oficina */
+    if (F) F.inv.forEach(function (x) {
+      var key = 'iva_' + x.p, v = ch[key] || null, on = !!(v && v.medio);
+      var sel = el('select', { 'aria-label': 'Cómo llegó el IVA del ' + lbl[x.p] }, [['', 'Pendiente'], ['efectivo', 'El asesor lo entregó en efectivo'], ['transf', 'Transferencia a los martilleros']].map(function (o) { return el('option', { value: o[0], text: o[1] }); }));
+      sel.value = on ? v.medio : '';
+      sel.addEventListener('change', function () { var nc = Object.assign({}, d.check || {}); nc[key] = sel.value ? Object.assign({ medio: sel.value }, stamp()) : ''; save(nc); });
+      items.push({ done: on, node: el('div', { class: 'g-chk' + (on ? ' ok' : '') }, el('span', { class: 'g-chk-i', text: on ? '✓' : '○' }), el('span', { class: 'g-chk-t', text: 'IVA del ' + lbl[x.p] + (x.fx && x.fx.cliente ? ' (' + x.fx.cliente + ')' : '') }), el('b', { class: 'g-chk-m', text: ars(x.iva) }), sel) });
     });
-    return sect('Checklist de la operación · ' + done + ' de ' + items.length, [el('div', { class: 'g-chks' }, list)]);
+    else if (fact) simple('ivaAse', 'El asesor entregó el IVA que le pagó el cliente', '');
+    if (fact) simple('uif', 'El asesor entregó los papeles UIF a la oficina', '');
+    if (k.av) simple('seba', 'Pago de producción audiovisual a Seba', money(k.av.costo, mon));
+    /* doble control: Erica lo separa y entrega; Ramiro confirma que lo recibió */
+    function doble(key, txt, amt) {
+      var e = ch[key + '_E'] || null, r = ch[key] || null;
+      var ce = el('input', { type: 'checkbox' }); ce.checked = !!e;
+      ce.addEventListener('change', function () { var nc = Object.assign({}, d.check || {}); nc[key + '_E'] = ce.checked ? stamp() : ''; if (!ce.checked) nc[key] = ''; save(nc); });
+      var cr = el('input', { type: 'checkbox' }); cr.checked = !!r; cr.disabled = !e && !r;
+      cr.addEventListener('change', function () { var nc = Object.assign({}, d.check || {}); nc[key] = cr.checked ? stamp() : ''; save(nc); });
+      var done = !!(e && r);
+      items.push({ done: done, node: el('div', { class: 'g-chk g-chk2' + (done ? ' ok' : '') },
+        el('span', { class: 'g-chk-i', text: done ? '✓' : '○' }), el('span', { class: 'g-chk-t', text: txt }), amt ? el('b', { class: 'g-chk-m', text: amt }) : el('span'),
+        el('div', { class: 'g-chk-steps' },
+          el('label', { class: 'check sm' }, ce, 'Erica: lo separó y lo entregó', e ? el('span', { class: 'sm', text: ' · ' + when(e) }) : null),
+          el('label', { class: 'check sm' + (cr.disabled ? ' dis' : '') }, cr, 'Ramiro: lo recibió', r ? el('span', { class: 'sm', text: ' · ' + when(r) }) : null))) });
+    }
+    doble('martHon', 'Honorarios del martillero', money(k.mart, mon));
+    if (fact) doble('martIva', 'IVA para el martillero', F ? ars(F.ivaSaldo) + ' a pagar' : '');
+    if (fact) doble('martIibb', 'Ingresos brutos para el martillero', F ? ars(F.iibb) : '');
+    var done = items.filter(function (x) { return x.done; }).length;
+    return sect('Checklist de la operación · ' + done + ' de ' + items.length, [el('div', { class: 'g-chks' }, items.map(function (x) { return x.node; })),
+      el('p', { class: 'sm', text: 'Los pagos al martillero tienen doble control: primero Erica marca que lo separó y lo entregó, y después Ramiro confirma que lo recibió.' })]);
   }
   /* ----- Cierres: volver a reserva ----- */
   async function cieAReserva(c) {
@@ -9779,7 +9824,138 @@ table.g-mini.calc.liq tr.det td { color: var(--ink-2); font-size: 13px; }
     });
     return fld(aid ? 'Captación de ' + aseName(aid) : 'Captación de la oficina', el('span', { class: 'row-wrap g-caplink' }, s, d.tokko && d.tokko.url ? el('a', { class: 'btn ghost sm-btn', href: d.tokko.url, target: '_blank', rel: 'noopener', text: 'Ver ficha' }) : null), 'Incluye las propiedades que ya se dieron de baja en Tokko. Al elegirla se completan la dirección, la localidad, el precio y el asesor de la punta vendedora.');
   };
-  if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; } };
+
+  /* ----- % de comisión ↔ monto ----- */
+  function fmt2(n) { return (Math.round(n * 100) / 100).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+  function pctAmt(node, pct, precio, mon, onPct) {
+    var P = +precio || 0, m = mon === '$' ? '$' : 'U$S';
+    var a = el('input', { type: 'text', inputmode: 'decimal', 'aria-label': 'Monto de comisión', placeholder: P ? 'Monto' : 'Cargá el precio', value: P && pct != null && pct !== '' ? fmt2(P * pct) : '' });
+    a.disabled = !P;
+    a.addEventListener('change', function () { var n = numIn(a.value); if (n == null || !P) return; onPct(Math.round(n / P * 1e7) / 1e7); });
+    return el('span', { class: 'g-pctamt' }, node, el('span', { class: 'g-amt' }, el('span', { class: 'g-amt-m', text: m }), a));
+  }
+  ladoCard = (function (o) { return function (r, L, side, setL) {
+    var n = o.apply(this, arguments), x = L[side];
+    function upd(f) { var nl = JSON.parse(JSON.stringify(L)); delete nl.legacy; Object.assign(nl[side], f); setL(nl); }
+    var keys = x.nos || inmobRed(x.inmob) ? ['pct'] : side === 'c' ? ['pct', 'pctOtra'] : [];
+    Array.prototype.slice.call(n.querySelectorAll('.g-pctsel')).forEach(function (sp, i) {
+      var k = keys[i]; if (!k) return;
+      var w = pctAmt(el('span'), x[k], r.precio, r.precioMon, function (v) { var f = {}; f[k] = v; upd(f); });
+      sp.replaceWith(w); w.replaceChild(sp, w.firstChild);
+    });
+    return n;
+  }; })(ladoCard);
+  /* ===================== Producción audiovisual ===================== */
+  MOV.audiovisual = { name: 'Producción audiovisual', t: 'cargo' }; MOV_CARGOS.push('audiovisual');
+  var AV_ITEMS = [['fotos', 'Fotos'], ['video', 'Video'], ['dron', 'Dron'], ['tour', 'Tour 360°'], ['plano', 'Plano'], ['reel', 'Reel']];
+  function addDaysStr(s, n) { var d = new Date(String(s).slice(0, 10) + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+  function avInfo(p) {
+    var a = p && p.av; if (!a || !a.on || !(+a.costo > 0)) return null;
+    var f0 = a.fecha || String(p.alta || p.primeraVez || todayStr()).slice(0, 10), fin = addDaysStr(f0, 90), tid = String(p.tid);
+    var cie = G.cierres.filter(function (c) { return c.tokko && String(c.tokko.id) === tid; }).sort(function (x, y) { return String(x.fecha) < String(y.fecha) ? -1 : 1; })[0] || null;
+    var res = G.reservas.filter(function (r) { return r.tokko && String(r.tokko.id) === tid && ['pendiente', 'aceptada', 'cerrada'].indexOf(r.estado) >= 0; }).sort(function (x, y) { return String(x.fecha) < String(y.fecha) ? -1 : 1; })[0] || null;
+    var fv = [cie && (cie.fechaReserva || cie.fecha), res && res.fecha].filter(Boolean).sort()[0] || '';
+    var hoy = todayStr(), estado = fv && fv <= fin ? 'venta' : hoy > fin ? 'deuda' : 'curso';
+    var dias = Math.ceil((new Date(fin + 'T12:00:00') - new Date(hoy + 'T12:00:00')) / 864e5);
+    return { costo: +a.costo, mon: a.mon || '$', fecha: f0, fin: fin, estado: estado, dias: dias, cierre: cie, ase: capAse(p) || p.ase || '', items: a.items || [] };
+  }
+  function avPill(p) {
+    var i = avInfo(p); if (!i) return null;
+    var t = i.estado === 'venta' ? 'Audiovisual: se comparte al cierre' : i.estado === 'deuda' ? 'Audiovisual: en su cuenta corriente' : 'Audiovisual: ' + i.dias + ' días para vender';
+    return el('span', { class: 'tag ' + (i.estado === 'deuda' ? 'warn' : i.estado === 'venta' ? 'ok' : 'muted'), title: money(i.costo, i.mon) + ' · cargado ' + dmy(i.fecha) + ' · vence ' + dmy(i.fin), text: t });
+  }
+  async function avForm(p) {
+    var a = Object.assign({ on: true, mon: '$', fecha: todayStr(), items: [] }, p.av || {});
+    var on = el('input', { type: 'checkbox' }); on.checked = a.on !== false;
+    var mon = el('select', {}, ['$', 'U$S'].map(function (x) { return el('option', { value: x, text: x }); })); mon.value = a.mon || '$';
+    var costo = el('input', { type: 'text', inputmode: 'decimal', value: a.costo != null ? String(a.costo).replace('.', ',') : '' });
+    var fecha = el('input', { type: 'date', value: a.fecha || todayStr() });
+    var its = AV_ITEMS.map(function (x) { var c = el('input', { type: 'checkbox', value: x[0] }); c.checked = (a.items || []).indexOf(x[0]) >= 0; return el('label', { class: 'check sm' }, c, x[1]); });
+    var ok = await showModal('Producción audiovisual · ' + (p.dir || p.titulo || ''), el('div', { class: 'field' },
+      el('label', { class: 'check' }, on, 'El asesor contrató producción audiovisual'),
+      el('div', { class: 'row-wrap' }, its),
+      el('div', { class: 'grid' }, fld('Costo total', el('span', { class: 'g-money-in' }, mon, costo)), fld('Fecha de carga', fecha, 'Desde acá se cuentan 90 días')),
+      el('p', { class: 'sm', text: 'Si no se reserva en 90 días, el costo completo pasa a la cuenta corriente del asesor. Si se reserva antes, se descuenta al cierre: 50/50 con la oficina si su split es 50% o menos; si es mayor, según su split.' })), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar', onclick: function () { closeModal(true); } })]);
+    if (!ok) return;
+    var av = { on: on.checked, mon: mon.value, costo: numIn(costo.value), fecha: validDate(fecha.value) || todayStr(), items: its.map(function (l) { return l.querySelector('input'); }).filter(function (c) { return c.checked; }).map(function (c) { return c.value; }) };
+    gUpd('captaciones', p.id, { av: av }); avSync(true); gRenderView(); toast('Producción audiovisual guardada.');
+  }
+  capRow = (function (o) { return function (p) {
+    var n = o(p); if (window.ASE_MODE) { var pl = avPill(p); if (pl) n.querySelector('.g-cap-main').append(pl); return n; }
+    var pill = avPill(p), b = el('button', { type: 'button', class: 'chip g-av-btn', title: 'Producción audiovisual', onclick: function () { avForm(p); } }, pill ? pill.textContent : '+ Audiovisual');
+    if (pill) b.classList.add(pill.className.indexOf('warn') >= 0 ? 'avwarn' : 'avok');
+    n.querySelector('.g-cap-main').append(b); return n;
+  }; })(capRow);
+  /* a los 90 días sin reservar, el costo pasa a la cuenta corriente del asesor */
+  var _avT = 0;
+  function avSync(force) {
+    if (window.ASE_MODE || !gDb || !canGestion()) return;
+    if (!['captaciones', 'movimientos', 'reservas', 'cierres'].every(function (k) { return gReady[k]; })) return;
+    if (!force && Date.now() - _avT < 60000) return; _avT = Date.now();
+    G.captaciones.forEach(function (p) {
+      var i = avInfo(p), mid = 'av-' + p.id, ex = gGet('movimientos', mid);
+      if (i && i.estado === 'deuda' && i.ase && !ex) gSet('movimientos', mid, { asesorId: i.ase, concepto: 'audiovisual', fecha: i.fin, moneda: i.mon, monto: i.costo, detalle: 'Producción audiovisual · ' + (p.dir || p.titulo || '') + ' (90 días sin reservar)', avCapId: p.id, creado: new Date().toISOString(), creadoPor: 'Automático' });
+      else if (ex && ex.avCapId && (!i || i.estado !== 'deuda')) gDel('movimientos', mid);
+    });
+  }
+  gRefresh = (function (o) { return function () { var r = o.apply(this, arguments); try { avSync(false); } catch (e) {} return r; }; })(gRefresh);
+  /* al cierre: se reparte con la oficina */
+  function avCierre(c, k) {
+    var p = c.tokko ? capOf(c.tokko) : null, i = p ? avInfo(p) : null;
+    if (!i || i.estado !== 'venta' || (i.cierre && i.cierre.id && c.id && i.cierre.id !== c.id)) return null;
+    var mon = c.moneda || 'U$S', cot = +c.cot || +gConf.cot || 1;
+    var C = i.mon === mon ? i.costo : mon === '$' ? i.costo * cot : i.costo / cot;
+    var aid = cParts(c).some(function (x) { return x.id === i.ase; }) ? i.ase : (cParts(c)[0] || {}).id;
+    var px = cParts(c).filter(function (x) { return x.id === aid; })[0], sp = px ? +px.split || 0 : 0.5;
+    var share = sp <= 0.5 ? 0.5 : sp;
+    return { costo: C, costoOrig: i.costo, monOrig: i.mon, ase: aid, sp: sp, share: share, aseAV: C * share, ofiAV: C * (1 - share) };
+  }
+  calcCierre = (function (o) { return function (c) {
+    var k = o(c), av = avCierre(c, k); k.av = av;
+    if (av && av.ase) { if (k.agBy[av.ase]) { k.agBy[av.ase].av = av.aseAV; k.agBy[av.ase].liq -= av.aseAV; } k.aLiquidar -= av.aseAV; k.neto -= av.ofiAV; k.netoUSD = (c.moneda || 'U$S') === '$' ? k.neto / (+c.cot || +gConf.cot || 1) : k.neto; }
+    return k;
+  }; })(calcCierre);
+  updCalcBox = (function (o) { return function () {
+    o.apply(this, arguments);
+    var box = $('#gCalc'); if (!box || !gOpen) return; var d = gRec() || gOpen.draft; if (d.calc === 'excel') return;
+    var k = calcCierre(d); if (!k.av) return;
+    var mon = d.moneda || 'U$S', tb = box.querySelector('tbody'); if (!tb) return;
+    function tr(l, v, cls) { return el('tr', { class: cls || 'det' }, el('td', { text: l }), el('td', { text: '− ' + money(v, mon) })); }
+    var rows = Array.prototype.slice.call(tb.children), afterAse = rows.filter(function (r) { return /^Queda para la oficina/.test(r.textContent); })[0], tot = rows.filter(function (r) { return r.classList.contains('tot'); }).pop();
+    if (afterAse) afterAse.before(tr('   ' + aseName(k.av.ase) + ': su parte de producción audiovisual (' + pctTxt(k.av.share, 0) + ' de ' + money(k.av.costo, mon) + ')', k.av.aseAV));
+    if (tot) { tot.before(tr('Producción audiovisual: parte de la oficina (' + pctTxt(1 - k.av.share, 0) + ')', k.av.ofiAV)); tot.lastChild.textContent = money(k.neto, mon) + (mon === '$' ? ' · ' + usd(toUSD(k.neto, '$', d.cot)) : ''); }
+  }; })(updCalcBox);
+  cierreLiqDe = (function (o) { return function (c, aid) { var k = o(c, aid); if (!k) return k; try { var cc = calcCierre(c), a = cc.agBy[aid]; if (a && a.av) { k.av = a.av; k.neto -= a.av; } } catch (e) {} return k; }; })(cierreLiqDe);
+
+  /* ===================== Valor del listing ===================== */
+  function listingUSD(ps) { return ps.filter(function (p) { return p.estado !== 'baja' && capVenta(p); }).reduce(function (s, p) { var v = capVenta(p); return s + toUSD(v.precio || 0, v.mon); }, 0); }
+  renderCap = (function (o) { return function (box) {
+    o(box);
+    try {
+      var kp = box.querySelector('.kpis'); if (!kp) return;
+      var act = capAct(), n = act.filter(capVenta).length;
+      kp.prepend(kpi('Valor del listing', usd(listingUSD(act)), 'Suma de los precios de venta de las ' + n + ' propiedades publicadas'));
+      box.querySelectorAll('.hbar').forEach(function (b) {
+        var nm = b.querySelector('.hbar-l'); if (!nm) return;
+        var a = G.asesores.filter(function (x) { return aseName(x.id) === nm.textContent; })[0]; if (!a) return;
+        nm.title = 'Listing ' + usd(listingUSD(capDe(a.id)));
+        nm.append(el('span', { class: 'sm g-lst', text: ' · ' + usdK(listingUSD(capDe(a.id))) }));
+      });
+    } catch (e) {}
+  }; })(renderCap);
+  aseResumen = (function (o) { return function (a, s, y) {
+    o(a, s, y);
+    try {
+      var sec = Array.prototype.slice.call(document.querySelectorAll('#gpBody .g-pane .g-sec')).filter(function (x) { var h = x.querySelector('.g-sec-h'); return h && h.textContent === 'Captaciones'; })[0]; if (!sec) return;
+      var ps = capDe(a.id), v = listingUSD(ps), n = ps.filter(function (p) { return p.estado !== 'baja' && capVenta(p); }).length;
+      var avs = ps.map(avInfo).filter(function (i) { return i && i.estado === 'curso'; });
+      sec.append(el('p', {}, 'Valor del listing: ', el('b', { text: usd(v) }), el('span', { class: 'sm', text: ' · ' + n + ' en venta' })),
+        avs.length ? el('p', { class: 'sm', text: 'Producción audiovisual en curso: ' + avs.length + ' (' + avs.map(function (i) { return i.dias + ' días'; }).join(', ') + ' para vender)' }) : null);
+    } catch (e) {}
+  }; })(aseResumen);
+  if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet };
 
   /* ---------- arranque ---------- */
   var gStarted = false;
