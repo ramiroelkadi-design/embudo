@@ -1148,6 +1148,23 @@ div.g-chk select { max-width: 260px; }
 .g-av-btn.avwarn { background: color-mix(in srgb, #d9822b 16%, transparent); color: #a85a12; }
 .g-lst { font-weight: 400; color: var(--ink-2); }
 .g-cap-main > .tag, .g-cap-main > button { justify-self: start; align-self: flex-start; width: fit-content; }
+.gua-wrap { overflow-x: auto; margin-top: 10px; }
+.gua-t { width: 100%; border-collapse: separate; border-spacing: 6px; min-width: 720px; table-layout: fixed; }
+.gua-t th { font-size: 13px; text-align: center; padding: 4px; }
+.gua-t th.today { color: var(--accent); }
+.gua-t tbody th { width: 92px; text-align: left; vertical-align: middle; }
+.gua-t tbody th b, .gua-t tbody th span { display: block; }
+.gua-t td { vertical-align: middle; border: 1px solid var(--line); border-radius: 10px; padding: 8px; height: 64px; background: var(--surface); }
+.gua-t td.gua-na { border: 0; background: transparent; }
+.gua-t td.tom { background: var(--surface-2); }
+.gua-t td.mine { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.gua-t td.past { opacity: .6; }
+.gua-t td select { width: 100%; }
+.gua-t td { text-align: center; }
+.gua-t td > * { display: block; margin: 2px auto; }
+.gua-nav { align-items: center; justify-content: space-between; }
+.gua-rec { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.gua-aviso { margin-bottom: 12px; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -1468,7 +1485,8 @@ div.g-chk select { max-width: 260px; }
     <button type="button" class="vbtn" data-v="res" aria-pressed="false"><span data-icon="receipt" data-size="20"></span><span class="vl">Reservas</span><span id="resN" class="bn alert" hidden></span></button>
     <button type="button" class="vbtn" data-v="cie" aria-pressed="false"><span data-icon="key" data-size="20"></span><span class="vl">Cierres</span></button>
     <button type="button" class="vbtn" data-v="ase" aria-pressed="false"><span data-icon="users" data-size="20"></span><span class="vl">Asesores</span><span id="aseN" class="bn" hidden></span></button>
-    <button type="button" class="vbtn" data-v="cap" aria-pressed="false"><span data-icon="building" data-size="20"></span><span class="vl">Captaciones</span></button>
+    <button type="button" class="vbtn" data-v="gua" aria-pressed="false"><span data-icon="shield" data-size="20"></span><span class="vl">Guardias</span></button>
+  <button type="button" class="vbtn" data-v="cap" aria-pressed="false"><span data-icon="building" data-size="20"></span><span class="vl">Captaciones</span></button>
   <button type="button" class="vbtn" data-v="tas" aria-pressed="false"><span data-icon="calc" data-size="20"></span><span class="vl">Tasaciones</span></button>
   <button type="button" class="vbtn" data-v="cc" aria-pressed="false"><span data-icon="wallet" data-size="20"></span><span class="vl">Cuentas corrientes</span></button>
   </nav>
@@ -2489,7 +2507,7 @@ div.g-chk select { max-width: 260px; }
     var oldBoard = document.querySelector('.board');
     var sl = oldBoard ? oldBoard.scrollLeft : 0;
     $('#stats').textContent = statsText();
-    var PT = { hoy: 'Inicio', tablero: 'Reclutamiento', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores', cc: 'Cuentas corrientes', cap: 'Captaciones', tas: 'Tasaciones' };
+    var PT = { hoy: 'Inicio', tablero: 'Reclutamiento', cal: 'Calendario', onb: 'Onboarding', res: 'Reservas', cie: 'Cierres', ase: 'Asesores', cc: 'Cuentas corrientes', cap: 'Captaciones', tas: 'Tasaciones', gua: 'Guardias' };
     $('#pageTitle').textContent = PT[view] || 'Inicio'; document.title = (PT[view] ? PT[view] + ' · ' : '') + 'Juntos Gestión';
     var su = $('#sideUser'); if (su) su.textContent = me.name ? me.name : '';
     document.body.classList.toggle('v-cal', view === 'cal');
@@ -5143,6 +5161,7 @@ div.g-chk select { max-width: 260px; }
     var venta = (d.operacion || 'venta') === 'venta';
     var locItem = listFind('localidades', d.localidad);
     var opSec = sect('Operación', [
+      resCapBlock(d, L, set),
       fld('Propiedad', inText(d.propiedad, set, 'propiedad', { placeholder: 'Calle y número, piso, depto.', autocomplete: 'off', id: 'gResProp' })),
       el('div', { class: 'grid' },
         fld('Localidad o barrio', listSel('localidades', d.localidad, function (v, it) { set({ localidad: v, juris: (it && it.juris) || jurisDe(v) }); }, 'Elegí la localidad')),
@@ -5150,10 +5169,9 @@ div.g-chk select { max-width: 260px; }
         fld('Operación', inSel(d.operacion || 'venta', Object.keys(OPS).map(function (k) { return [k, OPS[k]]; }), set, 'operacion')),
         venta ? fld('Forma de pago', (function () { var s = el('select', {}, (d.pago ? [] : [el('option', { value: '', text: 'Elegí…', disabled: true })]).concat(['Escritura', 'Crédito', 'Boleto'].map(function (x) { return el('option', { value: x, text: x }); }))); s.value = d.pago || ''; s.addEventListener('change', function () { set({ pago: s.value }); }); return s; })()) : null),
       el('div', { class: 'grid' },
-        fld(venta ? 'Precio ofrecido' : 'Valor del contrato', el('span', { class: 'g-money-in' }, inSel(d.precioMon || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'precioMon', { 'aria-label': 'Moneda del precio' }), inNum(d.precio, set, 'precio', { 'aria-label': 'Precio' })), venta ? null : 'Total del contrato: la comisión se calcula como % de este valor.'),
+        fld(venta ? 'Precio ofrecido' : 'Valor del contrato', el('span', { class: 'g-money-in' }, inSel(d.precioMon || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'precioMon', { 'aria-label': 'Moneda del precio' }), fmtMiles(inNum(d.precio, set, 'precio', { 'aria-label': 'Precio' }))), venta ? null : 'Total del contrato: la comisión se calcula como % de este valor.'),
         d.precioMon === '$' ? fld('Cotización del dólar', inNum(d.cot, set, 'cot', { placeholder: gConf.cot ? fmtN(+gConf.cot) : '' }), 'Para pasar la comisión a dólares. Vacío: usa la de Ajustes.') : null),
       el('div', { class: 'g-lados' }, ladoCard(d, L, 'v', setL), ladoCard(d, L, 'c', setL)),
-      capLinkField(d, L, set),
       comBox(d)]);
     var dinero;
     if (isNew) {
@@ -5610,7 +5628,7 @@ div.g-chk select { max-width: 260px; }
     var aseSec = sect('Asesores', [aseRows.length ? el('div', { class: 'g-arows' }, aseRows) : null, addSel, el('p', { class: 'sm', text: 'Participación: qué parte de la comisión le corresponde a cada uno (suma 100%). Split: el porcentaje que cobra el asesor.' })]);
     var valSec = sect('Valores', [
       el('div', { class: 'grid' },
-        fld('Valor de cierre', el('span', { class: 'g-money-in' }, inSel(d.moneda || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'moneda', { 'aria-label': 'Moneda' }), inNum(d.valor, set, 'valor', { 'aria-label': 'Valor de cierre' })), d.operacion === 'venta' ? null : 'En alquileres, el total del contrato.'),
+        fld('Valor de cierre', el('span', { class: 'g-money-in' }, inSel(d.moneda || 'U$S', [['U$S', 'U$S'], ['$', '$']], set, 'moneda', { 'aria-label': 'Moneda' }), fmtMiles(inNum(d.valor, set, 'valor', { 'aria-label': 'Valor de cierre' }))), d.operacion === 'venta' ? null : 'En alquileres, el total del contrato.'),
         d.puntas !== 'comprador' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'vendedor' : 'locador'), pctAmt(inNum(d.pctVend, set, 'pctVend', null, 100), d.pctVend, d.valor, d.moneda, function (v) { set({ pctVend: v }); })) : null,
         d.puntas !== 'vendedor' || d.compartida === 'red' ? fld('% ' + (d.operacion === 'venta' ? 'comprador' : 'locatario'), pctAmt(inNum(d.pctComp, set, 'pctComp', null, 100), d.pctComp, d.valor, d.moneda, function (v) { set({ pctComp: v }); })) : null,
         d.moneda === '$' ? fld('Dólar del día', inNum(d.cot, set, 'cot'), 'Para pasar a U$S en las métricas') : null),
@@ -5690,7 +5708,7 @@ div.g-chk select { max-width: 260px; }
     $('#gp').classList.toggle('wide', !isNew && (gOpen.tab === 'ops' || gOpen.tab === 'cc'));
     var s = isNew ? null : aseStats(a, y);
     gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
-      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], (aseOnbData(a) || !window.ASE_MODE) ? ['onb', 'Onboarding'] : null, aseCapAvail(a) ? ['cap', 'Captaciones'] : null, ['tas', 'Tasaciones'], ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
+      isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], (aseOnbData(a) || !window.ASE_MODE) ? ['onb', 'Onboarding'] : null, aseCapAvail(a) ? ['cap', 'Captaciones'] : null, ['tas', 'Tasaciones'], ['guard', 'Guardias'], ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
     if (window.ASE_MODE && gOpen.tab === 'datos') gOpen.tab = 'resumen';
     if (isNew || gOpen.tab === 'datos') aseDatos(a, d, isNew);
     else if (gOpen.tab === 'onb') aseOnbPanel(a);
@@ -5698,6 +5716,7 @@ div.g-chk select { max-width: 260px; }
     else if (gOpen.tab === 'ops') aseOps(a, s, y);
     else if (gOpen.tab === 'cc') aseCuenta(a);
     else if (gOpen.tab === 'tas') aseTasTab(a);
+    else if (gOpen.tab === 'guard') aseGuardTab(a);
     else aseResumen(a, s, y);
     if (window.ASE_MODE) gFoot([]);
     else if (isNew) gFoot([el('p', { id: 'gMsg', class: 'hint err', hidden: true, style: 'flex-basis:100%;text-align:right' }), el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closePanels(); } }), el('button', { type: 'button', class: 'btn primary', text: 'Guardar asesor', onclick: saveNewAse })]);
@@ -6399,7 +6418,7 @@ div.g-chk select { max-width: 260px; }
   function applyRoles() {
     var ok = canGestion();
     document.querySelectorAll('.vbtn[data-v=res], .vbtn[data-v=cie], .vbtn[data-v=ase], .vbtn[data-v=cc], .vbtn[data-v=cap], .vbtn[data-v=tas], .vgl-g').forEach(function (b) { b.hidden = !ok; });
-    if (!ok && (view === 'res' || view === 'cie' || view === 'ase' || view === 'cc' || view === 'cap' || view === 'tas')) setView('hoy');
+    if (!ok && (view === 'res' || view === 'cie' || view === 'ase' || view === 'cc' || view === 'cap' || view === 'tas' || view === 'gua')) setView('hoy');
     return ok;
   }
 
@@ -9700,7 +9719,7 @@ div.g-chk select { max-width: 260px; }
       items.push({ done: done, node: el('div', { class: 'g-chk g-chk2' + (done ? ' ok' : '') },
         el('span', { class: 'g-chk-i', text: done ? '✓' : '○' }), el('span', { class: 'g-chk-t', text: txt }), amt ? el('b', { class: 'g-chk-m', text: amt }) : el('span'),
         el('div', { class: 'g-chk-steps' },
-          el('label', { class: 'check sm' }, ce, 'Erica: lo separó y lo entregó', e ? el('span', { class: 'sm', text: ' · ' + when(e) }) : null),
+          el('label', { class: 'check sm' }, ce, 'Erica: liquidado', e ? el('span', { class: 'sm', text: ' · ' + when(e) }) : null),
           el('label', { class: 'check sm' + (cr.disabled ? ' dis' : '') }, cr, 'Ramiro: lo recibió', r ? el('span', { class: 'sm', text: ' · ' + when(r) }) : null))) });
     }
     doble('martHon', 'Honorarios del martillero', money(k.mart, mon));
@@ -9708,7 +9727,7 @@ div.g-chk select { max-width: 260px; }
     if (fact) doble('martIibb', 'Ingresos brutos para el martillero', F ? ars(F.iibb) : '');
     var done = items.filter(function (x) { return x.done; }).length;
     return sect('Checklist de la operación · ' + done + ' de ' + items.length, [el('div', { class: 'g-chks' }, items.map(function (x) { return x.node; })),
-      el('p', { class: 'sm', text: 'Los pagos al martillero tienen doble control: primero Erica marca que lo separó y lo entregó, y después Ramiro confirma que lo recibió.' })]);
+      el('p', { class: 'sm', text: 'Los pagos al martillero tienen doble control: primero Erica marca que lo liquidó y después Ramiro confirma que lo recibió.' })]);
   }
   /* ----- Cierres: volver a reserva ----- */
   async function cieAReserva(c) {
@@ -9758,8 +9777,9 @@ div.g-chk select { max-width: 260px; }
     if (opSec) {
       var fr = opSec.querySelector('input[type=date]') && Array.prototype.slice.call(opSec.querySelectorAll('.field')).filter(function (f) { return /Fecha de reserva/.test(f.textContent); })[0];
       if (fr && d.reservaId) { var inp = fr.querySelector('input'); if (inp) { inp.disabled = true; inp.title = 'Se toma de la reserva vinculada'; } }
-      var extra = el('div', { class: 'grid' }, resLinkField(d, function (f) { gSetter('cierres', function () {})(f); }), capLinkField(d, cieLados(d), function (f) { var g = {}; ['tokko', 'direccion', 'localidad', 'prop', 'juris'].forEach(function (k) { if (k in f) g[k] = f[k]; }); if ('propiedad' in f && !d.direccion) g.direccion = f.propiedad; if ('precio' in f && !+d.valor) { g.valor = f.precio; } if (f.lados && f.lados.v.ase && !(d.asesores || []).length) { var sp0 = splitAt(gGet('asesores', f.lados.v.ase), d.fecha); g.asesores = [{ id: f.lados.v.ase, parte: 1, split: sp0 != null ? sp0 : 0.5 }]; if (!d.puntas) g.puntas = 'vendedor'; } gSetter('cierres', function () { gFill(); })(g); }));
+      var extra = el('div', { class: 'grid' }, resLinkField(d, function (f) { gSetter('cierres', function () {})(f); }), null);
       opSec.append(extra);
+      var hh = opSec.querySelector('.g-sec-h'); if (hh) hh.after(cieCapBlock(d)); else opSec.prepend(cieCapBlock(d));
     }
     if (!isNew) {
       var foot = $('#gpFoot');
@@ -10023,6 +10043,205 @@ div.g-chk select { max-width: 260px; }
     if (!window.ASE_MODE) mainEl.append(el('button', { type: 'button', class: 'g-link-btn sm', text: 'No es la misma propiedad', onclick: function () { d.all.forEach(function (id) { gUpd('captaciones', id, { noDup: true }); }); toast('Listo: se cuentan por separado.'); gRenderView(); } }));
     return n;
   }; })(capRow);
+  /* ===================== Agente + captación (mismo bloque en reservas y cierres) ===================== */
+  function capOpcionesDe(aid, cur) {
+    var hoy = todayStr(), lim = addDaysStr(hoy, -31), pool = aid ? capDe(aid, true) : [];
+    var act = pool.filter(function (p) { return p.estado !== 'baja'; }).sort(function (a, b) { return String(a.dir || a.titulo || '').localeCompare(String(b.dir || b.titulo || '')); });
+    var bajas = pool.filter(function (p) { return p.estado === 'baja' && (String(p.baja || '') >= lim || String(p.tid) === cur); }).sort(function (a, b) { return String(b.baja || '') < String(a.baja || '') ? -1 : 1; });
+    return { act: act, bajas: bajas };
+  }
+  function capBlock(d, aid, onAse, onCap) {
+    var cur = d.tokko && d.tokko.id != null ? String(d.tokko.id) : '';
+    var aSel = el('select', { 'aria-label': 'Agente' }, [el('option', { value: '', text: 'Elegí el agente' })].concat(G.asesores.filter(function (a) { return a.activo !== false || a.id === aid; }).sort(function (x, y) { return aseFull(x).localeCompare(aseFull(y), 'es'); }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); })));
+    aSel.value = aid || '';
+    aSel.addEventListener('change', function () { onAse(aSel.value); });
+    var O = capOpcionesDe(aid, cur);
+    function opt(p) { var rr = capRes(p); return el('option', { value: String(p.tid), text: (p.dir || p.titulo) + (p.loc ? ' · ' + p.loc : '') + (capPrecioTxt(p) ? ' · ' + capPrecioTxt(p) : '') + (p.estado === 'baja' && p.baja ? ' · baja ' + dmy(p.baja) : '') + (rr && (!d.id || rr.id !== d.id) ? ' (ya tiene reserva)' : '') }); }
+    var cSel = el('select', { 'aria-label': 'Captación' }, el('option', { value: '', text: !aid ? 'Elegí primero el agente' : O.act.length || O.bajas.length ? 'Sin vincular a una captación' : 'No tiene captaciones cargadas' }),
+      O.act.length ? el('optgroup', { label: 'Publicadas en Tokko' }, O.act.map(opt)) : null,
+      O.bajas.length ? el('optgroup', { label: 'Dadas de baja en el último mes' }, O.bajas.map(opt)) : null);
+    if (cur && !O.act.concat(O.bajas).some(function (p) { return String(p.tid) === cur; })) cSel.append(el('option', { value: cur, text: (d.tokko.dir || 'Captación ' + (d.tokko.ref || cur)) + ' (vinculada)' }));
+    cSel.value = cur; cSel.disabled = !aid && !cur;
+    cSel.addEventListener('change', function () {
+      if (!cSel.value) { onCap(null); return; }
+      var p = G.captaciones.filter(function (x) { return String(x.tid) === cSel.value; })[0]; if (p) onCap(p);
+    });
+    return el('div', { class: 'grid g-capblk' },
+      fld('Agente', aSel),
+      fld('Captación', el('span', { class: 'row-wrap g-caplink' }, cSel, d.tokko && d.tokko.url ? el('a', { class: 'btn ghost sm-btn', href: d.tokko.url, target: '_blank', rel: 'noopener', text: 'Ver ficha' }) : null), 'Publicadas y dadas de baja en el último mes. Completa dirección, localidad, precio y la punta vendedora.'));
+  }
+  /* reservas: arriba de todo */
+  function resCapBlock(d, L, set) {
+    var aid = L.v.nos && L.v.ase ? L.v.ase : (d.capAse || (L.c.nos ? L.c.ase : '') || '');
+    function setL(nl) { set({ lados: nl, asesorIds: rAseIds(nl), punta: puntaDe(nl) }); }
+    return capBlock(d, aid, function (id) {
+      var nl = JSON.parse(JSON.stringify(L)); delete nl.legacy;
+      if (nl.v.nos) nl.v.ase = id; else if (nl.c.nos && !nl.c.ase) nl.c.ase = id; else { nl.v.nos = true; nl.v.ase = id; nl.v.inmob = ''; }
+      set({ capAse: id, lados: nl, asesorIds: rAseIds(nl), punta: puntaDe(nl) }); gFill();
+    }, function (p) {
+      if (!p) { set({ tokko: null }); gFill(); return; }
+      var who = capAse(p) || aid, f = capFill(d, p, who), nl = JSON.parse(JSON.stringify(L)); delete nl.legacy;
+      nl.v.nos = true; nl.v.ase = who; nl.v.inmob = ''; f.lados = nl; f.asesorIds = rAseIds(nl); f.punta = puntaDe(nl); f.capAse = who;
+      set(f); gFill(); toast('Vinculada a ' + (p.dir || p.ref) + (p.estado === 'baja' ? ' (dada de baja en Tokko)' : '') + ': completé la propiedad y la punta vendedora.');
+    });
+  }
+  /* cierres: mismo bloque */
+  function cieCapBlock(d) {
+    var ps = cParts(d), aid = d.capAse || (ps[0] || {}).id || '';
+    var S = gSetter('cierres', function () { gFill(); });
+    return capBlock(d, aid, function (id) {
+      var g = { capAse: id };
+      if (!ps.length && id) { var sp0 = splitAt(gGet('asesores', id), d.fecha); g.asesores = [{ id: id, parte: 1, split: sp0 != null ? sp0 : 0.5 }]; }
+      S(g);
+    }, function (p) {
+      if (!p) { S({ tokko: null }); return; }
+      var who = capAse(p) || aid, f = capFill({ precio: d.valor, prop: d.prop }, p, who), g = { tokko: f.tokko, prop: f.prop, capAse: who };
+      if (f.propiedad) g.direccion = f.propiedad; if (f.localidad) { g.localidad = f.localidad; g.juris = f.juris; }
+      if (f.precio && !+d.valor) { g.valor = f.precio; g.moneda = f.precioMon; }
+      if (who && !ps.length) { var sp0 = splitAt(gGet('asesores', who), d.fecha); g.asesores = [{ id: who, parte: 1, split: sp0 != null ? sp0 : 0.5 }]; if (!d.puntas) g.puntas = 'vendedor'; }
+      S(g); toast('Vinculada a ' + (p.dir || p.ref) + ': completé la propiedad.');
+    });
+  }
+  /* valores con punto de miles */
+  function fmtMiles(inp) {
+    function f() { var n = numIn(inp.value); if (n != null) inp.value = n.toLocaleString('es-AR', { maximumFractionDigits: 2 }); }
+    f(); inp.addEventListener('blur', f); return inp;
+  }
+  /* perfil del asesor: valor del listing en la pestaña Captaciones */
+  aseCapTab = (function (o) { return function (a) {
+    var self = this, args = arguments;
+    withUnicas(function () { o.apply(self, args); });
+    try {
+      var kp = document.querySelector('#gpBody .kpis'); if (!kp) return;
+      var ps = capUnicas(aseCapList(a)), n = ps.filter(function (p) { return p.estado !== 'baja' && capVenta(p); }).length;
+      kp.prepend(kpi('Valor del listing', usd(listingUSD(ps)), 'Suma de los precios de venta de sus ' + n + ' propiedades publicadas'));
+    } catch (e) {}
+  }; })(aseCapTab);
+  /* ===================== Guardias de la oficina ===================== */
+  G.guardias = []; G_VIEWS.gua = 'guardias';
+  ICONS.shield = '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>';
+  var GUA_MSG = 'Recordá no llegar después ni retirarte antes, no superponer otras actividades, cumplir y respetar el horario, y no almorzar ni tener reuniones en el medio de la guardia.';
+  var GUA_T = { m: { n: 'Mañana', h: '10 a 14 hs', i: '10:00', f: '14:00' }, t: { n: 'Tarde', h: '14 a 18 hs', i: '14:00', f: '18:00' } };
+  function guaTurnos(fecha) { var w = new Date(fecha + 'T12:00:00').getDay(); return w >= 1 && w <= 5 ? ['m', 't'] : w === 6 ? ['m'] : []; }
+  function guaLunes(f) { var d = new Date((f || todayStr()) + 'T12:00:00'), w = d.getDay(); d.setDate(d.getDate() - (w === 0 ? 6 : w - 1)); return d.toISOString().slice(0, 10); }
+  function guaDe(fecha, t) { return G.guardias.filter(function (g) { return g.fecha === fecha && g.turno === t; })[0] || null; }
+  function guaDia(f) { var d = new Date(f + 'T12:00:00'); return ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1); }
+  function guaInicio(g) { return new Date(g.fecha + 'T' + GUA_T[g.turno].i + ':00-03:00'); }
+  function guaHoras(g) { return (guaInicio(g) - new Date()) / 36e5; }
+  function guaDb() { return gDb || (typeof aseDb !== 'undefined' ? aseDb : null); }
+  function guaSet(id, data) {
+    var x = Object.assign({}, data, { id: id }); G.guardias = G.guardias.filter(function (g) { return g.id !== id; }).concat([x]);
+    var db = guaDb(); if (db) return db.collection('guardias').doc(id).set(JSON.parse(JSON.stringify(data))).catch(function () { toast('No se pudo guardar la guardia. Revisá las reglas de Firestore.', { kind: 'error' }); });
+    gSaveLocal('guardias');
+  }
+  function guaDel(id) {
+    G.guardias = G.guardias.filter(function (g) { return g.id !== id; });
+    var db = guaDb(); if (db) return db.collection('guardias').doc(id).delete().catch(function () { toast('No se pudo borrar la guardia.', { kind: 'error' }); });
+    gSaveLocal('guardias');
+  }
+  function guaRefresh() { if (view === 'gua') gRenderView(); if (gOpen && gOpen.t === 'ase' && (gOpen.tab === 'guard' || gOpen.tab === 'resumen') && !$('#gp').hidden) { var a = document.activeElement; if (!(a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))) gFill(); } }
+  function guaGcal(g) {
+    var t = GUA_T[g.turno], d = g.fecha.replace(/-/g, '');
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('Guardia en la oficina (' + t.h + ')') + '&dates=' + d + 'T' + t.i.replace(':', '') + '00/' + d + 'T' + t.f.replace(':', '') + '00&ctz=America/Argentina/Buenos_Aires&details=' + encodeURIComponent(GUA_MSG) + '&location=' + encodeURIComponent('Coldwell Banker Juntos · Olivos');
+  }
+  function guaOutlook(g) {
+    var t = GUA_T[g.turno];
+    return 'https://outlook.office.com/calendar/0/deeplink/compose?path=%2Fcalendar%2Faction%2Fcompose&rru=addevent&subject=' + encodeURIComponent('Guardia en la oficina (' + t.h + ')') + '&startdt=' + encodeURIComponent(g.fecha + 'T' + t.i + ':00-03:00') + '&enddt=' + encodeURIComponent(g.fecha + 'T' + t.f + ':00-03:00') + '&body=' + encodeURIComponent(GUA_MSG) + '&location=' + encodeURIComponent('Coldwell Banker Juntos · Olivos');
+  }
+  function guaTexto(g) { return 'Hola ' + String(g.nombre || '').split(' ')[0] + '! Te recuerdo que tenés guardia en la oficina el ' + guaDia(g.fecha).toLowerCase() + ', de ' + GUA_T[g.turno].h + '. ' + GUA_MSG; }
+  /* grilla de una semana: ase = id del asesor que se anota (modo asesor) o null (oficina: elige a quién) */
+  function guaSemana(lunes, ase) {
+    var dias = []; for (var i = 0; i < 6; i++) dias.push(addDaysStr(lunes, i));
+    var hoy = todayStr();
+    function celda(f, t) {
+      if (guaTurnos(f).indexOf(t) < 0) return el('td', { class: 'gua-na' });
+      var g = guaDe(f, t), past = f < hoy, id = f + '_' + t, mine = g && ase && g.aseId === ase;
+      var cls = 'gua-c' + (g ? ' tom' : '') + (mine ? ' mine' : '') + (past ? ' past' : '');
+      var nodes = [];
+      if (ase) {
+        if (g) nodes.push(el('b', { text: mine ? 'Vos' : (g.nombre || 'Ocupada') }));
+        if (!g && !past) nodes.push(el('button', { type: 'button', class: 'btn sm-btn', text: 'Anotarme', onclick: function () { guaSet(id, { fecha: f, turno: t, aseId: ase, nombre: window.ASE_MODE ? aseFull({ nombre: (gGet('asesores', ase) || {}).nombre || window.ASE_MODE.nombre || '' }) : aseName(ase), creado: new Date().toISOString(), por: meNameSafe() }); toast('Anotado en la guardia del ' + guaDia(f) + ', ' + GUA_T[t].h + '.', { action: { label: 'Agendar', fn: function () { window.open(guaOutlook({ fecha: f, turno: t }), '_blank'); } } }); guaRefresh(); } }));
+        if (mine && !past) {
+          nodes.push(el('a', { class: 'g-link-btn sm', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agendar en Outlook' }));
+          if (guaHoras(g) > 48) nodes.push(el('button', { type: 'button', class: 'g-link-btn sm', text: 'Darme de baja', onclick: function () { guaDel(id); guaRefresh(); } }));
+          else nodes.push(el('span', { class: 'sm', text: 'Para cambiarla, hablá con la oficina' }));
+        }
+      } else {
+        var s = el('select', { 'aria-label': 'Guardia ' + guaDia(f) + ' ' + GUA_T[t].h }, [el('option', { value: '', text: past ? '—' : 'Libre' })].concat(G.asesores.filter(function (a) { return a.activo !== false || (g && g.aseId === a.id); }).sort(function (x, y) { return aseFull(x).localeCompare(aseFull(y), 'es'); }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); })));
+        s.value = g ? g.aseId : '';
+        s.addEventListener('change', function () { if (!s.value) guaDel(id); else guaSet(id, { fecha: f, turno: t, aseId: s.value, nombre: aseName(s.value), creado: new Date().toISOString(), por: meNameSafe() }); guaRefresh(); });
+        nodes.push(s);
+      }
+      return el('td', { class: cls }, nodes);
+    }
+    return el('div', { class: 'gua-wrap' }, el('table', { class: 'gua-t' },
+      el('thead', {}, el('tr', {}, el('th', { text: '' }), dias.map(function (f) { return el('th', { class: f === hoy ? 'today' : '', text: guaDia(f) }); }))),
+      el('tbody', {}, ['m', 't'].map(function (t) { return el('tr', {}, el('th', {}, el('b', { text: GUA_T[t].n }), el('span', { class: 'sm', text: GUA_T[t].h })), dias.map(function (f) { return celda(f, t); })); }))));
+  }
+  function guaNav(key, render) {
+    var lun = gF[key] || guaLunes();
+    return { lun: lun, bar: el('div', { class: 'row-wrap gua-nav' },
+      el('button', { type: 'button', class: 'btn ghost sm-btn', text: '← Semana anterior', onclick: function () { gF[key] = addDaysStr(lun, -7); render(); } }),
+      el('b', { text: 'Semana del ' + guaDia(lun).slice(4) + ' al ' + guaDia(addDaysStr(lun, 5)).slice(4) }),
+      el('button', { type: 'button', class: 'btn ghost sm-btn', text: 'Semana siguiente →', onclick: function () { gF[key] = addDaysStr(lun, 7); render(); } }),
+      lun !== guaLunes() ? el('button', { type: 'button', class: 'g-link-btn', text: 'Esta semana', onclick: function () { gF[key] = ''; render(); } }) : null) };
+  }
+  /* recordatorios: guardias que empiezan en las próximas 48 hs */
+  function guaProximas(hs) { return G.guardias.filter(function (g) { var h = guaHoras(g); return h > 0 && h <= hs; }).sort(function (a, b) { return guaInicio(a) - guaInicio(b); }); }
+  function guaRecordatorios() {
+    var L = guaProximas(72);
+    if (!L.length) return el('p', { class: 'sm', text: 'No hay guardias en los próximos tres días.' });
+    return el('div', { class: 'g-links' }, L.map(function (g) {
+      var a = gGet('asesores', g.aseId) || {}, wa = waLink(a.tel, guaTexto(g)), h = guaHoras(g);
+      function mark(k) { var x = Object.assign({}, g); delete x.id; x[k] = new Date().toISOString(); guaSet(g.id, x); }
+      return el('div', { class: 'gua-rec' },
+        el('span', {}, el('b', { text: (g.nombre || aseName(g.aseId)) + ' · ' + guaDia(g.fecha) + ' ' + GUA_T[g.turno].h }), el('span', { class: 'sm', text: h <= 48 ? ' · faltan ' + Math.round(h) + ' hs' : ' · el aviso va ' + dmy(new Date(guaInicio(g) - 48 * 36e5).toISOString().slice(0, 10)) })),
+        el('span', { class: 'row-wrap' },
+          wa ? el('a', { class: 'btn sm-btn' + (g.avWa ? ' ghost' : ''), href: wa, target: '_blank', rel: 'noopener', text: g.avWa ? 'WhatsApp ✓' : 'WhatsApp', onclick: function () { mark('avWa'); } }) : el('span', { class: 'sm', text: 'Sin teléfono' }),
+          g.mailEl ? el('span', { class: 'tag ok', text: 'Mail automático enviado' }) : a.mail ? el('a', { class: 'btn sm-btn' + (g.avMail ? ' ghost' : ''), href: 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(a.mail) + '&su=' + encodeURIComponent('Recordatorio de guardia · ' + guaDia(g.fecha) + ' ' + GUA_T[g.turno].h) + '&body=' + encodeURIComponent(guaTexto(g)), target: '_blank', rel: 'noopener', text: g.avMail ? 'Mail ✓' : 'Mail', onclick: function () { mark('avMail'); } }) : el('span', { class: 'sm', text: 'Sin mail' })));
+    }));
+  }
+  function renderGua(box) {
+    var N = guaNav('guaW', function () { gRenderView(); });
+    var lun = N.lun, dias = []; for (var i = 0; i < 6; i++) dias.push(addDaysStr(lun, i));
+    var tot = dias.reduce(function (s, f) { return s + guaTurnos(f).length; }, 0), ocup = dias.reduce(function (s, f) { return s + guaTurnos(f).filter(function (t) { return guaDe(f, t); }).length; }, 0);
+    var mes = todayStr().slice(0, 7), byA = {};
+    G.guardias.forEach(function (g) { if (g.fecha.slice(0, 7) === mes) byA[g.aseId] = (byA[g.aseId] || 0) + 1; });
+    var ak = Object.keys(byA).sort(function (a, b) { return byA[b] - byA[a]; });
+    box.replaceChildren(
+      gHead('Guardias', 'Lunes a viernes de 10 a 14 y de 14 a 18 hs · sábados de 10 a 14 hs. Los asesores se anotan desde su perfil.'),
+      el('div', { class: 'kpis' }, kpi('Esta semana', ocup + ' de ' + tot, tot - ocup ? (tot - ocup) + ' turnos libres' : 'Semana completa'), kpi('Guardias en ' + MESES[+mes.slice(5) - 1], String(ak.reduce(function (s, k) { return s + byA[k]; }, 0)), ak.length + ' asesores')),
+      el('section', { class: 'g-sec g-card' }, N.bar, guaSemana(lun, null)),
+      el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Recordatorios (48 hs antes)' }), el('p', { class: 'sm', text: 'Mensaje: «' + GUA_MSG + '»' }), guaRecordatorios()),
+      ak.length ? el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Guardias por asesor en ' + MESES[+mes.slice(5) - 1] }), el('div', { class: 'g-links' }, ak.map(function (k) { return el('div', { class: 'gua-rec' }, el('span', { text: aseName(k) }), el('b', { text: String(byA[k]) })); }))) : null);
+  }
+  gRenderView = (function (o) { return function () { if (view === 'gua') { renderGua($('#gview')); return; } return o.apply(this, arguments); }; })(gRenderView);
+  /* pestaña en el perfil del asesor (también en su portal) */
+  function aseGuardTab(a) {
+    var N = guaNav('guaWa', function () { gFill(); });
+    var mias = G.guardias.filter(function (g) { return g.aseId === a.id && g.fecha >= todayStr(); }).sort(function (x, y) { return guaInicio(x) - guaInicio(y); });
+    gBody([el('div', { class: 'g-pane' },
+      el('p', { class: 'sm', text: 'Anotate en las guardias de la semana. Lunes a viernes de 10 a 14 y de 14 a 18 hs; sábados de 10 a 14 hs. Te llega un recordatorio 48 hs antes.' }),
+      el('p', { class: 'banner-lite', text: GUA_MSG }),
+      N.bar, guaSemana(N.lun, a.id),
+      el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Tus próximas guardias' }),
+        mias.length ? el('div', { class: 'g-links' }, mias.map(function (g) { return el('div', { class: 'gua-rec' }, el('b', { text: guaDia(g.fecha) + ' · ' + GUA_T[g.turno].h }), el('span', { class: 'row-wrap' }, el('a', { class: 'btn ghost sm-btn', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agregar a Outlook' }), el('a', { class: 'btn ghost sm-btn', href: guaGcal(g), target: '_blank', rel: 'noopener', text: 'Google Calendar' }))); })) : el('p', { class: 'hint', text: 'Todavía no te anotaste.' })))]);
+  }
+  /* recordatorio en la plataforma: aviso en el resumen del asesor */
+  aseResumen = (function (o) { return function (a) {
+    var r = o.apply(this, arguments);
+    try {
+      var px = G.guardias.filter(function (g) { return g.aseId === a.id; }).filter(function (g) { var h = guaHoras(g); return h > -4 && h <= 48; }).sort(function (x, y) { return guaInicio(x) - guaInicio(y); })[0];
+      var pane = $('#gpBody .g-pane'); if (px && pane) pane.prepend(el('div', { class: 'banner-lite warn gua-aviso' }, el('span', {}, el('b', { text: 'Guardia ' + guaDia(px.fecha) + ', ' + GUA_T[px.turno].h + '. ' }), GUA_MSG)));
+    } catch (e) {}
+    return r;
+  }; })(aseResumen);
+  /* el portal del asesor escucha las guardias */
+  aseModeStart = (function (o) { return function (db) {
+    o.apply(this, arguments);
+    try { if (db && window.ASE_MODE && !window.ASE_MODE.preview) db.collection('guardias').onSnapshot(function (sn) { G.guardias = sn.docs.map(function (d) { var x = clone(d.data() || {}); x.id = d.id; return x; }); gReady.guardias = true; guaRefresh(); }, function () {}); } catch (e) {}
+  }; })(aseModeStart);
+  gRefresh = (function (o) { return function () { var r = o.apply(this, arguments); try { if (view === 'gua' && !document.querySelector('#gview select:focus')) gRenderView(); } catch (e) {} return r; }; })(gRefresh);
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
