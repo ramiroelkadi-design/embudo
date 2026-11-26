@@ -9980,12 +9980,23 @@ div.g-chk select { max-width: 260px; }
       /* mismo inmueble publicado a la vez: los períodos de publicación se superponen */
       var groups = [];
       L.forEach(function (p) {
-        var g = groups.filter(function (g) { return g.some(function (q) { return desde(p) <= hasta(q) && desde(q) <= hasta(p); }); })[0];
+        var g = groups.filter(function (g) { return g.some(function (q) { return desde(p) <= hasta(q) && desde(q) <= hasta(p) && capMismos(p, q); }); })[0];
         if (g) g.push(p); else groups.push([p]);
       });
       groups.forEach(function (g) { if (g.length < 2) return; var main = g.filter(function (p) { return p.estado !== 'baja'; })[0] || g[0]; g.forEach(function (p) { m[p.id] = { main: main.id, all: g.map(function (q) { return q.id; }) }; }); });
     });
     _dupC = { k: k, m: m }; return m;
+  }
+  /* además de la dirección: mismo precio, misma superficie y mismos ambientes (solo puede cambiar el barrio o el título) */
+  function capMismos(p, q) {
+    function cerca(a, b, tol) { a = +a || 0; b = +b || 0; return !a || !b || Math.abs(a - b) / Math.max(a, b) <= tol; }
+    var vp = capVenta(p), vq = capVenta(q);
+    if (!!vp !== !!vq) return false;
+    if (vp && vq && !cerca(toUSD(vp.precio || 0, vp.mon), toUSD(vq.precio || 0, vq.mon), 0.01)) return false;
+    if (!vp && JSON.stringify((p.ops || []).map(function (o) { return o.op + o.mon + o.precio; })) !== JSON.stringify((q.ops || []).map(function (o) { return o.op + o.mon + o.precio; }))) return false;
+    if (!cerca(capM2(p), capM2(q), 0.03)) return false;
+    if (p.amb && q.amb && +p.amb !== +q.amb) return false;
+    return true;
   }
   function capEsDup(p) { var d = capDupMap()[p.id]; return !!(d && d.main !== p.id); }
   function capUnicas(list) { return list.filter(function (p) { return !capEsDup(p); }); }
