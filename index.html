@@ -1184,6 +1184,8 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
 .notif-cfg { border-collapse: collapse; width: 100%; font-size: 14px; }
 .notif-cfg th, .notif-cfg td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
 .notif-cfg td.c, .notif-cfg th:not(:first-child) { text-align: center; }
+.g-liqm { display: grid; gap: 10px; }
+.g-liqm > label.check { display: flex; gap: 10px; align-items: flex-start; justify-content: flex-start; text-align: left; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -9514,7 +9516,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     }
     Object.keys(agBy).forEach(function (id) { agBy[id].abao = abao / 2 * agBy[id].parte; agBy[id].liq = agBy[id].bruto - agBy[id].abao; });
     /* Coldwell: si se factura, la parte de la regalía sobre lo facturado por la oficina se paga por transferencia con IVA; el resto, en efectivo */
-    var franT = factMon ? factMon * rate('fran') : 0, franIva = franT * 0.21, franE = fran - franT;
+    var franT = F && factMon ? factMon * rate('fran') : 0, franIva = franT * 0.21, franE = fran - franT;
     var neto = bruto - ag - mart - fran - franIva - imp - abao / 2;
     function u(v) { return mon === '$' ? v / cot : v; }
     return { bruto: bruto, base: base, red: red, total2: total2, pvAll: pvAll, pcAll: pcAll, agentes: ag, agBy: agBy, mart: mart, fran: fran, franE: franE, franT: franT, franIva: franIva, imp: imp, abao: abao, juris: juris, aLiquidar: ag - abao / 2, neto: neto, factMon: factMon, F: F, brutoUSD: u(bruto), netoUSD: u(neto), facturadoUSD: u(factMon) };
@@ -9717,8 +9719,8 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     function simple(key, txt, amt) {
       var on = key === 'liq' ? !!d.liquidado : !!ch[key], w = key === 'liq' ? d.liquidadoEl : ch[key];
       var cb = el('input', { type: 'checkbox' }); cb.checked = on;
-      cb.addEventListener('change', function () {
-        if (key === 'liq') { set({ liquidado: cb.checked, liquidadoEl: cb.checked ? todayStr() : '' }); gFill(); return; }
+      cb.addEventListener('change', async function () {
+        if (key === 'liq') { if (cb.checked) { var okL = await liqConfirm(d); if (!okL) cb.checked = false; gFill(); return; } set({ liquidado: false, liquidadoEl: '' }); gFill(); return; }
         var nc = Object.assign({}, d.check || {}); nc[key] = cb.checked ? stamp() : ''; save(nc);
       });
       items.push({ done: on, node: el('label', { class: 'g-chk' + (on ? ' ok' : '') }, cb, el('span', { class: 'g-chk-t', text: txt }), amt ? el('b', { class: 'g-chk-m', text: amt }) : el('span'), on && w ? el('span', { class: 'sm', text: when(w) }) : el('span')) });
@@ -10384,13 +10386,15 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
           el('button', { type: 'button', class: 'g-link-btn sm', text: 'Configurar', onclick: function () { pop.remove(); notifConfig(); } }))),
       L.length ? el('div', { class: 'notif-list' }, L.slice(0, 40).map(function (x) {
         var nuevo = x.t > e.visto && !e.leidas[x.id];
-        return el('button', { type: 'button', class: 'notif-it' + (nuevo ? ' new' : ''), onclick: function () { var le = Object.assign({}, notifEstado().leidas); le[x.id] = 1; notifSave({ leidas: le }); pop.remove(); notifBell(); try { x.open(); } catch (er) {} } },
+        return el('button', { type: 'button', class: 'notif-it' + (nuevo ? ' new' : ''), onmouseenter: function (ev) { if (ev.currentTarget.classList.contains('new')) { ev.currentTarget.classList.remove('new'); notifLeer(x.id); } }, onclick: function () { var le = Object.assign({}, notifEstado().leidas); le[x.id] = 1; notifSave({ leidas: le }); pop.remove(); notifBell(); try { x.open(); } catch (er) {} } },
           el('span', { class: 'notif-dot' }), el('span', { class: 'notif-tx' }, el('b', { text: x.txt }), x.sub ? el('span', { class: 'sm', text: x.sub }) : null), el('span', { class: 'sm notif-t', text: relTxt(x.t) }));
       })) : el('p', { class: 'hint', style: 'padding:14px', text: 'No tenés notificaciones de los últimos 30 días.' }));
     document.body.append(pop);
     var r = _nb.getBoundingClientRect(); pop.style.top = (r.bottom + 6) + 'px'; pop.style.right = Math.max(8, innerWidth - r.right) + 'px';
     setTimeout(function () { document.addEventListener('click', function f(ev) { if (!pop.contains(ev.target)) { pop.remove(); document.removeEventListener('click', f); } }); }, 0);
   }
+  var _nlq = {}, _nlt = 0;
+  function notifLeer(id) { _nlq[id] = 1; clearTimeout(_nlt); _nlt = setTimeout(function () { var le = Object.assign({}, notifEstado().leidas, _nlq); _nlq = {}; notifSave({ leidas: le }); notifBell(); }, 700); }
   function relTxt(t) { var h = (Date.now() - new Date(t)) / 36e5; if (h < 1) return 'recién'; if (h < 24) return 'hace ' + Math.round(h) + ' h'; var d = Math.round(h / 24); return d === 1 ? 'ayer' : 'hace ' + d + ' días'; }
   async function notifConfig() {
     var users = G.notiflect.filter(function (u) { return u.key; }).sort(function (a, b) { return String(a.nombre || a.key).localeCompare(String(b.nombre || b.key), 'es'); });
@@ -10414,6 +10418,60 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     gSaveConf({ notif: conf }); toast('Listo: notificaciones configuradas.'); notifBell();
   }
   gRefresh = (function (o) { return function () { var r = o.apply(this, arguments); try { notifRegistrar(); notifBell(); } catch (e) {} return r; }; })(gRefresh);
+  /* ===================== Mail de liquidación al asesor ===================== */
+  function f2n(v) { return (Math.round((v || 0) * 100) / 100).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function liqItemsDe(c, descDeuda) {
+    var k = calcCierre(c), mon = c.moneda || 'U$S', F = k.F, items = [];
+    var medio = { efectivo: 'lo entregó en efectivo', transf: 'llegó por transferencia a los martilleros' };
+    cParts(c).forEach(function (x) {
+      var a = gGet('asesores', x.id), g = k.agBy[x.id]; if (!a || !g) return;
+      var L = [{ c: 'Comisión por promoción · ' + (c.direccion || 'operación') + (cParts(c).length > 1 ? ' (' + pctTxt(g.parte, 0) + ' de la operación)' : '') + ' · split ' + pctTxt(+x.split || 0, 0), m: g.bruto }];
+      if (g.abao) L.push({ c: 'ABAO (su mitad)', m: -g.abao });
+      if (g.av) L.push({ c: 'Producción audiovisual (su parte)', m: -g.av });
+      var deuda = 0;
+      if (descDeuda && descDeuda[x.id]) { deuda = descDeuda[x.id]; L.push({ c: 'Deuda de su cuenta corriente', m: -deuda }); }
+      var tot = L.reduce(function (s, l) { return s + l.m; }, 0);
+      var iva = F ? F.inv.map(function (v) { var st = (c.check || {})['iva_' + v.p]; return 'IVA del ' + (v.p === 'v' ? 'vendedor' : 'comprador') + ': $ ' + f2n(v.iva) + ' · ' + (st && st.medio ? medio[st.medio] : 'pendiente de entregar'); }) : [];
+      items.push({ aseId: x.id, nombre: a.nombre || aseFull(a), mail: a.mail || '', mon: mon, prop: c.direccion || '', fecha: c.fecha || '', lineas: L, total: tot, iva: iva });
+    });
+    return items;
+  }
+  async function liqConfirm(c) {
+    var mon = c.moneda || 'U$S', deudas = {}, chks = {};
+    cParts(c).forEach(function (x) { var s = saldos(x.id)[mon] || 0; if (s < -0.5) deudas[x.id] = -s; });
+    var mail = el('input', { type: 'checkbox' }); mail.checked = true;
+    var box = el('div', {});
+    function draw() {
+      var sel = {}; Object.keys(chks).forEach(function (id) { if (chks[id].checked) sel[id] = deudas[id]; });
+      box.replaceChildren.apply(box, liqItemsDe(c, sel).map(function (it) {
+        return el('div', { class: 'g-fact-card' }, el('b', { text: it.nombre + (it.mail ? ' · ' + it.mail : ' · sin mail cargado') }),
+          el('table', { class: 'g-mini calc liq' }, el('tbody', {}, it.lineas.map(function (l) { return el('tr', { class: l.m < 0 ? 'det' : '' }, el('td', { text: l.c }), el('td', { text: (l.m < 0 ? '− ' : '') + it.mon + ' ' + f2n(Math.abs(l.m)) })); }),
+            el('tr', { class: 'tot' }, el('td', { text: 'Total a cobrar' }), el('td', { text: it.mon + ' ' + f2n(it.total) })))),
+          it.iva.length ? el('p', { class: 'sm', text: it.iva.join(' · ') }) : null);
+      }));
+    }
+    var deu = Object.keys(deudas).map(function (id) { var cb = el('input', { type: 'checkbox' }); chks[id] = cb; cb.addEventListener('change', draw); return el('label', { class: 'check' }, cb, 'Descontar lo que ' + aseName(id) + ' debe en su cuenta corriente (' + money(deudas[id], mon) + ')'); });
+    draw();
+    var ok = await showModal('Liquidación al asesor', el('div', { class: 'g-liqm' }, box, deu, el('label', { class: 'check' }, mail, 'Mandarle el detalle por mail')), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Marcar como liquidado', onclick: function () { closeModal(true); } })]);
+    if (!ok) return false;
+    var sel = {}; Object.keys(chks).forEach(function (id) { if (chks[id].checked) sel[id] = deudas[id]; });
+    var f = { liquidado: true, liquidadoEl: todayStr() };
+    if (mail.checked) { f.liqMail = { t: new Date().toISOString(), por: meNameSafe(), items: liqItemsDe(c, sel) }; f.liqMailEnviado = ''; }
+    Object.keys(sel).forEach(function (id) { gSet('movimientos', gNewId('movimientos'), { asesorId: id, concepto: 'otro-credito', fecha: todayStr(), moneda: mon, monto: Math.round(sel[id] * 100) / 100, detalle: 'Deuda descontada de la liquidación · ' + (c.direccion || ''), cierreId: c.id, creado: new Date().toISOString(), creadoPor: meNameSafe() }); });
+    gUpd('cierres', c.id, f);
+    if (mail.checked) toast(liqItemsDe(c, sel).some(function (i) { return i.mail; }) ? 'Liquidado. El mail con el detalle sale en unos minutos.' : 'Liquidado. Ojo: el asesor no tiene mail cargado.');
+    return true;
+  }
+  /* sacar el valor de los campos antes de cerrar o redibujar el panel: así Chrome no ofrece guardar un domicilio */
+  function blankInputs(root) { if (!root) return; root.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]), textarea').forEach(function (i) { try { i.value = ''; } catch (e) {} }); }
+  gBody = (function (o) { return function (nodes) {
+    var b = $('#gpBody'), keep = (nodes || []).filter(Boolean);
+    if (b) b.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]), textarea').forEach(function (i) { if (!keep.some(function (n) { return n.contains && n.contains(i); })) try { i.value = ''; } catch (e) {} });
+    return o.apply(this, arguments);
+  }; })(gBody);
+  closePanels = (function (o) { return function () { blankInputs($('#gpBody')); return o.apply(this, arguments); }; })(closePanels);
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
