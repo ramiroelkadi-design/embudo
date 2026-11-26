@@ -7346,7 +7346,7 @@ div.g-chk select { max-width: 260px; }
     var srt = function (k) { return function (x, z) { return String(z[k] || z.primeraVez) < String(x[k] || x.primeraVez) ? -1 : 1; }; };
     var resv = G.reservas.filter(function (r) { return r.tokko && (r.tokko.ase === a.id || (!r.tokko.ase && (r.asesorIds || []).indexOf(a.id) >= 0)); });
     gBody([el('div', { class: 'g-pane' }, kp, chart,
-      window.ASE_MODE ? null : m2Section(all),
+      null,
       el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Publicadas en Tokko (' + act.length + ')' }), act.length ? el('div', { class: 'g-cap-list mini' }, act.slice().sort(srt('alta')).map(capRow)) : el('p', { class: 'hint', text: 'No tiene captaciones publicadas.' })),
       bajas.length ? el('section', { class: 'g-sec' }, el('h3', { class: 'g-sec-h', text: 'Historial (' + bajas.length + ')' }), el('div', { class: 'g-cap-list mini' }, bajas.slice().sort(srt('baja')).map(capRow))) : null,
       resv.length && !window.ASE_MODE ? el('p', { class: 'sm', text: resv.length + ' reservas vinculadas a sus captaciones.' }) : null,
@@ -10252,6 +10252,17 @@ div.g-chk select { max-width: 260px; }
     try { if (db && window.ASE_MODE && !window.ASE_MODE.preview) db.collection('guardias').onSnapshot(function (sn) { G.guardias = sn.docs.map(function (d) { var x = clone(d.data() || {}); x.id = d.id; return x; }); gReady.guardias = true; guaRefresh(); }, function () {}); } catch (e) {}
   }; })(aseModeStart);
   gRefresh = (function (o) { return function () { var r = o.apply(this, arguments); try { if (view === 'gua' && !document.querySelector('#gview select:focus')) gRenderView(); } catch (e) {} return r; }; })(gRefresh);
+
+  /* que Chrome no ofrezca guardar domicilios: los campos de la plataforma no son formularios de dirección */
+  (function () {
+    function off(root) {
+      (root.querySelectorAll ? root.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file]):not([data-ac]), textarea:not([data-ac])') : []).forEach(function (i) {
+        if (i.type === 'password' || i.type === 'email' && i.closest('#login, .login')) return;
+        i.setAttribute('autocomplete', 'off-juntos'); i.setAttribute('data-ac', '1'); i.setAttribute('data-lpignore', 'true'); i.setAttribute('data-form-type', 'other');
+      });
+    }
+    try { off(document); new MutationObserver(function (ms) { ms.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) { if (/^(INPUT|TEXTAREA)$/.test(n.tagName)) off(n.parentNode || document); else off(n); } }); }); }).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+  })();
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
