@@ -9494,9 +9494,11 @@ div.g-chk select { max-width: 260px; }
       imp = factMon * rate('iibb'); abao = juris === 'PBA' && (c.operacion || 'venta') === 'venta' ? factMon * rate('abao') : 0;
     }
     Object.keys(agBy).forEach(function (id) { agBy[id].abao = abao / 2 * agBy[id].parte; agBy[id].liq = agBy[id].bruto - agBy[id].abao; });
-    var neto = bruto - ag - mart - fran - imp - abao / 2;
+    /* Coldwell: si se factura, la parte de la regalía sobre lo facturado por la oficina se paga por transferencia con IVA; el resto, en efectivo */
+    var franT = factMon ? factMon * rate('fran') : 0, franIva = franT * 0.21, franE = fran - franT;
+    var neto = bruto - ag - mart - fran - franIva - imp - abao / 2;
     function u(v) { return mon === '$' ? v / cot : v; }
-    return { bruto: bruto, base: base, red: red, total2: total2, pvAll: pvAll, pcAll: pcAll, agentes: ag, agBy: agBy, mart: mart, fran: fran, imp: imp, abao: abao, juris: juris, aLiquidar: ag - abao / 2, neto: neto, factMon: factMon, F: F, brutoUSD: u(bruto), netoUSD: u(neto), facturadoUSD: u(factMon) };
+    return { bruto: bruto, base: base, red: red, total2: total2, pvAll: pvAll, pcAll: pcAll, agentes: ag, agBy: agBy, mart: mart, fran: fran, franE: franE, franT: franT, franIva: franIva, imp: imp, abao: abao, juris: juris, aLiquidar: ag - abao / 2, neto: neto, factMon: factMon, F: F, brutoUSD: u(bruto), netoUSD: u(neto), facturadoUSD: u(factMon) };
   };
   updCalcBox = (function (o) { return function () {
     var box = $('#gCalc'); if (!box || !gOpen) return;
@@ -9522,7 +9524,13 @@ div.g-chk select { max-width: 260px; }
     row('Queda para la oficina', k.bruto - k.agentes, 'sum');
     sub('Descuentos de la oficina');
     row('Martillero (' + pctTxt(rate('mart'), 1) + ' de la comisión bruta)', k.mart, 'det', true);
-    row('Coldwell Banker (' + pctTxt(rate('fran'), 1) + ' de la comisión bruta)', k.fran, 'det', true);
+    if (k.franT) {
+      var m2 = function (v) { return mon + ' ' + (v || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+      var r2 = function (l, v, cls) { rows.push(el('tr', { class: cls || 'det' }, el('td', { text: l }), el('td', { text: v == null ? '' : '− ' + m2(v) }))); };
+      r2('Coldwell Banker: ' + pctTxt(rate('fran'), 1) + ' de la comisión bruta = ' + m2(k.fran) + ' (se factura: se divide en dos)', null);
+      r2('   Coldwell efectivo: ' + m2(k.fran) + ' − ' + m2(k.franT), k.franE);
+      r2('   Coldwell transferencia: ' + pctTxt(rate('fran'), 1) + ' de ' + m2(k.factMon) + ' facturado = ' + m2(k.franT) + ' + IVA 21% ' + m2(k.franIva), k.franT + k.franIva);
+    } else row('Coldwell Banker (' + pctTxt(rate('fran'), 1) + ' de la comisión bruta)', k.fran, 'det', true);
     if (k.imp) row('Ingresos brutos (' + pctTxt(rate('iibb'), 1) + ' de lo facturado)', k.imp, 'det', true);
     if (k.abao) row('ABAO (' + pctTxt(rate('abao'), 0) + ' de lo facturado): mitad de la oficina', k.abao / 2, 'det', true);
     var usdLine = mon === '$' ? ' · ' + usd(toUSD(k.neto, '$', d.cot)) : '';
@@ -9722,6 +9730,8 @@ div.g-chk select { max-width: 260px; }
           el('label', { class: 'check sm' }, ce, 'Erica: liquidado', e ? el('span', { class: 'sm', text: ' · ' + when(e) }) : null),
           el('label', { class: 'check sm' + (cr.disabled ? ' dis' : '') }, cr, 'Ramiro: lo recibió', r ? el('span', { class: 'sm', text: ' · ' + when(r) }) : null))) });
     }
+    if (k.franT) { var c2 = function (v) { return mon + ' ' + (v || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }; simple('cbE', 'Coldwell efectivo', c2(k.franE)); simple('cbT', 'Coldwell transferencia (' + c2(k.franT) + ' + IVA)', c2(k.franT + k.franIva)); }
+    else simple('cb', 'Pago a Coldwell Banker', money(k.fran, mon));
     doble('martHon', 'Honorarios del martillero', money(k.mart, mon));
     if (fact) doble('martIva', 'IVA para el martillero', F ? ars(F.ivaSaldo) + ' a pagar' : '');
     if (fact) doble('martIibb', 'Ingresos brutos para el martillero', F ? ars(F.iibb) : '');
