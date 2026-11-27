@@ -1172,7 +1172,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
 .hoy-cie .g-table { margin-top: 6px; }
 .notif-btn { position: relative; }
 .notif-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #e5484d; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
-.notif-pop { position: fixed; z-index: 80; width: min(420px, calc(100vw - 16px)); max-height: min(560px, 75vh); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
+.notif-pop { position: fixed; z-index: 3000; width: min(420px, calc(100vw - 16px)); max-height: min(560px, 75vh); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.18); }
 .notif-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); }
 .notif-it { display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: start; width: 100%; text-align: left; padding: 10px 14px; border: 0; border-bottom: 1px solid var(--line); background: transparent; cursor: pointer; color: inherit; font: inherit; }
 .notif-it:hover { background: var(--surface-2); }
@@ -1189,6 +1189,17 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
 .gua-t td.conf { border-color: #d9822b; background: color-mix(in srgb, #d9822b 10%, var(--surface)); }
 .gua-warn { color: #a85a12; }
 .ob-card.paused { opacity: .85; }
+.ss-pop { position: fixed; z-index: 3000; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,.18); padding: 6px; display: grid; gap: 6px; }
+.ss-in { width: 100%; min-height: 38px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: inherit; font: inherit; }
+.ss-list { overflow: auto; overscroll-behavior: contain; }
+.ss-it { padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; line-height: 1.3; }
+.ss-it:hover, .ss-it.act { background: var(--surface-2); }
+.ss-it.sel { font-weight: 600; color: var(--accent); }
+.ss-it.dis { opacity: .45; cursor: default; }
+.ss-grp { padding: 8px 10px 4px; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); }
+.ss-none { padding: 10px; color: var(--ink-2); font-size: 14px; }
+.gua-t td.hl { box-shadow: inset 0 0 0 2px var(--accent); }
+.gua-t td.dim { opacity: .4; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -4995,6 +5006,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     var F = [['activos', 'Activos'], ['atras', 'Bajo objetivo']].concat(Object.keys(teamNames).sort().map(function (t) { return ['team:' + t, t]; })).concat([['pausa', 'En pausa'], ['todos', 'Todos'], ['bajas', 'Dados de baja']]);
     function inF(a, f) { if (f.indexOf('team:') === 0) return a.activo !== false && a.team === f.slice(5); return f === 'pausa' ? a.activo !== false && asePausado(a) : f === 'activos' ? a.activo !== false : f === 'bajas' ? a.activo === false : f === 'atras' ? a.activo !== false && (stats[a.id].status === 'bad' || stats[a.id].status === 'warn') : true; }
     var list = all.filter(function (a) { return inF(a, gF.aseF); });
+    if (gF.aseQ) { var qq = norm(gF.aseQ); list = list.filter(function (a) { return norm([aseFull(a), a.nombre, a.apodo, a.team, a.mail, a.tel].concat(a.alias || []).join(' ')).indexOf(qq) >= 0; }); }
     var RANK = { bad: 0, warn: 1, ok: 2, none: 3, done: 4 };
     list.sort(function (a, b) {
       var sa = stats[a.id], sb = stats[b.id];
@@ -5009,6 +5021,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
         return el('button', { type: 'button', class: 'chip' + (gF.aseF === f[0] ? ' on' : ''), 'aria-pressed': String(gF.aseF === f[0]), onclick: function () { gF.aseF = f[0]; gKeepF(); renderAse(box); } }, f[1], el('span', { class: 'n', text: n }));
       })),
       el('div', { class: 'onb-opts' },
+        searchBox(gF.aseQ, 'Buscar asesor, equipo, mail…', function (v) { gF.aseQ = v; keepFocusRender(function () { renderAse(box); }); }),
         el('div', { class: 'views mini', role: 'group', 'aria-label': 'Vista' }, [['tarjetas', 'Tarjetas'], ['tabla', 'Tabla']].map(function (v) { return el('button', { type: 'button', class: 'vbtn', 'aria-pressed': String(gF.aseMode === v[0]), onclick: function () { gF.aseMode = v[0]; gKeepF(); renderAse(box); }, text: v[1] }); })),
         selectEl('Ordenar', [['ritmo', 'Más atrasados primero'], ['fact', 'Mayor facturación'], ['nombre', 'Nombre'], ['antig', 'Más antigüedad']], gF.aseSort, function (v) { gF.aseSort = v; gKeepF(); renderAse(box); })));
     var body;
@@ -10202,7 +10215,8 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
       if (guaTurnos(f).indexOf(t) < 0) return el('td', { class: 'gua-na' });
       var g = guaDe(f, t), past = f < hoy, id = f + '_' + t, mine = g && ase && g.aseId === ase;
       var gA = g ? gGet('asesores', g.aseId) : null, conf = g && !past && gA && !aseGuardiaOK(gA, f);
-      var cls = 'gua-c' + (g ? ' tom' : '') + (mine ? ' mine' : '') + (past ? ' past' : '') + (conf ? ' conf' : '');
+      var gq = !ase && gF.guaQ ? norm(gF.guaQ) : '', hit = gq && g && norm(g.nombre || aseName(g.aseId)).indexOf(gq) >= 0;
+      var cls = 'gua-c' + (g ? ' tom' : '') + (mine ? ' mine' : '') + (past ? ' past' : '') + (conf ? ' conf' : '') + (gq ? (hit ? ' hl' : ' dim') : '');
       var nodes = [];
       if (ase) {
         if (g) nodes.push(el('b', { text: mine ? 'Vos' : (g.nombre || 'Ocupada') }));
@@ -10263,7 +10277,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
         return C.length ? el('section', { class: 'g-sec g-card gua-confs' }, el('h3', { class: 'g-sec-h', text: 'Guardias para reasignar' }), el('p', { class: 'sm', text: 'Estas guardias están anotadas a asesores en pausa o dados de baja.' }),
           el('div', { class: 'g-links' }, C.map(function (g) { var a = gGet('asesores', g.aseId); return el('div', { class: 'gua-rec' }, el('span', {}, el('b', { text: guaDia(g.fecha) + ' · ' + GUA_T[g.turno].h }), el('span', { class: 'sm', text: ' · ' + aseName(g.aseId) + (a.activo === false ? ' (dado de baja)' : ' (en pausa)') })), el('button', { type: 'button', class: 'btn sm-btn', text: 'Liberar', onclick: function () { guaDel(g.id); gRenderView(); } })); }))) : null;
       })(),
-      el('section', { class: 'g-sec g-card' }, N.bar, guaSemana(lun, null)),
+      el('section', { class: 'g-sec g-card' }, el('div', { class: 'row-wrap', style: 'justify-content:space-between;gap:10px' }, N.bar, searchBox(gF.guaQ, 'Buscar asesor en la grilla', function (v) { gF.guaQ = v; keepFocusRender(function () { gRenderView(); }); })), guaSemana(lun, null)),
       el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Recordatorios (48 hs antes)' }), el('p', { class: 'sm', text: 'Mensaje: «' + GUA_MSG + '»' }), guaRecordatorios()),
       ak.length ? el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Guardias por asesor en ' + MESES[+mes.slice(5) - 1] }), el('div', { class: 'g-links' }, ak.map(function (k) { return el('div', { class: 'gua-rec' }, el('span', { text: aseName(k) }), el('b', { text: String(byA[k]) })); }))) : null);
   }
@@ -10592,6 +10606,70 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     try { if (!isNew && !window.ASE_MODE) { var row = Array.prototype.slice.call(document.querySelectorAll('#gpBody .row-wrap')).filter(function (x) { return /Eliminar de la nómina/.test(x.textContent); })[0]; if (row) row.prepend(el('button', { type: 'button', class: 'btn', text: 'Unificar con otro perfil…', onclick: function () { aseUnificar(gGet('asesores', a.id) || a); } })); } } catch (e) {}
     return r;
   }; })(aseDatos);
+  /* ===================== Desplegables con buscador ===================== */
+  (function () {
+    var MIN = 8, pop = null;
+    function nz(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function close(refocus) { if (!pop) return; var s = pop.__sel; pop.remove(); pop = null; document.removeEventListener('pointerdown', outside, true); if (refocus && s) try { s.focus({ preventScroll: true }); } catch (e) {} }
+    function closeNow() { close(false); }
+    function outside(e) { if (pop && !pop.contains(e.target)) close(false); }
+    function open(s, initial) {
+      close(false);
+      var r = s.getBoundingClientRect(), inp = el('input', { type: 'search', class: 'ss-in', placeholder: 'Buscar…', 'aria-label': 'Buscar en la lista', autocomplete: 'off' });
+      var list = el('div', { class: 'ss-list', role: 'listbox' }), items = [], act = -1;
+      pop = el('div', { class: 'ss-pop' }, inp, list); pop.__sel = s;
+      function pick(o) { if (s.value !== o.value) { s.value = o.value; s.dispatchEvent(new Event('input', { bubbles: true })); s.dispatchEvent(new Event('change', { bubbles: true })); } close(true); }
+      function draw() {
+        var q = nz(inp.value).split(/\s+/).filter(Boolean); list.replaceChildren(); items = []; act = -1;
+        Array.prototype.forEach.call(s.children, function (ch) {
+          var opts = ch.tagName === 'OPTGROUP' ? Array.prototype.slice.call(ch.children) : [ch];
+          var vis = opts.filter(function (o) { var t = nz(o.textContent + ' ' + (ch.tagName === 'OPTGROUP' ? ch.label : '')); return !o.hidden && q.every(function (w) { return t.indexOf(w) >= 0; }); });
+          if (!vis.length) return;
+          if (ch.tagName === 'OPTGROUP') list.append(el('div', { class: 'ss-grp', text: ch.label }));
+          vis.forEach(function (o) {
+            var it = el('div', { class: 'ss-it' + (o.value === s.value ? ' sel' : '') + (o.disabled ? ' dis' : ''), role: 'option', 'aria-selected': String(o.value === s.value), text: o.textContent });
+            if (!o.disabled) { it.addEventListener('pointerdown', function (e) { e.preventDefault(); }); it.addEventListener('click', function () { pick(o); }); items.push({ n: it, o: o }); }
+            list.append(it);
+          });
+        });
+        if (!items.length) list.append(el('div', { class: 'ss-none', text: 'Sin resultados' }));
+        var si = items.findIndex(function (x) { return x.o.value === s.value; }); mark(q.length ? 0 : si);
+      }
+      function mark(i) { items.forEach(function (x) { x.n.classList.remove('act'); }); act = Math.max(-1, Math.min(items.length - 1, i)); if (act >= 0) { items[act].n.classList.add('act'); items[act].n.scrollIntoView({ block: 'nearest' }); } }
+      inp.addEventListener('input', draw);
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); mark(act + 1); } else if (e.key === 'ArrowUp') { e.preventDefault(); mark(act - 1); }
+        else if (e.key === 'Enter') { e.preventDefault(); if (items[act]) pick(items[act].o); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(true); } else if (e.key === 'Tab') close(false);
+      });
+      document.body.append(pop);
+      pop.__place = function () {
+        var r = s.getBoundingClientRect(), vh = (window.visualViewport ? visualViewport.height : innerHeight);
+        if (r.bottom < 0 || r.top > vh) { close(false); return; }
+        var w = Math.max(r.width, 240), left = Math.min(r.left, innerWidth - w - 8), below = vh - r.bottom, h = Math.min(340, Math.max(below, r.top) - 16);
+        pop.style.width = w + 'px'; pop.style.left = Math.max(8, left) + 'px'; list.style.maxHeight = Math.max(120, h - 52) + 'px';
+        if (below >= 200 || below >= r.top) { pop.style.top = (r.bottom + 4) + 'px'; pop.style.bottom = ''; } else { pop.style.bottom = (innerHeight - r.top + 4) + 'px'; pop.style.top = ''; }
+      };
+      pop.__place();
+      if (initial) inp.value = initial;
+      draw(); setTimeout(function () { inp.focus(); }, 0);
+      document.addEventListener('pointerdown', outside, true);
+    }
+    function big(s) { return s.options.length >= MIN && !s.disabled && !s.multiple && !(s.size > 1) && !s.hasAttribute('data-nosearch'); }
+    function enhance(s) {
+      if (s.__ss) return; s.__ss = 1;
+      s.addEventListener('mousedown', function (e) { if (!big(s) || e.button !== 0) return; e.preventDefault(); s.focus({ preventScroll: true }); open(s); });
+      s.addEventListener('touchend', function (e) { if (!big(s)) return; e.preventDefault(); open(s); }, { passive: false });
+      s.addEventListener('keydown', function (e) {
+        if (!big(s) || e.ctrlKey || e.metaKey || e.altKey && e.key !== 'ArrowDown') return;
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'F4' || (e.altKey && e.key === 'ArrowDown')) { e.preventDefault(); open(s); }
+        else if (e.key.length === 1) { e.preventDefault(); open(s, e.key); }
+      });
+    }
+    function scan(root) { if (!root || !root.querySelectorAll) return; if (root.tagName === 'SELECT') enhance(root); root.querySelectorAll('select').forEach(enhance); }
+    try { scan(document); new MutationObserver(function (ms) { ms.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) scan(n); }); }); }).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+    function replace() { if (pop && pop.__place) pop.__place(); }
+    window.addEventListener('scroll', function (e) { if (pop && !pop.contains(e.target)) replace(); }, true); window.addEventListener('resize', replace);
+  })();
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
