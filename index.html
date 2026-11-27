@@ -10528,6 +10528,70 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     gUpd('asesores', a.id, { pausa: np, pausas: (cur.pausas || []).concat(np ? [np] : []), historial: gLog(cur, 'Terminó la pausa') });
     gFill(); render(); toast(aseFull(cur) + ' volvió a estar activo.');
   }
+  /* ===================== Unificar dos perfiles de asesor ===================== */
+  function aseRefs(id) {
+    var R = { cierres: [], reservas: [], movimientos: [], tasaciones: [], guardias: [], captaciones: [] };
+    G.cierres.forEach(function (c) { if ((c.asesores || []).some(function (x) { return x.id === id; }) || c.capAse === id) R.cierres.push(c); });
+    G.reservas.forEach(function (r) { var L = r.lados || {}; if ((r.asesorIds || []).indexOf(id) >= 0 || (L.v && L.v.ase === id) || (L.c && L.c.ase === id) || r.capAse === id) R.reservas.push(r); });
+    G.movimientos.forEach(function (m) { if (m.asesorId === id) R.movimientos.push(m); });
+    (G.tasaciones || []).forEach(function (t) { if (t.ase === id) R.tasaciones.push(t); });
+    G.guardias.forEach(function (g) { if (g.aseId === id) R.guardias.push(g); });
+    G.captaciones.forEach(function (p) { if (p.ase === id) R.captaciones.push(p); });
+    return R;
+  }
+  async function aseUnificar(src) {
+    var dsts = G.asesores.filter(function (a) { return a.id !== src.id; }).sort(function (x, y) { return aseFull(x).localeCompare(aseFull(y), 'es'); });
+    var sel = el('select', {}, [el('option', { value: '', text: 'Elegí el perfil que queda' })].concat(dsts.map(function (a) { return el('option', { value: a.id, text: aseFull(a) + (a.activo === false ? ' (de baja)' : '') }); })));
+    var R = aseRefs(src.id), n = function (k) { return R[k].length; };
+    var resumen = [['cierres', 'cierres'], ['reservas', 'reservas'], ['movimientos', 'movimientos de cuenta corriente'], ['tasaciones', 'tasaciones'], ['guardias', 'guardias'], ['captaciones', 'captaciones']].filter(function (x) { return n(x[0]); }).map(function (x) { return n(x[0]) + ' ' + x[1]; });
+    var ok = await showModal('Unificar ' + aseFull(src) + ' con otro perfil', el('div', { class: 'field' },
+      el('p', {}, 'Todo lo de ', el('b', { text: aseFull(src) }), ' pasa al perfil que elijas, y ', el('b', { text: aseFull(src) }), ' se elimina de la nómina.'),
+      fld('Perfil que queda', sel),
+      el('p', { class: 'sm', text: resumen.length ? 'Se mueven: ' + resumen.join(', ') + '.' : 'No tiene operaciones ni movimientos cargados.' }),
+      el('p', { class: 'hint', text: 'Los porcentajes y splits de cada cierre se mantienen como estaban. Los datos que falten en el perfil que queda (mail, teléfono, objetivos de años sin cargar) se completan con los de este. El nombre "' + aseFull(src) + '" queda como alias, para que las próximas importaciones lo reconozcan.' })), [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn danger', text: 'Unificar', onclick: function () { if (!sel.value) { toast('Elegí el perfil que queda.', { kind: 'error' }); return; } closeModal(sel.value); } })]);
+    if (!ok) return;
+    var dst = gGet('asesores', ok), A = src.id, B = dst.id;
+    function sw(v) { return v === A ? B : v; }
+    R.cierres.forEach(function (c) {
+      var as = (c.asesores || []).map(function (x) { return Object.assign({}, x, { id: sw(x.id) }); }), seen = {}, merged = [];
+      as.forEach(function (x) { if (seen[x.id]) { seen[x.id].parte = (+seen[x.id].parte || 0) + (+x.parte || 0); } else { seen[x.id] = x; merged.push(x); } });
+      var f = { asesores: merged };
+      if (c.capAse === A) f.capAse = B;
+      if (c.liqMail && c.liqMail.items) f.liqMail = Object.assign({}, c.liqMail, { items: c.liqMail.items.map(function (i) { return i.aseId === A ? Object.assign({}, i, { aseId: B, nombre: dst.nombre || aseFull(dst) }) : i; }) });
+      gUpd('cierres', c.id, f);
+    });
+    R.reservas.forEach(function (r) {
+      var f = { asesorIds: (r.asesorIds || []).map(sw).filter(function (v, i, a) { return a.indexOf(v) === i; }) };
+      if (r.lados) { var L = JSON.parse(JSON.stringify(r.lados)); ['v', 'c'].forEach(function (k) { if (L[k] && L[k].ase === A) L[k].ase = B; }); f.lados = L; }
+      if (r.capAse === A) f.capAse = B;
+      if (r.asesores) f.asesores = r.asesores.map(function (x) { return x === aseFull(src) || x === src.nombre ? (dst.nombre || aseFull(dst)) : x; });
+      gUpd('reservas', r.id, f);
+    });
+    R.movimientos.forEach(function (m) { gUpd('movimientos', m.id, { asesorId: B }); });
+    R.tasaciones.forEach(function (t) { gUpd('tasaciones', t.id, { ase: B }); });
+    R.guardias.forEach(function (g) { var x = Object.assign({}, g, { aseId: B, nombre: aseName(B) }); delete x.id; guaSet(g.id, x); });
+    R.captaciones.forEach(function (p) { gUpd('captaciones', p.id, { ase: B }); });
+    if (gConf.tokkoMap) { var mp = Object.assign({}, gConf.tokkoMap), ch = false; Object.keys(mp).forEach(function (k) { if (mp[k] === A) { mp[k] = B; ch = true; } }); if (ch) gSaveConf({ tokkoMap: mp }); }
+    var fD = {}, al = (dst.alias || []).slice();
+    [src.nombre, src.apodo, aseFull(src)].concat(src.alias || []).forEach(function (x) { if (x && al.indexOf(x) < 0 && x !== dst.nombre && x !== dst.apodo) al.push(x); });
+    fD.alias = al;
+    ['mail', 'tel', 'dni', 'cuit', 'cbu', 'nacimiento', 'iva', 'team', 'ingreso'].forEach(function (k) { if (!dst[k] && src[k]) fD[k] = src[k]; });
+    var ob = Object.assign({}, src.objetivos || {}, dst.objetivos || {}); fD.objetivos = ob;
+    fD.historial = gLog(dst, 'Se unificó con el perfil "' + aseFull(src) + '" (' + resumen.join(', ') + ')');
+    gUpd('asesores', B, fD);
+    if (src.acceso && src.accesoMail && gDb) { try { gDb.collection('accesos').doc(src.accesoMail).delete(); } catch (e) {} }
+    gDel('asesores', A);
+    closePanels(); render();
+    toast(aseFull(src) + ' quedó unificado en ' + aseFull(dst) + '.');
+    setTimeout(function () { openAse(B, 'ops'); }, 200);
+  }
+  aseDatos = (function (o) { return function (a, d, isNew) {
+    var r = o.apply(this, arguments);
+    try { if (!isNew && !window.ASE_MODE) { var row = Array.prototype.slice.call(document.querySelectorAll('#gpBody .row-wrap')).filter(function (x) { return /Eliminar de la nómina/.test(x.textContent); })[0]; if (row) row.prepend(el('button', { type: 'button', class: 'btn', text: 'Unificar con otro perfil…', onclick: function () { aseUnificar(gGet('asesores', a.id) || a); } })); } } catch (e) {}
+    return r;
+  }; })(aseDatos);
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
