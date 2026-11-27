@@ -1186,6 +1186,9 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
 .notif-cfg td.c, .notif-cfg th:not(:first-child) { text-align: center; }
 .g-liqm { display: grid; gap: 10px; }
 .g-liqm > label.check { display: flex; gap: 10px; align-items: flex-start; justify-content: flex-start; text-align: left; }
+.gua-t td.conf { border-color: #d9822b; background: color-mix(in srgb, #d9822b 10%, var(--surface)); }
+.gua-warn { color: #a85a12; }
+.ob-card.paused { opacity: .85; }
 </style>
 <style>
 .login { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -4989,8 +4992,8 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
       kpi('Realizado', usdK(ofiReal), el('span', { class: 'kpi-s' }, bar(tObj ? Math.min(100, Math.round(ofiReal * 100 / tObj)) : 0, Math.round(ef * 100), 'Avance de la oficina'), el('span', { text: (tObj ? pctTxt(ofiReal / tObj, 0) : '–') + ' del objetivo · debería ir en ' + pctTxt(ef, 0) }))),
       kpi('Proyectado', usdK(ofiReal + (y === now ? act.reduce(function (s, a) { return s + stats[a.id].pipeA; }, 0) : 0)), 'Realizado + comisión estimada de reservas aceptadas'));
     var teamNames = {}; act.forEach(function (a) { if (a.team) teamNames[a.team] = 1; });
-    var F = [['activos', 'Activos'], ['atras', 'Bajo objetivo']].concat(Object.keys(teamNames).sort().map(function (t) { return ['team:' + t, t]; })).concat([['todos', 'Todos'], ['bajas', 'Dados de baja']]);
-    function inF(a, f) { if (f.indexOf('team:') === 0) return a.activo !== false && a.team === f.slice(5); return f === 'activos' ? a.activo !== false : f === 'bajas' ? a.activo === false : f === 'atras' ? a.activo !== false && (stats[a.id].status === 'bad' || stats[a.id].status === 'warn') : true; }
+    var F = [['activos', 'Activos'], ['atras', 'Bajo objetivo']].concat(Object.keys(teamNames).sort().map(function (t) { return ['team:' + t, t]; })).concat([['pausa', 'En pausa'], ['todos', 'Todos'], ['bajas', 'Dados de baja']]);
+    function inF(a, f) { if (f.indexOf('team:') === 0) return a.activo !== false && a.team === f.slice(5); return f === 'pausa' ? a.activo !== false && asePausado(a) : f === 'activos' ? a.activo !== false : f === 'bajas' ? a.activo === false : f === 'atras' ? a.activo !== false && (stats[a.id].status === 'bad' || stats[a.id].status === 'warn') : true; }
     var list = all.filter(function (a) { return inF(a, gF.aseF); });
     var RANK = { bad: 0, warn: 1, ok: 2, none: 3, done: 4 };
     list.sort(function (a, b) {
@@ -5050,9 +5053,9 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     var sp = splitAt(a), ns = nextSplit(a);
     var sub = [antig(a.ingreso), sp != null ? 'Split ' + pctTxt(sp, 0) + (ns ? ' (' + pctTxt(+ns.split, 0) + ' desde ' + dmy(ns.desde) + ')' : '') : null].filter(Boolean).join(' · ');
     var pctN = s.obj ? Math.min(100, Math.round(s.real * 100 / s.obj)) : 0;
-    return el('article', { class: 'card ob-card' + (a.activo === false ? ' off' : '') },
+    return el('article', { class: 'card ob-card' + (a.activo === false ? ' off' : '') + (asePausado(a) ? ' paused' : '') },
       el('button', { type: 'button', class: 'card-main', 'data-focus': 'ase:' + a.id, onclick: function () { openAse(a.id); } },
-        el('span', { class: 'ob-top' }, el('span', { class: 'g-who' }, aseAv(a.id, true), el('span', {}, el('span', { class: 'card-name', text: aseFull(a) }), a.team ? el('span', { class: 'sm team-t', text: a.team }) : null)), asePill(s)),
+        el('span', { class: 'ob-top' }, el('span', { class: 'g-who' }, aseAv(a.id, true), el('span', {}, el('span', { class: 'card-name', text: aseFull(a) }), a.team ? el('span', { class: 'sm team-t', text: a.team }) : null)), asePausado(a) ? tag('warn', 'En pausa') : asePill(s)),
         el('span', { class: 'sm', text: sub || 'Completar fecha de ingreso y split' }),
         s.obj ? bar(pctN, Math.round(s.ef * 100), 'Avance hacia el objetivo') : null,
         el('span', { class: 'ob-nums' }, usd(s.real) + (s.obj ? ' de ' + usd(s.obj) + ' · ' + pctTxt(s.pct, 0) : ' facturado en ' + y), s.obj && s.status !== 'done' && s.ef > 0 && s.ef < 1 ? el('span', { class: 'gap ' + (s.pct >= s.ef ? 'up' : 'down'), text: ' ' + (s.pct >= s.ef ? '+' : '−') + Math.abs(Math.round((s.pct - s.ef) * 100)) + ' pts' }) : null),
@@ -5728,7 +5731,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     var a = gRec(), isNew = !a, d = isNew ? gOpen.draft : a, y = gF.aseY;
     $('#gp').classList.toggle('wide', !isNew && (gOpen.tab === 'ops' || gOpen.tab === 'cc'));
     var s = isNew ? null : aseStats(a, y);
-    gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : null],
+    gHeadSet(isNew ? 'Nuevo asesor' : aseFull(d), isNew ? [] : [aseAv(a.id), el('span', { class: 'sm', text: [d.team, antig(d.ingreso)].filter(Boolean).join(' · ') }), asePill(s), d.activo === false ? tag('muted', 'Dado de baja') : asePausado(d) ? tag('warn', 'En pausa' + (d.pausa.hasta ? ' hasta ' + dmy(d.pausa.hasta) : '')) : null],
       isNew ? null : [['resumen', 'Resumen'], ['ops', 'Planilla'], (aseOnbData(a) || !window.ASE_MODE) ? ['onb', 'Onboarding'] : null, aseCapAvail(a) ? ['cap', 'Captaciones'] : null, ['tas', 'Tasaciones'], ['guard', 'Guardias'], ['cc', 'Cuenta corriente'], window.ASE_MODE ? null : ['datos', 'Datos']].filter(Boolean));
     if (window.ASE_MODE && gOpen.tab === 'datos') gOpen.tab = 'resumen';
     if (isNew || gOpen.tab === 'datos') aseDatos(a, d, isNew);
@@ -5894,8 +5897,12 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
           ? el('div', { class: 'g-baja' }, el('p', {}, el('b', { text: 'Dado de baja' + (d.baja ? ' el ' + dmy(d.baja) : '') }), d.motivoBaja ? el('span', { class: 'sm', text: ' · ' + d.motivoBaja }) : null),
               el('p', { class: 'sm', text: 'No suma al objetivo de la oficina y no aparece para elegir en reservas ni cierres nuevos. Sus operaciones y estadísticas se conservan.' }),
               el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', text: 'Reincorporar', onclick: function () { aseReincorporar(a); } })))
+          : d.pausa && d.pausa.desde && (!d.pausa.hasta || d.pausa.hasta >= todayStr())
+          ? el('div', { class: 'g-baja' }, el('p', {}, el('b', { text: (asePausado(d) ? 'En pausa' : 'Pausa programada') + ' desde el ' + dmy(d.pausa.desde) + (d.pausa.hasta ? ' hasta el ' + dmy(d.pausa.hasta) : ' (sin fecha de vuelta)') }), d.pausa.motivo ? el('span', { class: 'sm', text: ' · ' + d.pausa.motivo }) : null),
+              el('p', { class: 'sm', text: 'Baja temporal: no se puede anotar ni asignar a guardias en ese período. Sigue en la nómina, conserva sus reservas y cierres, y puede seguir cerrando operaciones.' }),
+              el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', text: 'Terminar la pausa', onclick: function () { asePausaFin(a); } }), el('button', { type: 'button', class: 'btn ghost', text: 'Cambiar fechas', onclick: function () { asePausa(a); } }), el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja…', onclick: function () { aseBaja(a); } })))
           : el('div', { class: 'g-baja' }, el('p', { class: 'sm', text: 'Activo' + (d.ingreso ? ' desde el ' + dmy(d.ingreso) : '') + '.' }),
-              el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja…', onclick: function () { aseBaja(a); } }))),
+              el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn', text: 'Poner en pausa…', onclick: function () { asePausa(a); } }), el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja…', onclick: function () { aseBaja(a); } }))),
         fld('Notas', inArea(d.notas, set, 'notas')), histList(d.historial)]),
       isNew ? null : el('div', { class: 'row-wrap' }, el('button', { type: 'button', class: 'btn danger', text: 'Eliminar de la nómina', onclick: function () {
         var used = G.cierres.some(function (c) { return cShare(c, a.id); }) || G.reservas.some(function (r) { return (r.asesorIds || []).indexOf(a.id) >= 0; });
@@ -5913,15 +5920,15 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     var body = el('div', { class: 'field' },
       el('div', { class: 'grid' }, fld('Fecha de baja', fecha), fld('Motivo', mot)), fld('Detalle', det),
       el('p', { class: 'hint', text: 'Sus cierres y estadísticas se conservan. Deja de sumar al objetivo de la oficina y no aparece para elegir en reservas ni cierres nuevos.' }),
-      act ? el('p', { class: 'warn', text: 'Tiene ' + act + (act === 1 ? ' reserva activa' : ' reservas activas') + ': revisá quién las sigue.' }) : null);
+      act ? el('p', { class: 'warn', text: 'Tiene ' + act + (act === 1 ? ' reserva activa' : ' reservas activas') + ': revisá quién las sigue.' }) : null, guaLibCheck(a, todayStr(), ''));
     var ok = await showModal('Dar de baja a ' + nombre, body, [
       el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
       el('button', { type: 'button', class: 'btn danger', text: 'Dar de baja', onclick: function () { closeModal(true); } })]);
     if (!ok) return;
     var motivo = mot.value + (det.value.trim() ? ': ' + det.value.trim() : '');
     var cur = gGet('asesores', a.id) || a;
-    var f = { activo: false, baja: validDate(fecha.value) || todayStr(), motivoBaja: motivo, historial: gLog(cur, 'Baja: ' + motivo) };
-    gUpd('asesores', a.id, f); gFill(); render();
+    var f = { activo: false, baja: validDate(fecha.value) || todayStr(), motivoBaja: motivo, historial: gLog(cur, 'Baja: ' + motivo), pausa: null };
+    gUpd('asesores', a.id, f); guaLiberar(body, a, f.baja, ''); gFill(); render();
     toast(nombre + ' quedó dado de baja.', { action: { label: 'Deshacer', fn: function () { var c2 = gGet('asesores', a.id); gUpd('asesores', a.id, { activo: true, baja: '', motivoBaja: '', historial: gLog(c2 || a, 'Se deshizo la baja') }); gFill(); render(); } } });
   }
   function aseReincorporar(a) {
@@ -10194,21 +10201,23 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     function celda(f, t) {
       if (guaTurnos(f).indexOf(t) < 0) return el('td', { class: 'gua-na' });
       var g = guaDe(f, t), past = f < hoy, id = f + '_' + t, mine = g && ase && g.aseId === ase;
-      var cls = 'gua-c' + (g ? ' tom' : '') + (mine ? ' mine' : '') + (past ? ' past' : '');
+      var gA = g ? gGet('asesores', g.aseId) : null, conf = g && !past && gA && !aseGuardiaOK(gA, f);
+      var cls = 'gua-c' + (g ? ' tom' : '') + (mine ? ' mine' : '') + (past ? ' past' : '') + (conf ? ' conf' : '');
       var nodes = [];
       if (ase) {
         if (g) nodes.push(el('b', { text: mine ? 'Vos' : (g.nombre || 'Ocupada') }));
-        if (!g && !past) nodes.push(el('button', { type: 'button', class: 'btn sm-btn', text: 'Anotarme', onclick: function () { guaSet(id, { fecha: f, turno: t, aseId: ase, nombre: window.ASE_MODE ? aseFull({ nombre: (gGet('asesores', ase) || {}).nombre || window.ASE_MODE.nombre || '' }) : aseName(ase), creado: new Date().toISOString(), por: meNameSafe() }); toast('Anotado en la guardia del ' + guaDia(f) + ', ' + GUA_T[t].h + '.', { action: { label: 'Agendar', fn: function () { window.open(guaOutlook({ fecha: f, turno: t }), '_blank'); } } }); guaRefresh(); } }));
+        var meA = gGet('asesores', ase); if (!g && !past && meA && !aseGuardiaOK(meA, f)) nodes.push(el('span', { class: 'sm', text: meA.activo === false ? 'Dado de baja' : 'En pausa' }));
+        else if (!g && !past) nodes.push(el('button', { type: 'button', class: 'btn sm-btn', text: 'Anotarme', onclick: function () { guaSet(id, { fecha: f, turno: t, aseId: ase, nombre: window.ASE_MODE ? aseFull({ nombre: (gGet('asesores', ase) || {}).nombre || window.ASE_MODE.nombre || '' }) : aseName(ase), creado: new Date().toISOString(), por: meNameSafe() }); toast('Anotado en la guardia del ' + guaDia(f) + ', ' + GUA_T[t].h + '.', { action: { label: 'Agendar', fn: function () { window.open(guaOutlook({ fecha: f, turno: t }), '_blank'); } } }); guaRefresh(); } }));
         if (mine && !past) {
           nodes.push(el('a', { class: 'g-link-btn sm', href: guaOutlook(g), target: '_blank', rel: 'noopener', text: 'Agendar en Outlook' }), el('button', { type: 'button', class: 'g-link-btn sm', text: 'Descargar (.ics)', onclick: function () { guaIcs(g); } }));
           if (guaHoras(g) > 48) nodes.push(el('button', { type: 'button', class: 'g-link-btn sm', text: 'Darme de baja', onclick: function () { guaDel(id); guaRefresh(); } }));
           else nodes.push(el('span', { class: 'sm', text: 'Para cambiarla, hablá con la oficina' }));
         }
       } else {
-        var s = el('select', { 'aria-label': 'Guardia ' + guaDia(f) + ' ' + GUA_T[t].h }, [el('option', { value: '', text: past ? '—' : 'Libre' })].concat(G.asesores.filter(function (a) { return a.activo !== false || (g && g.aseId === a.id); }).sort(function (x, y) { return aseFull(x).localeCompare(aseFull(y), 'es'); }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); })));
+        var s = el('select', { 'aria-label': 'Guardia ' + guaDia(f) + ' ' + GUA_T[t].h }, [el('option', { value: '', text: past ? '—' : 'Libre' })].concat(G.asesores.filter(function (a) { return aseGuardiaOK(a, f) || (g && g.aseId === a.id); }).sort(function (x, y) { return aseFull(x).localeCompare(aseFull(y), 'es'); }).map(function (a) { return el('option', { value: a.id, text: aseFull(a) }); })));
         s.value = g ? g.aseId : '';
         s.addEventListener('change', function () { if (!s.value) guaDel(id); else guaSet(id, { fecha: f, turno: t, aseId: s.value, nombre: aseName(s.value), creado: new Date().toISOString(), por: meNameSafe() }); guaRefresh(); });
-        nodes.push(s);
+        nodes.push(s); if (conf) nodes.push(el('span', { class: 'sm gua-warn', text: gA.activo === false ? 'Está dado de baja' : 'Está en pausa' }));
       }
       return el('td', { class: cls }, nodes);
     }
@@ -10249,6 +10258,11 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     box.replaceChildren(
       gHead('Guardias', 'Lunes a viernes de 10 a 14 y de 14 a 18 hs · sábados de 10 a 14 hs. Los asesores se anotan desde su perfil.'),
       el('div', { class: 'kpis' }, kpi('Esta semana', ocup + ' de ' + tot, tot - ocup ? (tot - ocup) + ' turnos libres' : 'Semana completa'), kpi('Guardias en ' + MESES[+mes.slice(5) - 1], String(ak.reduce(function (s, k) { return s + byA[k]; }, 0)), ak.length + ' asesores')),
+      (function () {
+        var C = G.guardias.filter(function (g) { var a = gGet('asesores', g.aseId); return g.fecha >= todayStr() && a && !aseGuardiaOK(a, g.fecha); }).sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1; });
+        return C.length ? el('section', { class: 'g-sec g-card gua-confs' }, el('h3', { class: 'g-sec-h', text: 'Guardias para reasignar' }), el('p', { class: 'sm', text: 'Estas guardias están anotadas a asesores en pausa o dados de baja.' }),
+          el('div', { class: 'g-links' }, C.map(function (g) { var a = gGet('asesores', g.aseId); return el('div', { class: 'gua-rec' }, el('span', {}, el('b', { text: guaDia(g.fecha) + ' · ' + GUA_T[g.turno].h }), el('span', { class: 'sm', text: ' · ' + aseName(g.aseId) + (a.activo === false ? ' (dado de baja)' : ' (en pausa)') })), el('button', { type: 'button', class: 'btn sm-btn', text: 'Liberar', onclick: function () { guaDel(g.id); gRenderView(); } })); }))) : null;
+      })(),
       el('section', { class: 'g-sec g-card' }, N.bar, guaSemana(lun, null)),
       el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Recordatorios (48 hs antes)' }), el('p', { class: 'sm', text: 'Mensaje: «' + GUA_MSG + '»' }), guaRecordatorios()),
       ak.length ? el('section', { class: 'g-sec g-card' }, el('h3', { class: 'g-sec-h', text: 'Guardias por asesor en ' + MESES[+mes.slice(5) - 1] }), el('div', { class: 'g-links' }, ak.map(function (k) { return el('div', { class: 'gua-rec' }, el('span', { text: aseName(k) }), el('b', { text: String(byA[k]) })); }))) : null);
@@ -10472,6 +10486,48 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     return o.apply(this, arguments);
   }; })(gBody);
   closePanels = (function (o) { return function () { blankInputs($('#gpBody')); return o.apply(this, arguments); }; })(closePanels);
+  /* ===================== Pausa (baja temporal) ===================== */
+  function asePausado(a, fecha) { var p = a && a.pausa; if (!p || !p.desde) return false; var f = fecha || todayStr(); return f >= p.desde && (!p.hasta || f <= p.hasta); }
+  function aseGuardiaOK(a, fecha) { return !!a && a.activo !== false && !asePausado(a, fecha); }
+  function guaDeAse(aid, desde, hasta) { return G.guardias.filter(function (g) { return g.aseId === aid && g.fecha >= desde && (!hasta || g.fecha <= hasta); }); }
+  function guaLibCheck(a, desde, hasta) {
+    var n = guaDeAse(a.id, desde || todayStr(), hasta).length; if (!n) return null;
+    var c = el('input', { type: 'checkbox', 'data-gualib': '1' }); c.checked = true;
+    return el('label', { class: 'check', style: 'display:flex;gap:10px;align-items:flex-start;justify-content:flex-start;text-align:left' }, c, (n === 1 ? 'Liberar su guardia anotada' : 'Liberar sus ' + n + ' guardias anotadas') + ' en ese período (quedan libres para otro asesor)');
+  }
+  function guaLiberar(body, a, desde, hasta) {
+    var c = body && body.querySelector('[data-gualib]'); if (!c || !c.checked) return 0;
+    var L = guaDeAse(a.id, desde || todayStr(), hasta); L.forEach(function (g) { guaDel(g.id); }); return L.length;
+  }
+  async function asePausa(a) {
+    var cur = gGet('asesores', a.id) || a, p0 = cur.pausa || {};
+    var desde = el('input', { type: 'date', value: p0.desde || todayStr() }), hasta = el('input', { type: 'date', value: p0.hasta || '' });
+    var mot = el('select', {}, ['Licencia', 'Vacaciones', 'Viaje', 'Salud', 'Motivos personales', 'Otro'].map(function (x) { return el('option', { value: x, text: x }); }));
+    if (p0.motivo) { var m0 = String(p0.motivo).split(':')[0]; if ([].some.call(mot.options, function (o) { return o.value === m0; })) mot.value = m0; }
+    var det = el('input', { type: 'text', placeholder: 'Detalle (opcional)', value: p0.motivo && p0.motivo.indexOf(':') > 0 ? p0.motivo.split(':').slice(1).join(':').trim() : '' });
+    var libBox = el('div', {});
+    function lib() { libBox.replaceChildren(); var x = guaLibCheck(cur, validDate(desde.value) || todayStr(), validDate(hasta.value) || ''); if (x) libBox.append(x); }
+    desde.addEventListener('change', lib); hasta.addEventListener('change', lib); lib();
+    var body = el('div', { class: 'field' },
+      el('div', { class: 'grid' }, fld('Desde', desde), fld('Hasta', hasta, 'Vacío si todavía no sabe cuándo vuelve')), el('div', { class: 'grid' }, fld('Motivo', mot), fld('Detalle', det)),
+      el('p', { class: 'hint', text: 'Mientras esté en pausa no puede anotarse ni ser asignado a guardias. Sigue en la nómina, con sus reservas, cierres y cuenta corriente, y puede seguir cerrando operaciones.' }), libBox);
+    var ok = await showModal('Poner en pausa a ' + aseFull(cur), body, [
+      el('button', { type: 'button', class: 'btn ghost', text: 'Cancelar', onclick: function () { closeModal(null); } }),
+      el('button', { type: 'button', class: 'btn primary', text: 'Guardar pausa', onclick: function () { closeModal(true); } })]);
+    if (!ok) return;
+    var d1 = validDate(desde.value) || todayStr(), h1 = validDate(hasta.value) || '';
+    if (h1 && h1 < d1) { toast('La fecha de vuelta es anterior al inicio de la pausa.', { kind: 'error' }); return; }
+    var motivo = mot.value + (det.value.trim() ? ': ' + det.value.trim() : '');
+    gUpd('asesores', a.id, { pausa: { desde: d1, hasta: h1, motivo: motivo }, historial: gLog(cur, 'Pausa desde el ' + dmy(d1) + (h1 ? ' hasta el ' + dmy(h1) : '') + ': ' + motivo) });
+    var n = guaLiberar(body, cur, d1, h1);
+    gFill(); render(); toast(aseFull(cur) + ' quedó en pausa' + (n ? '. Se liberaron ' + n + (n === 1 ? ' guardia.' : ' guardias.') : '.'));
+  }
+  function asePausaFin(a) {
+    var cur = gGet('asesores', a.id) || a, p = cur.pausa || {}, hoy = todayStr();
+    var np = p.desde && p.desde < hoy ? { desde: p.desde, hasta: addDaysStr(hoy, -1), motivo: p.motivo || '' } : null;
+    gUpd('asesores', a.id, { pausa: np, pausas: (cur.pausas || []).concat(np ? [np] : []), historial: gLog(cur, 'Terminó la pausa') });
+    gFill(); render(); toast(aseFull(cur) + ' volvió a estar activo.');
+  }
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
