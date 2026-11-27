@@ -5211,7 +5211,12 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
       el('div', { class: 'g-lados' }, ladoCard(d, L, 'v', setL), ladoCard(d, L, 'c', setL)),
       comBox(d)]);
     var dinero;
-    if (isNew) {
+    var sinPlata = !L.v.nos && !rPagos(d).length && !d.plataIgual;
+    if (sinPlata) {
+      if (d.pago_) delete d.pago_;
+      dinero = sect('Dinero de la reserva', [el('p', { class: 'sm', text: 'La punta vendedora es de otra inmobiliaria: el dinero de la reserva lo recibe y lo guarda ella, así que acá no se carga.' }),
+        el('button', { type: 'button', class: 'g-link-btn sm', text: 'Cargar dinero igual', onclick: function () { set({ plataIgual: true }); gFill(); } })]);
+    } else if (isNew) {
       var p = d.pago_ || (d.pago_ = { moneda: 'U$S', fecha: todayStr(), medio: 'efectivo', estado: 'oficina' });
       var setP = function (f) { Object.assign(p, f); if ('estado' in f) gFill(); };
       dinero = sect('Dinero de la reserva', [
@@ -6522,7 +6527,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
       card('Contactos para hoy o vencidos', it.contactos, function (c) { var d = relDue(c.proximoContacto); return lk(c.nombre || 'Sin nombre', stageName(c.estado) + ' · ' + (d.d === 0 ? 'hoy' : d.text), function () { openSheet(c.id); }, d.d < 0 ? 'alert' : ''); }, 'Nada pendiente.', function () { setView('tablero'); }),
       card('Onboarding atrasado', it.onb, function (c) { var o = obInfo(c); return lk(c.nombre || '', o.late + ' objetivos vencidos · semana ' + Math.min(o.cur, 13), function () { openOnb(c.id); }); }, 'Todos en ritmo.', function () { setView('onb'); })];
     if (gest) cards = cards.concat([
-      card('Plata en poder de asesores', it.plata, function (r) { return lk(r.propiedad || 'Sin dirección', aseNames(r.asesorIds) + ' · ' + totTxt(rTotals(r, true)), function () { openRes(r.id); }, 'alert'); }, 'Todo el dinero está en la oficina o el banco.'),
+      card('Plata en poder de asesores', it.plata, function (r) { var dd = Math.max.apply(null, rPagos(r).filter(function (p) { return p.estado === 'asesor' && +p.monto; }).map(function (p) { return Math.max(0, -dayDiff(p.fecha || todayStr())); }).concat([0])); return lk(r.propiedad || 'Sin dirección', aseNames(r.asesorIds) + ' · ' + totTxt(rTotals(r, true)) + (dd ? ' · hace ' + dd + (dd === 1 ? ' día' : ' días') : ' · desde hoy'), function () { openRes(r.id); }, 'alert'); }, 'Todo el dinero está en la oficina o el banco.'),
       card('Reservas por vencer o a devolver', it.vence.concat(it.devolver), function (r) { return lk(r.propiedad || 'Sin dirección', r.estado === 'pendiente' ? 'Vence ' + relDue(r.vence).text : 'Devolver ' + totTxt(rTotals(r, true)), function () { openRes(r.id); }); }, 'Nada pendiente.'),
       card('Firmas de la semana', it.firmas, function (r) { return lk(r.propiedad || '', aseNames(r.asesorIds) + ' · firma ' + relDue(r.fechaFirma).text, function () { openRes(r.id); }); }, 'No hay firmas cargadas para estos días.'),
       card('Cierres sin liquidar al asesor', it.liq, function (c) { return lk(c.direccion || '', dmy(c.fecha) + ' · ' + cParts(c).map(function (x) { return aseName(x.id); }).join(' y ') + ' · ' + usd(cBruto(c)), function () { openCie(c.id); }); }, 'Todo liquidado.', function () { gF.cieM = 0; setView('cie'); }),
@@ -10362,7 +10367,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
   ICONS.bell = '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>';
   var NOTIF_T = [
     ['cierre_nuevo', 'Cierre nuevo'], ['bluesoft', 'Cierre cargado en BlueSoft'], ['reserva_nueva', 'Reserva nueva'], ['reserva_aceptada', 'Reserva aceptada'],
-    ['reserva_caida', 'Reserva caída o rechazada'], ['guardia', 'Guardias: alguien se anota'], ['tasacion', 'Tasación nueva de un asesor'], ['audiovisual', 'Producción audiovisual pasada a cuenta corriente']];
+    ['reserva_caida', 'Reserva caída o rechazada'], ['plata_asesor', 'Dinero de una reserva en poder del asesor'], ['guardia', 'Guardias: alguien se anota'], ['tasacion', 'Tasación nueva de un asesor'], ['audiovisual', 'Producción audiovisual pasada a cuenta corriente']];
   gUpd = (function (o) { return function (n, id, f) { if (n === 'reservas' && f && f.estado) { var r0 = gGet('reservas', id); if (!r0 || r0.estado !== f.estado) { f.estadoEl = new Date().toISOString(); f.estadoPor = meNameSafe(); } } return o.apply(this, arguments); }; })(gUpd);
   function notifKey() { var m = miMail(); return m || ('n:' + String(meName() || 'yo').toLowerCase()); }
   function notifDocId(k) { return String(k).replace(/[^a-z0-9]/gi, '_').slice(0, 120); }
@@ -10379,6 +10384,7 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     G.reservas.forEach(function (r) {
       var who = aseNames(r.asesorIds);
       add('reserva_nueva', r.id, r.creado, 'Reserva nueva: ' + (r.propiedad || 'sin dirección'), who, function () { setView('res'); openRes(r.id); }, r.creadoPor);
+      rPagos(r).forEach(function (p, i) { if (p.estado === 'asesor' && +p.monto && r.estado !== 'cerrada') { var dd = Math.max(0, -dayDiff(p.fecha || todayStr())); add('plata_asesor', r.id + ':' + i, p.creado || ((p.fecha || todayStr()) + 'T09:00:00'), 'Dinero con el asesor: ' + (r.propiedad || 'reserva'), who + ' · ' + money(+p.monto, p.moneda) + (dd ? ' · hace ' + dd + (dd === 1 ? ' día' : ' días') : ' · hoy'), function () { setView('res'); openRes(r.id); }); } });
       if (r.estado === 'aceptada' && r.estadoEl) add('reserva_aceptada', r.id, r.estadoEl, 'Reserva aceptada: ' + (r.propiedad || ''), who, function () { setView('res'); openRes(r.id); }, r.estadoPor);
       if ((r.estado === 'caida' || r.estado === 'rechazada') && r.estadoEl) add('reserva_caida', r.id, r.estadoEl, (r.estado === 'caida' ? 'Se cayó: ' : 'Rechazada: ') + (r.propiedad || ''), who + (r.motivoBaja ? ' · ' + r.motivoBaja : ''), function () { setView('res'); openRes(r.id); }, r.estadoPor);
     });
@@ -10670,6 +10676,18 @@ button.g-tr.g-blue:hover { filter: brightness(0.98); }
     function replace() { if (pop && pop.__place) pop.__place(); }
     window.addEventListener('scroll', function (e) { if (pop && !pop.contains(e.target)) replace(); }, true); window.addEventListener('resize', replace);
   })();
+
+  /* el asesor ve en su resumen que tiene dinero de reservas para entregar */
+  aseResumen = (function (o) { return function (a) {
+    var r = o.apply(this, arguments);
+    try {
+      var L = G.reservas.filter(function (x) { return x.estado !== 'cerrada' && (x.asesorIds || []).indexOf(a.id) >= 0 && rPagos(x).some(function (p) { return p.estado === 'asesor' && +p.monto; }); });
+      var pane = $('#gpBody .g-pane');
+      if (L.length && pane) pane.prepend(el('div', { class: 'banner-lite warn gua-aviso' }, el('b', { text: (window.ASE_MODE ? 'Tenés' : 'Tiene') + ' dinero de reservas para entregar en la oficina: ' }),
+        L.map(function (x) { var ps = rPagos(x).filter(function (p) { return p.estado === 'asesor' && +p.monto; }), dd = Math.max.apply(null, ps.map(function (p) { return Math.max(0, -dayDiff(p.fecha || todayStr())); })); return (x.propiedad || 'reserva') + ' (' + ps.map(function (p) { return money(+p.monto, p.moneda); }).join(' + ') + (dd ? ', hace ' + dd + (dd === 1 ? ' día' : ' días') : '') + ')'; }).join(' · ')));
+    } catch (e) {}
+    return r;
+  }; })(aseResumen);
   if (window.__FB_MOCK) window.__t7 = { calcCierre: function (c) { return calcCierre(c); }, rCom: function (r) { return rCom(r); }, factCalc: factCalc, G: function () { return G; }, avInfo: avInfo, avSync: avSync, gGet: gGet, capDupMap: capDupMap, capDirKey: capDirKey };
 
   /* ---------- arranque ---------- */
